@@ -1,0 +1,26 @@
+Package: s3fs
+Type: Package
+Title: File System like `API` for Amazon Web Service `S3`.
+Version: 0.1.0
+import:
+  data.table,
+  future,
+  future.apply,
+  R6,
+  fs,
+  paws.storage,
+  lgr
+Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
+Description: Access Amazon Web Service `S3` as if it were a file system. 
+    File system `API` design around R package `fs`
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Collate: 
+    'zzz.R'
+    'utils.R'
+    's3filesystem_class.R'
+    'file_system.R'
+    'file_system_async.R'
