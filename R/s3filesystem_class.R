@@ -200,9 +200,6 @@ S3FileSystem = R6Class("S3FileSystem",
         path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
         new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
 
-        found = self$file_exists(path)
-        found_path = path[found]
-
         file_size = self$file_info(path)$size
 
         multipart = (5 * GB) < file_size
