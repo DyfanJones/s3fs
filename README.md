@@ -4,10 +4,10 @@
 # s3fs
 
 `s3fs` provides a file-system like interface into Amazon Web Services
-for `R`. It utilizes [`paws`](https://github.com/paws-r/paws) `SDK`,
-[`R6`](https://github.com/r-lib/R6). This repo has been inspired by
-Python’s [`s3fs`](https://github.com/fsspec/s3fs), however it’s API and
-implementation has been developed to follow `R`’s
+for `R`. It utilizes [`paws`](https://github.com/paws-r/paws) `SDK`and
+[`R6`](https://github.com/r-lib/R6) for it’s core design. This repo has
+been inspired by Python’s [`s3fs`](https://github.com/fsspec/s3fs),
+however it’s API and implementation has been developed to follow `R`’s
 [`fs`](https://github.com/r-lib/fs).
 
 ## Installation
@@ -17,6 +17,19 @@ Currently only avialable on github:
 ``` r
 remotes::install_github("dyfanjones/s3fs")
 ```
+
+### Dependencies
+
+-   [`paws`](https://github.com/paws-r/paws): connection with AWS S3
+-   [`R6`](https://github.com/r-lib/R6): Setup core class
+-   [`data.table`](https://github.com/Rdatatable/data.table): wrangle
+    lists into data.frames
+-   [`fs`](https://github.com/r-lib/fs): file system on local files
+-   [`lgr`](https://github.com/s-fleck/lgr): set up logging
+-   [`future`](https://github.com/HenrikBengtsson/future): set up async
+    functionality
+-   [`future.apply`](https://github.com/HenrikBengtsson/future.apply):
+    set up parallel looping
 
 # Comparison with `fs`
 
