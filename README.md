@@ -88,7 +88,7 @@ s3_dir_delete(tmp)
 <sup>Created on 2022-06-21 by the [reprex
 package](https://reprex.tidyverse.org) (v2.0.1)</sup>
 
-Similar to `fs` `s3fs` is designed to work well with the pipe.
+Similar to `fs`, `s3fs` is designed to work well with the pipe.
 
 ``` r
 library(s3fs)
@@ -114,7 +114,8 @@ paths |> s3_file_delete()
 <sup>Created on 2022-06-22 by the [reprex
 package](https://reprex.tidyverse.org) (v2.0.1)</sup>
 
+**NOTE:** all examples have be developed from `fs`.
+
 # Feedback wanted
 
-`s3fs` is designed work nicely with `fs` and piping. Please open a
-Github ticket raising any issues or feature requests.
+Please open a Github ticket raising any issues or feature requests.
