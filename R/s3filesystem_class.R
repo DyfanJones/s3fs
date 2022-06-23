@@ -13,7 +13,6 @@ KB = 1024
 MB = KB ^ 2
 GB = KB ^ 3
 
-
 retry_api_call = function(expr, retries){
   if(retries == 0){
     return(eval.parent(substitute(expr)))
@@ -61,13 +60,13 @@ retry_api_call = function(expr, retries){
 S3FileSystem = R6Class("S3FileSystem",
   public = list(
 
-    # connect_timeout = 5,
-    # retries = 5,
-    # read_timeout = 15,
-
     #' @field s3_cache
     #' Cache AWS S3
     s3_cache = list(),
+
+    #' @field s3_cache_bucket
+    #' Cached s3 bucket
+    s3_cache_bucket = "",
 
     #' @field s3_client
     #' paws s3 client
@@ -85,10 +84,6 @@ S3FileSystem = R6Class("S3FileSystem",
     #' The name of a profile to use
     profile_name = NULL,
 
-    #' @field s3_cache_bucket
-    #' Cached s3 bucket
-    s3_cache_bucket = "",
-
     #' @description Initialize S3FileSystem class
     #' @param aws_access_key_id (character): AWS access key ID
     #' @param aws_secret_access_key (character): AWS secret access key
@@ -97,6 +92,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param profile_name (character): The name of a profile to use. If not given,
     #'              then the default profile is used.
     #' @param endpoint (character): The complete URL to use for the constructed client.
+    #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
     #' @param ... Other parameters within \code{paws} client.
     initialize = function(aws_access_key_id = NULL,
                           aws_secret_access_key = NULL,
@@ -104,7 +100,31 @@ S3FileSystem = R6Class("S3FileSystem",
                           region_name = NULL,
                           profile_name = NULL,
                           endpoint = NULL,
+                          disable_ssl = FALSE,
                           ...){
+      stopifnot(
+        "`aws_access_key_id` is required to be a character vector" = (
+          is.character(aws_access_key_id) || is.null(aws_access_key_id)
+        ),
+        "`aws_secret_access_key` is required to be a character vector" = (
+          is.character(aws_secret_access_key) || is.null(aws_secret_access_key)
+        ),
+        "`aws_session_token` is required to be a character vector" = (
+          is.character(aws_session_token) || is.null(aws_session_token)
+        ),
+        "`region_name` is required to be a character vector" = (
+          is.character(region_name) || is.null(region_name)
+        ),
+        "`profile_name` is required to be a character vector" = (
+          is.character(profile_name) || is.null(profile_name)
+        ),
+        "`endpoint` is required to be a character vector" = (
+          is.character(endpoint) || is.null(endpoint)
+        ),
+        "`disable_ssl` is required to be a character vector" = (
+          is.logical(disable_ssl)
+        )
+      )
       config = private$.cred_set(
         aws_access_key_id,
         aws_secret_access_key,
@@ -112,8 +132,10 @@ S3FileSystem = R6Class("S3FileSystem",
         profile_name,
         region_name,
         endpoint,
+        disable_ssl,
         ...
       )
+
       self$region_name = region_name
       self$profile_name = profile_name
       self$s3_client = paws.storage::s3(config)
@@ -188,26 +210,22 @@ S3FileSystem = R6Class("S3FileSystem",
         standard_path = list_zip(path[!multipart], new_path[!multipart])
         multipart_path = list_zip(path[multipart], new_path[multipart], file_size[multipart])
 
-        if(length(standard_path) > 0){
-          future_lapply(standard_path, function(s) {
-            private$.s3_copy_standard(
-              src = s[[1]],
-              dest = s[[2]],
-              overwrite = overwrite,
-              ...
-            )
+        if (length(standard_path) > 0){
+          lapply(standard_path, function(part){
+            future_lapply(seq_along(part[[1]]), function(i) {
+              private$.s3_copy_standard(
+                part[[1]][i], part[[2]][i], overwrite, ...
+              )
+            })
           })
         }
-        if(length(multipart_path) > 0){
-          lapply(multipart, function(m){
-            private$.s3_copy_multipart(
-              src = m[[1]],
-              dest = m[[2]],
-              size = m[[3]],
-              max_batch = max_batch,
-              overwrite = overwrite,
-              ...
-            )
+        if (length(multipart_path) > 0){
+          lapply(multipart_path, function(part){
+            lapply(seq_along(part[[1]]), function(i) {
+              private$.s3_copy_multipart(
+                part[[1]][i], part[[2]][i], part[[3]][i], max_batch, overwrite, ...
+              )
+            })
           })
         }
         self$clear_cache(private$.s3_pnt_dir(path))
@@ -337,21 +355,30 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
-      # TODO: check s3_cache
-      s3_parts = lapply(path, private$.s3_split_path)
-      exist_l = rep(TRUE, length(s3_parts))
-      for (i in seq_along(s3_parts)) {
-        retry_api_call(
-          tryCatch({
-            self$s3_client$head_object(
-              Bucket = s3_parts[[i]]$Bucket,
-              Key = s3_parts[[i]]$Key,
-              VersionId = s3_parts[[i]]$VersionId
-            )
-          }, http_404 = function(e){
-            exist_l[i] <<- FALSE
-          }), self$retries
-        )
+      # check if directory is in cache
+      found = path %in% names(self$s3_cache)
+      if (length(self$s3_cache) > 0) {
+        uri = unique(rbindlist(self$s3_cache)[get("type") == "file"][["uri"]])
+        found[!found] = path[!found] %in% vapply(uri, private$.s3_strip_uri, FUN.VALUE = "")
+      }
+
+      if(!any(found)){
+        s3_parts = lapply(path[!found], private$.s3_split_path)
+        exist_l = rep(TRUE, length(s3_parts))
+        for (i in seq_along(s3_parts)) {
+          retry_api_call(
+            tryCatch({
+              self$s3_client$head_object(
+                Bucket = s3_parts[[i]]$Bucket,
+                Key = s3_parts[[i]]$Key,
+                VersionId = s3_parts[[i]]$VersionId
+              )
+            }, http_404 = function(e){
+              exist_l[i] <<- FALSE
+            }), self$retries
+          )
+        }
+        found[!found] = exist_l
       }
       return(exist_l)
     },
@@ -363,9 +390,9 @@ S3FileSystem = R6Class("S3FileSystem",
         "`path` is required to be a character vector" = is.character(path)
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      s3_parts <- lapply(path, private$.s3_split_path)
+      s3_parts = lapply(path, private$.s3_split_path)
 
-      resp = lapply(seq_along(s3_parts), function(i){
+      resp = future_lapply(seq_along(s3_parts), function(i){
         resp = retry_api_call(
           tryCatch({
             self$s3_client$head_object(
@@ -376,7 +403,14 @@ S3FileSystem = R6Class("S3FileSystem",
           }), self$retries)
         resp$bucket_name = s3_parts[[i]]$Bucket
         resp$key = s3_parts[[i]]$Key
-        resp$uri = paste("s3:/",s3_parts[[i]]$Bucket, s3_parts[[i]]$Key, sep="/")
+        version_id = if(!is.null(s3_parts$VersionId)) paste0("?versionId=", s3_parts$VersionId) else ""
+        resp$uri = self$path(
+          s3_parts[[i]]$Bucket,
+          s3_parts[[i]]$Key,
+          if(!is.null(version_id))
+            paste0("?versionId=", version_id)
+          else ""
+        )
         resp$size = resp$ContentLength
         resp$ContentLength = NULL
         resp$type = ifelse(endsWith(s3_parts[[i]]$Key, "/"), "directory", "file")
@@ -390,6 +424,25 @@ S3FileSystem = R6Class("S3FileSystem",
         c("bucket_name", "key", "uri", "size", "type", "etag", "last_modified")
       )
       return(dt)
+    },
+
+    #' @description Move files to another location on AWS S3
+    #' @param path (character): A character vector of s3 uri
+    #' @param new_path (character): A character vector of s3 uri.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+    file_move = function(path,
+                         new_path,
+                         max_batch = 100*MB,
+                         overwrite = FALSE,
+                         ...){
+      path = self$path_join(path)
+      new_path = self$path_join(new_path)
+      self$file_copy(path, new_path, max_batch, overwrite, ...)
+      self$file_delete(path, new_path)
+      return(new_path)
     },
 
     #' @description Streams in AWS S3 file as a raw vector
@@ -420,7 +473,9 @@ S3FileSystem = R6Class("S3FileSystem",
                                overwrite = FALSE,
                                ...){
       stopifnot(
-        "`obj` is required to be a raw vector or list of raw vectors" = inherits(obj, c("raw", "list")),
+        "`obj` is required to be a raw vector or list of raw vectors" = (
+          inherits(obj, c("raw", "list"))
+        ),
         "`path` is required to be a character vector" = is.character(path),
         "`overwrite` is required to be class numeric" = is.numeric(max_batch),
         "`overwrite` is required to be class logical" = is.logical(overwrite),
@@ -428,7 +483,9 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       if(is.list(obj)){
         stopifnot(
-          "Each element of the list `obj` needs to be a raw object." = all(sapply(obj, inherits, what = "raw"))
+          "Each element of the list `obj` needs to be a raw object." = (
+            all(sapply(obj, inherits, what = "raw"))
+          )
         )
       }
       new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
@@ -463,15 +520,149 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param tmp_dir (character): The directory the file will be created in.
     #' @param ext (character): A character vector of one or more paths.
     file_temp = function(pattern = "file", tmp_dir = "", ext = ""){
+      stopifnot(
+        "`pattern` is required to be a character vector" = is.character(pattern),
+        "`tmp_dir` is required to be a character vector" = is.character(tmp_dir),
+        "`ext` is required to be a character vector" = is.character(ext)
+      )
       if(!nzchar(tmp_dir)) {
         tmp_dir = self$s3_cache_bucket
         self$s3_cache_bucket = str_split(tmp_dir, "/", 2)[[1]][[1]]
       }
-      has_extension <- nzchar(ext)
-      ext[has_extension] <- paste0(".", sub("^[.]", "", ext[has_extension]))
+      has_extension = nzchar(ext)
+      ext[has_extension] = paste0(".", sub("^[.]", "", ext[has_extension]))
       id = paste0(sample(c(letters, 1:9), replace = T, 12), collapse = "")
       file_id = paste0(pattern, id, ext)
       return(self$path(tmp_dir, file_id))
+    },
+
+    #' @description Delete file tags
+    #' @param path (character): A character vector of paths or s3 uri
+    file_tag_delete = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      found = self$file_exists(path)
+      if(!any(self$file_exists(path))){
+        stop(sprintf(
+          "Files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n")),
+          call. = F
+        )
+      }
+      s3_parts = lapply(path, private$.s3_split_path)
+      future_lapply(seq_along(s3_parts), function(i){
+        retry_api_call(
+          self$s3_client$delete_object_tagging(
+            Bucket = s3_parts[[i]]$Bucket,
+            Key = s3_parts[[i]]$Key,
+            VersionId = s3_parts[[i]]$VersionId
+          ), self$retries
+        )
+      })
+      return(self$path_join(path))
+    },
+
+    #' @description Get file tags
+    #' @param path (character): A character vector of paths or s3 uri
+    file_tag_info = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      found = self$file_exists(path)
+      if(!any(self$file_exists(path))){
+        stop(sprintf(
+          "Files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n")),
+          call. = F
+        )
+      }
+      s3_parts = lapply(path, private$.s3_split_path)
+      out = future_lapply(seq_along(s3_parts), function(i){
+        resp = retry_api_call(
+          self$s3_client$get_object_tagging(
+            Bucket = s3_parts[[i]]$Bucket,
+            Key = s3_parts[[i]]$Key,
+            VersionId = s3_parts[[i]]$VersionId
+          ), self$retries
+        )
+        tag = suppressWarnings(rbindlist(resp$TagSet, fill = T))
+        names(tag) = c("tag_key", "tag_value")
+        tag$version_id = resp$VersionId
+        tag$bucket_name = s3_parts[[i]]$Bucket
+        tag$key = s3_parts[[i]]$Key
+        tag$uri = self$path(
+          s3_parts[[i]]$Bucket,
+          s3_parts[[i]]$Key,
+          if(!is.null(s3_parts[[i]]$VersionId))
+            paste0("?versionId=", s3_parts[[i]]$VersionId)
+          else ""
+        )
+        return(tag)
+      })
+      out = rbindlist(out)
+      names(out) = camel_to_snake(names(out))
+      setcolorder(out, c("bucket_name", "key", "uri", "version_id"))
+      return(out)
+    },
+
+    #' @description Update file tags
+    #' @param path (character): A character vector of paths or s3 uri
+    #' @param tags (list): Tags to be applied
+    #' @param overwrite (logical): To overwrite tagging or to modify inplace. Default will
+    #'             modify inplace.
+    file_tag_update = function(path,
+                               tags,
+                               overwrite=FALSE){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`tags` is required to be a list" = is.list(tags),
+        "`tags` is required to be a named list" = !is.null(names(tags)),
+        "`overwrite` is required to be a logical vector" = is.logical(overwrite)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      found = self$file_exists(path)
+      if(!any(self$file_exists(path))){
+        stop(sprintf(
+          "Files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n")),
+          call. = F
+        )
+      }
+      s3_parts = lapply(path, private$.s3_split_path)
+      if (!overwrite) {
+        new_tags = future_lapply(seq_along(s3_parts), function(i){
+          resp = retry_api_call(
+            self$s3_client$get_object_tagging(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              VersionId = s3_parts[[i]]$VersionId
+            ), self$retries
+          )
+          org_tag = lapply(resp$TagSet, function(x) x$Value)
+          names(org_tag) = vapply(resp$TagSet, function(x) x$Key, FUN.VALUE = "")
+          new_tags = modifyList(org_tag, tags)
+          return(
+            lapply(names(new_tags), function(n) list(Key=n, Value=new_tags[[n]]))
+          )
+        })
+      } else if (overwrite) {
+        new_tags = rep(
+          lapply(names(tags), function(n) list(Key=n, Value=tags[[n]])),
+          length(s3_parts)
+        )
+      }
+
+      future_lapply(seq_along(s3_parts), function(i){
+        resp = retry_api_call(
+          self$s3_client$put_object_tagging(
+            Bucket = s3_parts[[i]]$Bucket,
+            Key = s3_parts[[i]]$Key,
+            VersionId = s3_parts[[i]]$VersionId,
+            Tagging = list("TagSet" = new_tags[[i]])
+          ), self$retries
+        )
+      })
+      return(self$path_join(path))
     },
 
     #' @description Similar to `fs::file_touch` this does not create the file if
@@ -537,9 +728,9 @@ S3FileSystem = R6Class("S3FileSystem",
       new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
       path = path_abs(path)
 
-      if (length(new_path) == 1 & endsWith(new_path, "/")) {
-        new_path = rep(new_path, length(path))
-        new_path = paste0(new_path, basename(path))
+      if (length(new_path) == 1 & !nzchar(self$path_ext(new_path))) {
+        new_path = rep(trimws(new_path, "right", "/"), length(path))
+        new_path = paste(new_path, basename(path), sep = "/")
       }
       if(length(path) != length(new_path))
         stop(
@@ -582,6 +773,119 @@ S3FileSystem = R6Class("S3FileSystem",
       }
       self$clear_cache(private$.s3_pnt_dir(new_path))
       return(self$path_join(new_path))
+    },
+
+    #' @description Get file versions
+    #' @param path (character): A character vector of paths or uris
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_versions}}
+    file_version_info = function(path, ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+
+      found = self$file_exists(path)
+      if(!any(self$file_exists(path))){
+        stop(sprintf(
+          "Files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n")),
+          call. = F
+        )
+      }
+      out = future_lapply(seq_along(s3_parts), function(i){
+        kwargs = list()
+        j = 1
+        out = list()
+        while(!identical(kwargs$VersionIdMarker, character(0))){
+          resp = retry_api_call(
+            self$s3_client$list_object_versions(
+              Bucket = s3_parts[[i]]$Bucket,
+              Prefix = s3_parts[[i]]$Key,
+              VersionIdMarker = kwargs$VersionIdMarker,
+              KeyMarker = kwargs$KeyMarker
+            ), self$retries
+          )
+          kwargs$VersionIdMarker = resp$VersionIdMarker
+          kwargs$KeyMarker = resp$KeyMarker
+
+          df = rbindlist(
+            lapply(resp$Versions, function(v)
+              list(
+                size = v$Size,
+                version_id =v$VersionId,
+                owner = v$Owner$DisplayName,
+                etag = v$ETag,
+                last_modified = v$LastModified
+              )
+            )
+          )
+          df$bucket_name = s3_parts[[i]]$Bucket
+          df$key = s3_parts[[i]]$Key
+          df$uri = self$path(
+            s3_parts[[i]]$Bucket,
+            s3_parts[[i]]$Key,
+            if(!is.null(s3_parts[[i]]$VersionId))
+              paste0("?versionId=", s3_parts[[i]]$VersionId)
+            else ""
+          )
+          out[[j]] = df
+          j = j + 1
+        }
+        dt = rbindlist(out)
+        setcolorder(dt, c("bucket_name", "key", "uri"))
+        return(dt)
+      })
+      return(rbindlist(out))
+    },
+
+    ############################################################################
+    # Test File methods
+    ############################################################################
+
+    #' @description Test for file types
+    #' @param path (character): A character vector of paths or uris
+    is_file = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      return(self$file_exists(path))
+    },
+
+    #' @description Test for file types
+    #' @param path (character): A character vector of paths or uris
+    is_dir = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path,  private$.s3_strip_uri, FUN.VALUE = ""))
+      # check if directory is in cache
+      found = path %in% names(self$s3_cache)
+      if (length(self$s3_cache) > 0) {
+        uri = unique(rbindlist(self$s3_cache)[get("type") == "directory"][["uri"]])
+        found[!found] = path[!found] %in% vapply(uri, private$.s3_strip_uri, FUN.VALUE = "")
+      }
+      found[!found] = self$dir_exists(path[!found])
+      return(found)
+    },
+
+    #' @description Test for file types
+    #' @param path (character): A character vector of paths or uris
+    is_bucket = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      return(path %in% private$.s3_bucket_ls(path)$bucket_name)
+    },
+
+    #' @description Test for file types
+    #' @param path (character): A character vector of paths or uris
+    is_file_empty = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      return(self$file_info(path)$size == 0)
     },
 
     ############################################################################
@@ -727,26 +1031,41 @@ S3FileSystem = R6Class("S3FileSystem",
       if(any(path %in% c(".", "", "/")))
         return(TRUE)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      s3_parts = lapply(path, private$.s3_split_path)
-      kwargs = list(
-        Delimiter = "/",
-        MaxKeys = 1
-      )
-      exist_l = rep(TRUE, length(s3_parts))
-      for(i in seq_along(s3_parts)){
-        kwargs$Bucket = s3_parts[[i]]$Bucket
-        kwargs$Prefix = paste0(trimws(s3_parts[[i]]$Key, "both", "/"), "/")
-        resp = list()
-        resp = retry_api_call(
-          tryCatch({
-            do.call(self$s3_client$list_objects_v2, kwargs)$Contents
-          }, http_404 = function(e){
-            NULL
-          }), self$retries
+
+      # check cache first
+      path = unname(vapply(path,  private$.s3_strip_uri, FUN.VALUE = ""))
+      # check if directory is in cache
+      found = path %in% names(self$s3_cache)
+      if (length(self$s3_cache) > 0) {
+        uri = trimws(
+          unique(rbindlist(self$s3_cache)[get("type") == "directory"][["uri"]]), "right", "/"
         )
-        exist_l[i] <- length(resp) > 0
+        found[!found] = path[!found] %in% vapply(uri, private$.s3_strip_uri, FUN.VALUE = "")
       }
-      return(exist_l)
+      # look for directory in
+      if (!any(found)) {
+        s3_parts = lapply(path[!found], private$.s3_split_path)
+        kwargs = list(
+          MaxKeys = 1
+        )
+
+        exist_l = rep(TRUE, length(s3_parts))
+        for(i in seq_along(s3_parts)){
+          kwargs$Bucket = s3_parts[[i]]$Bucket
+          kwargs$Prefix = paste0(trimws(s3_parts[[i]]$Key, "both", "/"), "/")
+          resp = list()
+          resp = retry_api_call(
+            tryCatch({
+              do.call(self$s3_client$list_objects_v2, kwargs)$Contents
+            }, http_404 = function(e){
+              NULL
+            }), self$retries
+          )
+          exist_l[i] = length(resp) > 0
+        }
+        found[!found] = exist_l
+      }
+      return(found)
     },
 
     #' @description Downloads AWS S3 files to local
@@ -1218,7 +1537,13 @@ S3FileSystem = R6Class("S3FileSystem",
             list(
               bucket_name = s3_parts$Bucket,
               key = c$Key,
-              uri = paste("s3:/", s3_parts$Bucket, c$Key, sep = "/"),
+              uri = self$path(
+                s3_parts[[i]]$Bucket,
+                s3_parts[[i]]$Key,
+                if(!is.null(s3_parts[[i]]$Bucket$VersionId))
+                  paste0("?versionId=", s3_parts[[i]]$Bucket$VersionId)
+                else ""
+              ),
               size = c$Size,
               type = ifelse(endsWith(c$Key, "/"), "directory", "file"),
               owner = ifelse(
@@ -1238,7 +1563,13 @@ S3FileSystem = R6Class("S3FileSystem",
           list(
             bucket_name = s3_parts$Bucket,
             key = l$Prefix,
-            uri = paste('s3:/', s3_parts$Bucket, l$Prefix, sep = "/"),
+            uri = self$path(
+              s3_parts$Bucket,
+              l$Prefix,
+              if(!is.null(s3_parts$Bucket$VersionId))
+                paste0("?versionId=", s3_parts$Bucket$VersionId)
+              else ""
+            ),
             size = 0,
             type = "directory",
             owner = "",
@@ -1262,7 +1593,7 @@ S3FileSystem = R6Class("S3FileSystem",
           VersionId = s3_parts$VersionId,
           ...
         )$Body, self$retries)
-      write_bin(obj, dest)
+      return(write_bin(obj, dest))
     },
 
     .s3_copy_standard = function(src,
@@ -1324,27 +1655,35 @@ S3FileSystem = R6Class("S3FileSystem",
       batch_range <- c(seq(1, size, by=max_batch), size)
       tryCatch({
         parts = future_lapply(seq_along(batch_range[-1]), function(i){
-          etag = self$s3_client$upload_part_copy(
-            CopySource = copy_src,
-            Bucket = dest_parts$Bucket,
-            Key = dest_parts$Key,
-            UploadId = upload_id,
-            PartNumber = i,
-            CopySourceRange = sprintf("bytes=%s-%s", batch_range[i], batch_range[i+1])
-          )$CopyPartResult$Etag
+          etag = retry_api_call(
+            self$retry_api_callupload_part_copy(
+              CopySource = copy_src,
+              Bucket = dest_parts$Bucket,
+              Key = dest_parts$Key,
+              UploadId = upload_id,
+              PartNumber = i,
+              CopySourceRange = sprintf("bytes=%s-%s", batch_range[i], batch_range[i+1])
+            )$CopyPartResult$Etag,
+            self$retries
+          )
           return(list(ETag = etag, PartNumber = i))
         })
-        self$s3_client$complete_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          MultipartUpload = list(Parts = parts),
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$complete_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            MultipartUpload = list(Parts = parts),
+            UploadId = upload_id
+          ), self$retries
         )
       }, error = function(cond){
-        self$s3_client$abort_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$abort_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            UploadId = upload_id
+          ),
+          self$retries
         )
         LOGGER$error("Failed to copy file in multiparts")
         stop(cond)
@@ -1360,8 +1699,7 @@ S3FileSystem = R6Class("S3FileSystem",
           Key = s3_parts$Key,
           VersionId = s3_parts$VersionId,
           ...
-        )$Body, self$retries
-      )
+        )$Body, self$retries)
       return(obj)
     },
 
@@ -1384,10 +1722,10 @@ S3FileSystem = R6Class("S3FileSystem",
       self$clear_cache(dest)
     },
 
+    # Using 100 MB multipart upload size due to AWS recommendation:
+    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
     .s3_stream_out_multipart_file = function(obj,
                                              dest,
-                                             # Using 100 MB multipart upload size due to AWS recommendation:
-                                             # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
                                              size,
                                              max_batch = 100 * MB,
                                              overwrite = FALSE,
@@ -1403,27 +1741,33 @@ S3FileSystem = R6Class("S3FileSystem",
 
       tryCatch({
         parts = future_lapply(seq_len(num_parts), function(i){
-          etag <- self$s3_client$upload_part(
-            Body = obj[[i]],
-            Bucket = dest_parts$Bucket,
-            Key = dest_parts$Key,
-            PartNumber = i,
-            UploadId = upload_id
-          )$ETag
+          etag = retry_api_call(
+            self$s3_client$upload_part(
+              Body = obj[[i]],
+              Bucket = dest_parts$Bucket,
+              Key = dest_parts$Key,
+              PartNumber = i,
+              UploadId = upload_id
+            )$ETag, self$retries
+          )
           return(list(ETag = etag, PartNumber = i))
         })
-        self$s3_client$complete_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          MultipartUpload = list(Parts = parts),
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$complete_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            MultipartUpload = list(Parts = parts),
+            UploadId = upload_id
+          ), self$retries
         )
       },
       error = function(cond){
-        self$s3_client$abort_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$abort_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            UploadId = upload_id
+          ), self$retries
         )
         LOGGER$error("Failed to Upload file in Multiparts")
         stop(cond)
@@ -1449,10 +1793,10 @@ S3FileSystem = R6Class("S3FileSystem",
       self$clear_cache(dest)
     },
 
+    # Using 100 MB multipart upload size due to AWS recommendation:
+    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
     .s3_upload_multipart_file = function(src,
                                          dest,
-                                         # Using 100 MB multipart upload size due to AWS recommendation:
-                                         # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
                                          size,
                                          max_batch = 100 * MB,
                                          overwrite = FALSE,
@@ -1474,27 +1818,33 @@ S3FileSystem = R6Class("S3FileSystem",
 
       tryCatch({
         parts = lapply(seq_len(num_parts), function(i){
-          etag <- self$s3_client$upload_part(
-            Body = readBin(con, what = "raw", n = max_batch),
-            Bucket = dest_parts$Bucket,
-            Key = dest_parts$Key,
-            PartNumber = i,
-            UploadId = upload_id
-          )$ETag
+          etag = retry_api_call(
+              self$s3_client$upload_part(
+              Body = readBin(con, what = "raw", n = max_batch),
+              Bucket = dest_parts$Bucket,
+              Key = dest_parts$Key,
+              PartNumber = i,
+              UploadId = upload_id
+            )$ETag, self$retries
+          )
           return(list(ETag = etag, PartNumber = i))
         })
-        self$s3_client$complete_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          MultipartUpload = list(Parts = parts),
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$complete_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            MultipartUpload = list(Parts = parts),
+            UploadId = upload_id
+          ), self$retries
         )
       },
       error = function(cond){
-        self$s3_client$abort_multipart_upload(
-          Bucket = dest_parts$Bucket,
-          Key = dest_parts$Key,
-          UploadId = upload_id
+        retry_api_call(
+          self$s3_client$abort_multipart_upload(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            UploadId = upload_id
+          ), self$retries
         )
         LOGGER$error("Failed to Upload file in Multiparts")
         stop(cond)
@@ -1543,6 +1893,7 @@ S3FileSystem = R6Class("S3FileSystem",
                          profile_name,
                          region_name,
                          endpoint,
+                         disable_ssl,
                          ...){
       add_list = function(x) if(length(x) == 0) NULL else x
       config = list()
@@ -1558,6 +1909,7 @@ S3FileSystem = R6Class("S3FileSystem",
       config$credentials = add_list(credentials)
       config$region = region_name
       config$endpoint = endpoint
+      config$disable_ssl = disable_ssl
 
       return(modifyList(config, list(...)))
     }

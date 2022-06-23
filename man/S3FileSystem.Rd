@@ -15,6 +15,8 @@ This method will only update the modification time of the AWS S3 object.
 \describe{
 \item{\code{s3_cache}}{Cache AWS S3}
 
+\item{\code{s3_cache_bucket}}{Cached s3 bucket}
+
 \item{\code{s3_client}}{paws s3 client}
 
 \item{\code{pid}}{Get the process ID of the R Session}
@@ -22,8 +24,6 @@ This method will only update the modification time of the AWS S3 object.
 \item{\code{region_name}}{AWS region when creating new connections}
 
 \item{\code{profile_name}}{The name of a profile to use}
-
-\item{\code{s3_cache_bucket}}{Cached s3 bucket}
 }
 \if{html}{\out{</div>}}
 }
@@ -45,11 +45,20 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-file_download}{\code{S3FileSystem$file_download()}}
 \item \href{#method-S3FileSystem-file_exists}{\code{S3FileSystem$file_exists()}}
 \item \href{#method-S3FileSystem-file_info}{\code{S3FileSystem$file_info()}}
+\item \href{#method-S3FileSystem-file_move}{\code{S3FileSystem$file_move()}}
 \item \href{#method-S3FileSystem-file_stream_in}{\code{S3FileSystem$file_stream_in()}}
 \item \href{#method-S3FileSystem-file_stream_out}{\code{S3FileSystem$file_stream_out()}}
 \item \href{#method-S3FileSystem-file_temp}{\code{S3FileSystem$file_temp()}}
+\item \href{#method-S3FileSystem-file_tag_delete}{\code{S3FileSystem$file_tag_delete()}}
+\item \href{#method-S3FileSystem-file_tag_info}{\code{S3FileSystem$file_tag_info()}}
+\item \href{#method-S3FileSystem-file_tag_update}{\code{S3FileSystem$file_tag_update()}}
 \item \href{#method-S3FileSystem-file_touch}{\code{S3FileSystem$file_touch()}}
 \item \href{#method-S3FileSystem-file_upload}{\code{S3FileSystem$file_upload()}}
+\item \href{#method-S3FileSystem-file_version_info}{\code{S3FileSystem$file_version_info()}}
+\item \href{#method-S3FileSystem-is_file}{\code{S3FileSystem$is_file()}}
+\item \href{#method-S3FileSystem-is_dir}{\code{S3FileSystem$is_dir()}}
+\item \href{#method-S3FileSystem-is_bucket}{\code{S3FileSystem$is_bucket()}}
+\item \href{#method-S3FileSystem-is_file_empty}{\code{S3FileSystem$is_file_empty()}}
 \item \href{#method-S3FileSystem-dir_copy}{\code{S3FileSystem$dir_copy()}}
 \item \href{#method-S3FileSystem-dir_create}{\code{S3FileSystem$dir_create()}}
 \item \href{#method-S3FileSystem-dir_delete}{\code{S3FileSystem$dir_delete()}}
@@ -83,6 +92,7 @@ Initialize S3FileSystem class
   region_name = NULL,
   profile_name = NULL,
   endpoint = NULL,
+  disable_ssl = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -102,6 +112,8 @@ Initialize S3FileSystem class
 then the default profile is used.}
 
 \item{\code{endpoint}}{(character): The complete URL to use for the constructed client.}
+
+\item{\code{disable_ssl}}{(logical): Whether or not to use SSL. By default, SSL is used.}
 
 \item{\code{...}}{Other parameters within \code{paws} client.}
 }
@@ -264,6 +276,38 @@ Returns file information within AWS S3 directory
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_move"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_move}{}}}
+\subsection{Method \code{file_move()}}{
+Move files to another location on AWS S3
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_move(
+  path,
+  new_path,
+  max_batch = 100 * MB,
+  overwrite = FALSE,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of s3 uri}
+
+\item{\code{new_path}}{(character): A character vector of s3 uri.}
+
+\item{\code{max_batch}}{(numeric): Maximum batch size being uploaded with each multipart.}
+
+\item{\code{overwrite}}{(logical): Overwrite files if the exist. If this is \code{FALSE}
+and the file exists an error will be thrown.}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_stream_in"></a>}}
 \if{latex}{\out{\hypertarget{method-S3FileSystem-file_stream_in}{}}}
 \subsection{Method \code{file_stream_in()}}{
@@ -336,6 +380,62 @@ return the name which can be used as a temporary file
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_tag_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_delete}{}}}
+\subsection{Method \code{file_tag_delete()}}{
+Delete file tags
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_tag_delete(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or s3 uri}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_tag_info"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_info}{}}}
+\subsection{Method \code{file_tag_info()}}{
+Get file tags
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_tag_info(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or s3 uri}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_tag_update"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_update}{}}}
+\subsection{Method \code{file_tag_update()}}{
+Update file tags
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_tag_update(path, tags, overwrite = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or s3 uri}
+
+\item{\code{tags}}{(list): Tags to be applied}
+
+\item{\code{overwrite}}{(logical): To overwrite tagging or to modify inplace. Default will
+modify inplace.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_touch"></a>}}
 \if{latex}{\out{\hypertarget{method-S3FileSystem-file_touch}{}}}
 \subsection{Method \code{file_touch()}}{
@@ -384,6 +484,93 @@ and the file exists an error will be thrown.}
 
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
 and \code{\link[paws.storage]{s3_create_multipart_upload}}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_version_info"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_version_info}{}}}
+\subsection{Method \code{file_version_info()}}{
+Get file versions
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_version_info(path, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_object_versions}}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-is_file"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-is_file}{}}}
+\subsection{Method \code{is_file()}}{
+Test for file types
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_file(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-is_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-is_dir}{}}}
+\subsection{Method \code{is_dir()}}{
+Test for file types
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_dir(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-is_bucket"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-is_bucket}{}}}
+\subsection{Method \code{is_bucket()}}{
+Test for file types
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_bucket(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-is_file_empty"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-is_file_empty}{}}}
+\subsection{Method \code{is_file_empty()}}{
+Test for file types
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_file_empty(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
 }
 \if{html}{\out{</div>}}
 }

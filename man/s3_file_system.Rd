@@ -11,6 +11,7 @@ s3_file_system(
   region_name = NULL,
   profile_name = NULL,
   endpoint = NULL,
+  disable_ssl = FALSE,
   refresh = FALSE,
   ...
 )
@@ -28,6 +29,8 @@ s3_file_system(
 then the default profile is used.}
 
 \item{endpoint}{(character): The complete URL to use for the constructed client.}
+
+\item{disable_ssl}{(logical): Whether or not to use SSL. By default, SSL is used.}
 
 \item{refresh}{(logical): Refresh cached S3FileSystem class}
 

@@ -4,7 +4,7 @@
 \alias{s3_file_temp}
 \title{Create name for temporary files}
 \usage{
-s3_file_temp(pattern, tmp_dir = "", ext = "")
+s3_file_temp(pattern = "file", tmp_dir = "", ext = "")
 }
 \arguments{
 \item{pattern}{(character): A character vector with the non-random portion of the name.}

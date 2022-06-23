@@ -12,6 +12,7 @@ s3fs_cache = new.env(parent = emptyenv())
 #' @param profile_name (character): The name of a profile to use. If not given,
 #'              then the default profile is used.
 #' @param endpoint (character): The complete URL to use for the constructed client.
+#' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
 #' @export
@@ -21,6 +22,7 @@ s3_file_system = function(aws_access_key_id = NULL,
                           region_name = NULL,
                           profile_name = NULL,
                           endpoint = NULL,
+                          disable_ssl = FALSE,
                           refresh = FALSE,
                           ...){
   s3fs = NULL
@@ -178,6 +180,24 @@ s3_file_info = function(path){
   return(s3fs$file_info(path))
 }
 
+#' @title Move or rename S3 files
+#' @description Move files to another location on AWS S3
+#' @param path (character): A character vector of s3 uri
+#' @param new_path (character): A character vector of s3 uri.
+#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+#' @export
+s3_file_move = function(path,
+                        new_path,
+                        max_batch = 100*MB,
+                        overwrite = FALSE,
+                        ...){
+  s3fs = s3_file_system()
+  return(s3fs$file_move(path, new_path, max_batch, overwrite, ...))
+}
+
 #' @title Streams data from R to AWS S3.
 #' @description
 #' `s3_file_stream_in` streams in AWS S3 file as a raw vector
@@ -260,6 +280,85 @@ s3_file_upload = function(path,
                           ...){
   s3fs = s3_file_system()
   return(s3fs$file_upload(path, new_path, max_batch, overwrite, ...))
+}
+
+#' @title Modifying file tags
+#' @description
+#' `s3_file_tag_delete` delete file tags
+#'
+#' `s3_file_tag_info` get file tags
+#'
+#' `s3_file_tag_info`
+#' @param path (character): A character vector of paths or s3 uri
+#' @param tags (list): Tags to be applied
+#' @param overwrite (logical): To overwrite tagging or to modify inplace. Default will
+#'             modify inplace.
+#' @name tag
+#' @export
+s3_file_tag_delete = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$file_tag_delete(path, ...))
+}
+
+#' @rdname tag
+#' @export
+s3_file_tag_info = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$file_tag_info(path))
+}
+
+#' @rdname tag
+#' @export
+s3_file_tag_update = function(path,
+                              tags,
+                              overwrite=FALSE){
+  s3fs = s3_file_system()
+  return(s3fs$file_tag_update(path, tags, overwrite))
+}
+
+#' @title Query file version metadata
+#' @description Get file versions
+#' @param path (character): A character vector of paths or uris
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_versions}}
+#' @export
+s3_file_version_info = function(path,
+                                ...){
+  s3fs = s3_file_system()
+  return(s3fs$file_version_info(path, ...))
+}
+
+############################################################################
+# Test File methods
+############################################################################
+#' @title Functions to test for file types
+#' @description Test for file types
+#' @param path (character): A character vector of paths or uris
+#' @name file_type
+#' @export
+s3_is_file = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$is_file(path))
+}
+
+#' @rdname file_type
+#' @export
+s3_is_dir = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$is_dir(path))
+}
+
+#' @rdname file_type
+#' @export
+s3_is_bucket = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$is_bucke(path))
+}
+
+#' @rdname file_type
+#' @export
+s3_is_file_empty = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$is_file_empty(path))
 }
 
 ############################################################################
