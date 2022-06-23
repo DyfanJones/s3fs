@@ -1,0 +1,1565 @@
+#' @include zzz.R
+#' @include utils.R
+
+#' @import R6
+#' @import paws.storage
+#' @import fs
+#' @import future
+#' @import future.apply
+#' @import data.table
+#' @importFrom utils modifyList
+
+KB = 1024
+MB = KB ^ 2
+GB = KB ^ 3
+
+
+retry_api_call = function(expr, retries){
+  if(retries == 0){
+    return(eval.parent(substitute(expr)))
+  }
+
+  for (i in seq_len(retries)){
+    tryCatch({
+      return(eval.parent(substitute(expr)))
+    }, http_300 = function(err) {
+      stop(err)
+    }, http_400 = function(err) {
+      stop(err)
+    }, http_500 = function(err) {
+      # https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html
+      # HTTP Status Code: 500
+      #     Error Code: InternalError
+      #     Description: An internal error occurred. Try again.
+      #
+      # HTTP Status Code: 501
+      #     Error Code: NotImplemented
+      #     Description: A header that you provided implies functionality that is not implemented.
+      #
+      # HTTP Status Code: 503
+      #     Error Code: ServiceUnavailable
+      #     Description: Reduce your request rate.
+      #     Error Code: SlowDown
+      #     Description: Reduce your request rate.
+      #     Error Code: Busy
+      #     Description: The service is unavailable. Try again later.
+      #
+      # HTTP Status Code: 503
+      #     Error Code: NotImplemented
+      #     Description: Reduce your request rate.
+      Sys.sleep(2**i * 0.1)
+    }, error = function(err) {
+      stop(err)
+    })
+  }
+}
+
+#' @title Access AWS S3 as if it were a file system.
+#' @description This creates a file system "like" API based off \code{fs}
+#'              (e.g. dir_ls, file_copy, etc.) for AWS S3 storage.
+#' @export
+S3FileSystem = R6Class("S3FileSystem",
+  public = list(
+
+    # connect_timeout = 5,
+    # retries = 5,
+    # read_timeout = 15,
+
+    #' @field s3_cache
+    #' Cache AWS S3
+    s3_cache = list(),
+
+    #' @field s3_client
+    #' paws s3 client
+    s3_client = NULL,
+
+    #' @field pid
+    #' Get the process ID of the R Session
+    pid = Sys.getpid(),
+
+    #' @field region_name
+    #' AWS region when creating new connections
+    region_name = NULL,
+
+    #' @field profile_name
+    #' The name of a profile to use
+    profile_name = NULL,
+
+    #' @field s3_cache_bucket
+    #' Cached s3 bucket
+    s3_cache_bucket = "",
+
+    #' @description Initialize S3FileSystem class
+    #' @param aws_access_key_id (character): AWS access key ID
+    #' @param aws_secret_access_key (character): AWS secret access key
+    #' @param aws_session_token (character): AWS temporary session token
+    #' @param region_name (character): Default region when creating new connections
+    #' @param profile_name (character): The name of a profile to use. If not given,
+    #'              then the default profile is used.
+    #' @param endpoint (character): The complete URL to use for the constructed client.
+    #' @param ... Other parameters within \code{paws} client.
+    initialize = function(aws_access_key_id = NULL,
+                          aws_secret_access_key = NULL,
+                          aws_session_token = NULL,
+                          region_name = NULL,
+                          profile_name = NULL,
+                          endpoint = NULL,
+                          ...){
+      config = private$.cred_set(
+        aws_access_key_id,
+        aws_secret_access_key,
+        aws_session_token,
+        profile_name,
+        region_name,
+        endpoint,
+        ...
+      )
+      self$region_name = region_name
+      self$profile_name = profile_name
+      self$s3_client = paws.storage::s3(config)
+    },
+
+    ############################################################################
+    # File methods
+    ############################################################################
+
+    #' @description Change file permissions
+    #' @param path (character): A character vector of path or s3 uri.
+    #' @param mode (character): A character of the mode
+    file_chmod = function(path,
+                          mode = c(
+                            'private',
+                            'public-read',
+                            'public-read-write',
+                            'authenticated-read',
+                            'aws-exec-read',
+                            'bucket-owner-read',
+                            'bucket-owner-full-control')){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      mode = match.arg(mode)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+
+      future_lapply(seq_along(s3_parts), function(i){
+        retry_api_call(
+          self$s3_client$put_object_acl(
+            Bucket = s3_parts[[i]]$Bucket,
+            Key = s3_parts[[i]]$Key,
+            VersionId = s3_parts[[i]]$VersionId
+          ), self$retries)
+      })
+      return(self$path_join(path))
+    },
+
+    #' @description copy files
+    #' @param path (character): path to a local directory of file or a uri.
+    #' @param new_path (character): path to a local directory of file or a uri.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    file_copy = function(path,
+                         new_path,
+                         max_batch = 100 * MB,
+                         overwrite = FALSE,
+                         ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`new_path` is required to be a character vector" = is.character(new_path),
+        "`max_batch` is required to be class numeric" = is.numeric(max_batch),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
+      )
+
+      # s3 uri to s3 uri
+      if (any(is_uri(path)) & any(is_uri(new_path))) {
+        path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+        new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+        found = self$file_exists(path)
+        found_path = path[found]
+
+        file_size = self$file_info(path)$size
+
+        multipart = (5 * GB) < file_size
+
+        standard_path = list_zip(path[!multipart], new_path[!multipart])
+        multipart_path = list_zip(path[multipart], new_path[multipart], file_size[multipart])
+
+        if(length(standard_path) > 0){
+          future_lapply(standard_path, function(s) {
+            private$.s3_copy_standard(
+              src = s[[1]],
+              dest = s[[2]],
+              overwrite = overwrite,
+              ...
+            )
+          })
+        }
+        if(length(multipart_path) > 0){
+          lapply(multipart, function(m){
+            private$.s3_copy_multipart(
+              src = m[[1]],
+              dest = m[[2]],
+              size = m[[3]],
+              max_batch = max_batch,
+              overwrite = overwrite,
+              ...
+            )
+          })
+        }
+        self$clear_cache(private$.s3_pnt_dir(path))
+        return(self$path_join(path))
+      # s3 uri to local
+      } else if (any(is_uri(path)) & !any(is_uri(new_path))) {
+        self$file_download(path, new_path, overwrite, ...)
+      # local to s3 uri
+      } else if (!any(is_uri(path)) & any(is_uri(new_path))) {
+        self$file_upload(path, new_path, max_batch, overwrite, ...)
+      }
+    },
+
+    #' @description Create file on AWS S3, if file already
+    #'      exists it will be left unchanged.
+    #' @param path (character): A character vector of path or s3 uri.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    file_create = function(path,
+                           overwrite = FALSE,
+                           ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`overwrite` is required to be class logical" = is.logical(overwrite)
+      )
+      if(isFALSE(overwrite) & any(self$file_exists(path)))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+      if (any(sapply(s3_parts, function(l) !is.null(l$VersionId))))
+        stop("S3 does not support touching existing versions of files")
+      resp = lapply(seq_along(s3_parts), function(i){
+        resp = NULL
+        resp = retry_api_call(
+          tryCatch({
+            self$s3_client$put_object(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              ...
+              )
+            } # TODO: handle aws error
+            ), self$retries)
+        self$clear_cache(private$.s3_pnt_dir(path[i]))
+        return(resp)
+      })
+      return(self$path_join(path))
+    },
+
+    #' @description Delete files in AWS S3
+    #' @param path (character): A character vector of paths or s3 uris.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}
+    file_delete = function(path,
+                           ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, dir = T, FUN.VALUE = ""))
+      s3_parts = unname(lapply(path, private$.s3_split_path))
+      # re-apply directory "/" so that they can be removed
+      y = lapply(s3_parts[endsWith(path, "/")], function(x) {x$Key = paste0(x$Key, "/"); x})
+      s3_parts[endsWith(path, "/")] <- y
+      s3_parts = split(s3_parts, sapply(s3_parts, function(x) x$Bucket), drop = T)
+      key_parts = lapply(s3_parts, split_vec, 1000)
+
+      for (parts in key_parts) {
+        for (part in parts) {
+          bucket = unique(sapply(part, function(x) x$Bucket))
+          retry_api_call(
+            tryCatch({
+              self$s3_client$delete_objects(
+                Bucket = bucket,
+                Delete = list(Objects = lapply(part, function(x) {
+                  Filter(Negate(is.null), x[2:3])
+                })),
+                ...
+              )
+            }), self$retries
+          )
+        }
+      }
+      return(self$path_join(path))
+    },
+
+    #' @description Downloads AWS S3 files to local
+    #' @param path (character): A character vector of paths or uris
+    #' @param new_path (character): A character vector of paths to the new locations.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    file_download = function(path,
+                             new_path,
+                             overwrite=FALSE,
+                             ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      file_exists = file.exists(new_path)
+      if(any(file_exists) & !overwrite){
+        stop(sprintf(
+          "File '%s' already exist, please set `overwrite=TRUE`", paste(path_rel(new_path), ".")),
+          call. = FALSE
+        )
+      }
+      # create new_path parent folder
+      dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
+      new_path = path_abs(new_path)
+
+      if (length(new_path) == 1 & fs::is_dir(new_path)) {
+        new_path = rep(new_path, length(path))
+        new_path = paste(trimws(new_path, "right", "/"), basename(path), sep = "/")
+        dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
+      }
+      future_lapply(seq_along(path), function(i){
+        private$.s3_download_file(path[[i]], new_path[[i]], ...)
+      })
+      return(new_path)
+    },
+
+    #' @description Check if file exists in AWS S3
+    #' @param path (character) s3 path to check
+    file_exists = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      # TODO: check s3_cache
+      s3_parts = lapply(path, private$.s3_split_path)
+      exist_l = rep(TRUE, length(s3_parts))
+      for (i in seq_along(s3_parts)) {
+        retry_api_call(
+          tryCatch({
+            self$s3_client$head_object(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              VersionId = s3_parts[[i]]$VersionId
+            )
+          }, http_404 = function(e){
+            exist_l[i] <<- FALSE
+          }), self$retries
+        )
+      }
+      return(exist_l)
+    },
+
+    #' @description Returns file information within AWS S3 directory
+    #' @param path (character): A character vector of paths or uris.
+    file_info = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts <- lapply(path, private$.s3_split_path)
+
+      resp = lapply(seq_along(s3_parts), function(i){
+        resp = retry_api_call(
+          tryCatch({
+            self$s3_client$head_object(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              VersionId = s3_parts[[i]]$VersionId
+            )
+          }), self$retries)
+        resp$bucket_name = s3_parts[[i]]$Bucket
+        resp$key = s3_parts[[i]]$Key
+        resp$uri = paste("s3:/",s3_parts[[i]]$Bucket, s3_parts[[i]]$Key, sep="/")
+        resp$size = resp$ContentLength
+        resp$ContentLength = NULL
+        resp$type = ifelse(endsWith(s3_parts[[i]]$Key, "/"), "directory", "file")
+        suppressWarnings(as.data.table(resp))
+      })
+
+      dt = rbindlist(resp)
+      names(dt) = camel_to_snake(names(dt))
+      setnames(dt, "e_tag", "etag")
+      setcolorder(dt,
+        c("bucket_name", "key", "uri", "size", "type", "etag", "last_modified")
+      )
+      return(dt)
+    },
+
+    #' @description Streams in AWS S3 file as a raw vector
+    #' @param path (character): A character vector of paths or s3 uri
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    file_stream_in = function(path,
+                              ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      future_lapply(path, function(p){
+        private$.s3_stream_in_file(p, ...)
+      })
+    },
+
+    #' @description Streams out raw vector to AWS S3 file
+    #' @param path (character): A character vector of paths or s3 uri
+    #' @param obj (raw): A raw vector or rawConnection to be streamed up to AWS S3.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    file_stream_out = function(obj,
+                               path,
+                               max_batch = 100 * MB,
+                               overwrite = FALSE,
+                               ...){
+      stopifnot(
+        "`obj` is required to be a raw vector or list of raw vectors" = inherits(obj, c("raw", "list")),
+        "`path` is required to be a character vector" = is.character(path),
+        "`overwrite` is required to be class numeric" = is.numeric(max_batch),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
+      )
+      if(is.list(obj)){
+        stopifnot(
+          "Each element of the list `obj` needs to be a raw object." = all(sapply(obj, inherits, what = "raw"))
+        )
+      }
+      new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      obj = if(is.list(obj)) obj else list(obj)
+      obj_size = sapply(obj, length)
+      multipart = (5 * GB) < obj_size
+
+      standard = list_zip(path[!multipart], path_size[!multipart], lapply(obj[!multipart], split_vec))
+      multipart = list_zip(path[multipart], path_size[multipart], lapply(obj[multipart], split_vec))
+
+      if (length(standard) > 0){
+        future_lapply(standard, function(s){
+          private$.s3_stream_out_file(
+            s[1], s[3], s[2], overwrite, ...
+          )
+        })
+      }
+      if (length(multipart) > 0){
+        lapply(multipart, function(m){
+          private$.s3_stream_out_multipart_file(
+            m[1], m[3], m[2], max_batch, overwrite, ...
+          )
+        })
+      }
+      self$clear_cache(path)
+      return(self$path_join(path))
+    },
+
+    #' @description return the name which can be used as a temporary file
+    #' @param pattern (character): A character vector with the non-random portion of the name.
+    #' @param tmp_dir (character): The directory the file will be created in.
+    #' @param ext (character): A character vector of one or more paths.
+    file_temp = function(pattern = "file", tmp_dir = "", ext = ""){
+      if(!nzchar(tmp_dir)) {
+        tmp_dir = self$s3_cache_bucket
+        self$s3_cache_bucket = str_split(tmp_dir, "/", 2)[[1]][[1]]
+      }
+      has_extension <- nzchar(ext)
+      ext[has_extension] <- paste0(".", sub("^[.]", "", ext[has_extension]))
+      id = paste0(sample(c(letters, 1:9), replace = T, 12), collapse = "")
+      file_id = paste0(pattern, id, ext)
+      return(self$path(tmp_dir, file_id))
+    },
+
+    #' @description Similar to `fs::file_touch` this does not create the file if
+    #'              it does not exist. Use `s3fs$file_create()` to do this if needed.
+    #' @param path (character): A character vector of paths or s3 uri
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+    #' @note This method will only update the modification time of the AWS S3 object.
+    file_touch = function(path,
+                          ...) {
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      found = self$file_exists(path)
+      found_path = path[found]
+
+      file_size = self$file_info(path)$size
+
+      multipart = (5 * GB) < file_size
+
+      standard_path = path[!multipart]
+      multipart_path = list_zip(path[multipart], file_size[multipart])
+
+      if(length(standard_path) > 0){
+        future_lapply(standard_path, function(s) {
+          private$.s3_copy_standard(
+            src = s, dest = s, overwrite = TRUE, ...
+          )
+        })
+      }
+      if(length(multipart_path) > 0){
+        lapply(multipart, function(m){
+          private$.s3_copy_multipart(
+            src = m[1], dest = m[1], size = m[2], max_batch = 100 * MB, overwrite = TRUE, ...
+          )
+        })
+      }
+      return(self$path_join(path))
+    },
+
+    #' @description Uploads files to AWS S3
+    #' @param path (character): A character vector of local file paths to upload to AWS S3
+    #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    file_upload = function(path,
+                           new_path,
+                           max_batch = 100 * MB,
+                           overwrite = FALSE,
+                           ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "Please use `dir_upload` to upload directories to AWS S3" = !fs::is_dir(path),
+        "`new_path` is required to be a character vector" = is.character(new_path),
+        "`max_batch` is required to be class numeric" = is.numeric(max_batch),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
+      )
+      new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+      path = path_abs(path)
+
+      if (length(new_path) == 1 & endsWith(new_path, "/")) {
+        new_path = rep(new_path, length(path))
+        new_path = paste0(new_path, basename(path))
+      }
+      if(length(path) != length(new_path))
+        stop(
+          "Number of source files doesn't match number ",
+          "of file destination. Please check source and destination files.",
+          call. = FALSE
+        )
+
+      src_exist = file.exists(path)
+      if(any(!src_exist)){
+        stop(sprintf(
+            "File '%s' doesn't exist, please check `path` parameter.",
+            paste(path[!src_exist], collapse = "', '")),
+          call. = F
+        )
+      }
+      path_size = file.size(path)
+      multipart = (5 * GB) < path_size
+
+      # split source files
+      standard = list_zip(path[!multipart], path_size[!multipart], new_path[!multipart])
+      multipart = list_zip(path[multipart], path_size[multipart], new_path[multipart])
+      if (length(standard) > 0){
+        lapply(standard, function(part){
+          future_lapply(seq_along(part[[1]]), function(i) {
+            private$.s3_upload_standard_file(
+              part[[1]][i], part[[3]][i], part[[2]][i], overwrite, ...
+            )
+          })
+        })
+      }
+      if (length(multipart) > 0){
+        lapply(multipart, function(part){
+          future_lapply(seq_along(part[[1]]), function(i) {
+            private$.s3_upload_multipart_file(
+              part[[1]][i], part[[3]][i], part[[2]][i], max_batch, overwrite, ...
+            )
+          })
+        })
+      }
+      self$clear_cache(private$.s3_pnt_dir(new_path))
+      return(self$path_join(new_path))
+    },
+
+    ############################################################################
+    # Directory methods
+    ############################################################################
+
+    #' @description Copies the direcotry recursively to the new location.
+    #' @param path (character): path to a local directory of file or a uri.
+    #' @param new_path (character): path to a local directory of file or a uri.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    dir_copy = function(path,
+                        new_path,
+                        max_batch = 100 * MB,
+                        overwrite = FALSE,
+                        ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`new_path` is required to be a character vector" = is.character(new_path),
+        "`max_batch` is required to be class numeric" = is.numeric(max_batch),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
+      )
+      # s3 uri to s3 uri
+      if (any(is_uri(path)) & any(is_uri(new_path))) {
+        path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+        new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+        # list all source files needing to be copied over
+        src_files = lapply(path, self$dir_info, type = "file", recurse = T)
+
+        # set destination file location
+        file_zip = list_zip(lapply(src_files, function(x) paste(x$bucket_name, x$key, sep = "/")), new_path)
+        dest_files = lapply(file_zip, function(fz) {
+          paste(trimws(fz[[2]], "right", "/"), fz[[1]], sep = "/")
+        })
+
+        file_size = lapply(src_files, function(x) x$size)
+        multipart = lapply(file_size, function(x) (5 * GB) < x)
+
+        # split source files
+        standard_path = list_zip(
+          src=lapply(seq_along(src_files), function(i) src_files[[i]][!multipart[[i]]]),
+          dest=lapply(seq_along(dest_files), function(i) dest_files[[i]][!multipart[[i]]])
+        )
+        multipart_path = list_zip(
+          lapply(seq_along(src_files), function(i) src_files[[i]][multipart[[i]]]),
+          lapply(seq_along(dest_files), function(i) dest_files[[i]][multipart[[i]]]),
+          lapply(seq_along(path_size), function(i) path_size[[i]][multipart[[i]]])
+        )
+
+        if (length(standard_path) > 0){
+          lapply(standard_path, function(part){
+            future_lapply(seq_along(part[[1]]), function(i) {
+              private$.s3_copy_standard(
+                part[[1]][i], part[[2]][i], overwrite, ...
+              )
+            })
+          })
+        }
+        if (length(multipart_path) > 0){
+          lapply(multipart_path, function(part){
+            lapply(seq_along(part[[1]]), function(i) {
+              private$.s3_copy_multipart(
+                part[[1]][i], part[[2]][i], part[[3]][i], max_batch, overwrite, ...
+              )
+            })
+          })
+        }
+        self$clear_cache(path)
+        return(self$path_join(path))
+        # s3 uri to local
+      } else if (any(is_uri(path)) & !any(is_uri(new_path))) {
+        self$dir_download(path, new_path, max_batch, overwrite, ...)
+        # local to s3 uri
+      } else if (!any(is_uri(path)) & any(is_uri(new_path))) {
+        self$dir_upload(path, new_path, max_batch, overwrite, ...)
+      }
+    },
+
+    #' @description Create empty directory
+    #' @param path (character): A vector of directory or uri to be created in AWS S3
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    dir_create = function(path,
+                          overwrite=FALSE,
+                          ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`overwrite` is required to be class logical" = is.logical(overwrite)
+      )
+      if(!any(self$dir_exists(path))){
+        path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+        s3_parts = lapply(path, private$.s3_split_path)
+        if (any(sapply(s3_parts, function(l) !is.null(l$VersionId))))
+          stop("S3 does not support touching existing versions of files", call. = F)
+        resp = lapply(seq_along(s3_parts), function(i){
+          resp = NULL
+          resp = retry_api_call(
+            tryCatch({
+              self$s3_client$put_object(
+                Bucket = s3_parts[[i]]$Bucket,
+                Key = paste0(trimws(s3_parts[[i]]$Key, "right", "/"), "/"),
+                ...
+              )
+            } # TODO: handle aws error
+            ), self$retries
+          )
+          self$clear_cache(private$.s3_pnt_dir(path[[i]]))
+          return(resp)
+        })
+        return(self$path_join(path))
+      }
+      LOGGER$info("Directory already exists in AWS S3")
+    },
+
+    #' @description Delete contents and directory in AWS S3
+    #' @param path (character): A vector of paths or uris to directories to be deleted.
+    dir_delete = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path_uri = self$dir_ls(path, recurse = T)
+
+      # if no object inside directory delete directory
+      if(identical(path_uri, character(0))) {
+        path_uri = paste0(trimws(path,"right", "/"), "/")
+      }
+      self$file_delete(path_uri)
+      return(self$path_join(path))
+    },
+
+    #' @description Check if path exists in AWS S3
+    #' @param path (character) aws s3 path to be checked
+    dir_exists = function(path = "."){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      if(any(path %in% c(".", "", "/")))
+        return(TRUE)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+      kwargs = list(
+        Delimiter = "/",
+        MaxKeys = 1
+      )
+      exist_l = rep(TRUE, length(s3_parts))
+      for(i in seq_along(s3_parts)){
+        kwargs$Bucket = s3_parts[[i]]$Bucket
+        kwargs$Prefix = paste0(trimws(s3_parts[[i]]$Key, "both", "/"), "/")
+        resp = list()
+        resp = retry_api_call(
+          tryCatch({
+            do.call(self$s3_client$list_objects_v2, kwargs)$Contents
+          }, http_404 = function(e){
+            NULL
+          }), self$retries
+        )
+        exist_l[i] <- length(resp) > 0
+      }
+      return(exist_l)
+    },
+
+    #' @description Downloads AWS S3 files to local
+    #' @param path (character): A character vector of paths or uris
+    #' @param new_path (character): A character vector of paths to the new locations.
+    #'              Please ensure directories end with a \code{/}.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    dir_download = function(path,
+                            new_path,
+                            overwrite = FALSE,
+                            ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`new_path` is required to be a character vector" = is.character(new_path),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "length of path must equal length to new_path" = (length(path) == length(new_path))
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      dir_exists = dir.exists(new_path)
+      if(all(dir_exists) & !overwrite){
+        stop(sprintf(
+            "Directory '%s' already exist, please set `overwrite=TRUE`",
+            paste(path_rel(new_path[[dir_exists]]), "', '")
+          ), call. = FALSE
+        )
+      }
+      # create new_path parent folder
+      lapply(new_path, dir.create, showWarnings = F, recursive = T)
+      new_path = path_abs(new_path)
+
+      # list all source files needing to be copied over
+      src_files = lapply(path, self$dir_ls, type = "file", recurse = T)
+      # get all sub directories from parent path directory
+      src_sub_dir = lapply(list_zip(src_files, path), function(sp){
+          Filter(nzchar,
+            gsub("\\.", "", unique(trimws(dirname(path_rel(unlist(sp[[1]]), sp[[2]])), "left", "/")))
+          )
+      })
+      # create sub directories within new_path
+      lapply(list_zip(src_sub_dir, new_path), function(Dir) {
+        lapply(paste(trimws(Dir[[2]], "right", "/"), Dir[[1]], sep = "/"), function(folder){
+          dir.create(folder, showWarnings = F, recursive = T)
+        })
+      })
+      # create destination files
+      file_zip = list_zip(src_files, new_path)
+      dest_files = lapply(file_zip, function(fz) {
+        paste(trimws(fz[[2]], "right", "/"), fz[[1]], sep = "/")
+      })
+      # download s3 files
+      paths = list_zip(src_files, dest_files)
+      future_lapply(paths, function(p){
+        private$.s3_download_file(p[1], p[2], ...)
+      })
+      return(path_rel(new_path))
+    },
+
+    #' @description Returns file information within AWS S3 directory
+    #' @param path (character):A character vector of one or more paths. Can be path
+    #'              or s3 uri.
+    #' @param type (character): File type(s) to return. Default ("any") returns all
+    #'              AWS S3 object types.
+    #' @param glob (character): A wildcard pattern (e.g. \code{*.csv}), passed onto
+    #'              \code{grep()} to filter paths.
+    #' @param regexp (character): A regular expression (e.g. \code{[.]csv$}),
+    #'              passed onto \code{grep()} to filter paths.
+    #' @param invert (logical): If \code{code} return files which do not match.
+    #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+    #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+    dir_info = function(path = ".",
+                        type = c("any", "bucket", "directory", "file"),
+                        glob = NULL,
+                        regexp = NULL,
+                        invert = FALSE,
+                        recurse = FALSE,
+                        refresh = FALSE){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`glob` is required to be a character vector" = is.character(glob) || is.null(glob),
+        "`regexp` is required to be a character vector" = is.character(regexp) || is.null(regexp),
+        "`invert` is required to be a character vector" = is.logical(invert),
+        "`recurse` is required to be a character vector" = is.logical(recurse),
+        "`refresh` is required to be a character vector" = is.logical(refresh)
+      )
+      type = match.arg(type)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      if(all(private$.cache_s3_data(path)))
+        private$.cache_s3_bucket(path)
+        file = rbindlist(self$s3_cache[path])
+      if (all(path %in% c("", "/", "."))){
+        files = private$.s3_bucket_ls(refresh)
+      } else {
+        private$.cache_s3_bucket(path)
+        files = rbindlist(lapply(
+          path, private$.s3_dir_ls, refresh = refresh, recurse = recurse
+        ))
+      }
+      path = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
+
+      if(length(files$bucket_name) == 0)
+        stop(sprintf(
+          "Failed to search directory '%s': no such file or directory",
+          paste(sprintf("s3://%s", path), collapse = "', '")),
+          call. = F
+        )
+
+      files = files[!(trimws(get("key"), "right", "/") %in% path), ]
+      if(type != "any")
+        files = files[get("type") %in% type,]
+      if(!is.null(glob))
+        files = files[grep(glob, get("key"), invert = invert),]
+      if(!is.null(regexp))
+        files = files[grep(regexp, get("key"), invert = invert),]
+
+      return(files)
+    },
+
+    #' @description Returns file name within AWS S3 directory
+    #' @param path (character):A character vector of one or more paths. Can be path
+    #'              or s3 uri.
+    #' @param type (character): File type(s) to return. Default ("any") returns all
+    #'              AWS S3 object types.
+    #' @param glob (character): A wildcard pattern (e.g. \code{*.csv}), passed onto
+    #'              \code{grep()} to filter paths.
+    #' @param regexp (character): A regular expression (e.g. \code{[.]csv$}),
+    #'              passed onto \code{grep()} to filter paths.
+    #' @param invert (logical): If \code{code} return files which do not match.
+    #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+    #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+    dir_ls = function(path = ".",
+                      type = c("any", "bucket", "directory", "file"),
+                      glob = NULL,
+                      regexp = NULL,
+                      invert = FALSE,
+                      recurse = FALSE,
+                      refresh = FALSE){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`glob` is required to be a character vector" = is.character(glob) || is.null(glob),
+        "`regexp` is required to be a character vector" = is.character(regexp) || is.null(regexp),
+        "`invert` is required to be a character vector" = is.logical(invert),
+        "`recurse` is required to be a character vector" = is.logical(recurse),
+        "`refresh` is required to be a character vector" = is.logical(refresh)
+      )
+      type = match.arg(type)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      if(recurse) {
+        private$.cache_s3_bucket(path)
+        files = rbindlist(lapply(
+          path, private$.s3_dir_ls, refresh = refresh, recurse = recurse
+        ))
+      } else if (all(path %in% c("", "/", "."))){
+        files = private$.s3_bucket_ls(refresh)
+      } else {
+        private$.cache_s3_bucket(path)
+        files = rbindlist(lapply(path, private$.s3_dir_ls, refresh = refresh))
+        if(nrow(files) == 0 && all(sapply(path, function(p) grepl("/", p)))){
+          files = rbindlist(lapply(private$.s3_pnt_dir(path), private$.s3_dir_ls, refresh=refresh))
+        }
+      }
+      path = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
+
+      if(length(files$bucket_name) == 0)
+        stop(sprintf(
+          "Failed to search directory '%s': no such file or directory",
+          paste(sprintf("s3://%s", path), collapse = "', '")),
+          call. = F
+        )
+
+      files = files[!(trimws(get("key"), "right", "/") %in% path), ]
+      if(type != "any")
+        files = files[get("type") %in% type,]
+      if(!is.null(glob))
+        files = files[grep(glob, get("key"), invert = invert),]
+      if(!is.null(regexp))
+        files = files[grep(regexp, get("key"), invert = invert),]
+
+      return(
+        if(identical(files$bucket_name ,character(0))) {
+          character(0)
+        } else {
+          files$uri
+        }
+      )
+    },
+
+    #' @description Uploads local directory to AWS S3
+    #' @param path (character): A character vector of local file paths to upload to AWS S3
+    #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
+    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+    #'              and the file exists an error will be thrown.
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    dir_upload = function(path,
+                          new_path,
+                          max_batch = 100 * MB,
+                          overwrite = FALSE,
+                          ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`new_path` is required to be a character vector" = is.character(new_path),
+        "`max_batch` is required to be class numeric" = is.numeric(max_batch),
+        "`overwrite` is required to be class logical" = is.logical(overwrite),
+        "Please use `file_upload` to upload files to AWS S3" = all(fs::is_dir(path)),
+        "length of path must equal length to new_path" = (length(path) == length(new_path)),
+        "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
+      )
+      new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      path = path_abs(path)
+
+      # list all source files needing to be copied over
+      src_files = lapply(path, list.files, full.names = T, recursive = T)
+
+      # create destination files
+      file_zip = list_zip(path_rel(src_files), new_path)
+      dest_files = lapply(file_zip, function(fz) {
+        paste(trimws(fz[[2]], "right", "/"), trimws(fz[[1]], "left", "/"), sep = "/")
+      })
+
+      # get file size
+      path_size = lapply(src_files, file.size)
+      multipart = lapply(path_size, function(x) (5 * GB) < x)
+
+      # split source files
+      standard_path = list_zip(
+        lapply(seq_along(src_files), function(i) src_files[[i]][!multipart[[i]]]),
+        lapply(seq_along(dest_files), function(i) dest_files[[i]][!multipart[[i]]]),
+        lapply(seq_along(path_size), function(i) path_size[[i]][!multipart[[i]]])
+      )
+      multipart_path = list_zip(
+        lapply(seq_along(src_files), function(i) src_files[[i]][multipart[[i]]]),
+        lapply(seq_along(dest_files), function(i) dest_files[[i]][multipart[[i]]]),
+        lapply(seq_along(path_size), function(i) path_size[[i]][multipart[[i]]])
+      )
+
+      if (length(standard_path) > 0){
+        lapply(standard_path, function(part){
+          future_lapply(seq_along(part[[1]]), function(i) {
+            private$.s3_upload_standard_file(
+              part[[1]][i], part[[2]][i], part[[3]][i], overwrite, ...
+            )
+          })
+        })
+      }
+      if (length(multipart_path) > 0){
+        lapply(multipart_path, function(part){
+          lapply(seq_along(part[[1]]), function(i) {
+            private$.s3_upload_multipart_file(
+              part[[1]][i], part[[2]][i], part[[3]][i], max_batch, overwrite, ...
+            )
+          })
+        })
+      }
+      self$clear_cache(self$path_dir(unlist(dest_files)))
+      return(self$path_join(path))
+    },
+
+    ############################################################################
+    # Path methods
+    ############################################################################
+
+    #' @description Constructs a s3 uri path
+    #' @param ... (character): Character vectors
+    #' @param ext (character): An optional extension to append to the generated path
+    path = function(..., ext = ""){
+      stopifnot(
+        "ext is required to be a character" = is.character(ext)
+      )
+      path = trimws(fs::path(..., ext=ext), "left", "/")
+      return(paste("s3:/", gsub("s3:/", "", path), sep = "/"))
+    },
+
+    #' @description Returns the directory portion of s3 uri
+    #' @param path (character): A character vector of paths
+    path_dir = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      return(dirname(path))
+    },
+
+    #' @description Returns the last extension for a path.
+    #' @param path (character): A character vector of paths
+    path_ext = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      pattern = "(?<!^|[.]|/)[.]([^.]+)$"
+      pos = regexpr(pattern, path, perl = TRUE)
+      return(ifelse(pos > -1L, substring(path, pos + 1L), ""))
+    },
+
+    #' @description Removes the last extension and return the rest of the s3 uri.
+    #' @param path (character): A character vector of paths
+    path_ext_remove = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      pattern = "(?<!^|[.]|/)[.]([^.]+)$"
+      pos = regexpr(pattern, path, perl = TRUE)
+      return(Filter(nzchar, unlist(regmatches(path, pos, invert = TRUE))))
+    },
+
+    #' @description Replace the extension with a new extension.
+    #' @param path (character): A character vector of paths
+    #' @param ext (character): New file extension
+    path_ext_set = function(path, ext){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      return(paste(self$path_ext_remove(path), ext, sep = "."))
+    },
+
+    #' @description Returns the file name portion of the s3 uri path
+    #' @param path (character): A character vector of paths
+    path_file = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      return(basename(path))
+    },
+
+    #' @description Construct an s3 uri path from path vector
+    #' @param parts (character): A character vector of one or more paths
+    path_join = function(parts){
+      stopifnot(
+        "`parts` is required to be a character vector" = is.character(parts) || is.list(parts)
+      )
+      parts = lapply(Filter(Negate(is.null), parts), function(x) enc2utf8(as.character(x)))
+      return(vapply(parts, function(x) {
+          paste("s3:/", paste(trimws(gsub("s3://", "", x), whitespace="/"), collapse = "/"), sep = "/")
+        }, FUN.VALUE = "")
+      )
+    },
+
+    #' @description Split s3 uri path to core components bucket, key and version id
+    #' @param path (character): A character vector of one or more paths or s3 uri
+    path_split = function(path){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      return(unname(lapply(path, private$.s3_split_path)))
+    },
+
+    ############################################################################
+    # Helper methods
+    ############################################################################
+
+    #' @description Clear S3 Cache
+    #' @param path (character): s3 path to be cl
+    clear_cache = function(path = NULL){
+      if(is.null(path))
+        self$s3_cache = list()
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      for (p in path){
+        self$s3_cache[[p]] = NULL
+      }
+    }
+  ),
+  active = list(
+
+    #' @field retries
+    #' number of retries
+    retries = function(retries){
+      if(missing(retries)) {
+        return(private$.retries)
+      } else {
+        stopifnot(
+           "retries requires to be numeric" = is.numeric(retries)
+        )
+        if(retries < 0)
+          stop(
+            "retries requires to be positive values", call. = F
+          )
+        private$.retries = retries
+      }
+    }
+  ),
+  private = list(
+    .retries = 5,
+    .extra_tokenize_attribute = "default_block_size",
+
+    .cache_s3_data = function(path){
+      !is.null(self$s3_cache[[path]])
+    },
+
+    .cache_s3_bucket = function(path){
+      s3_parts = lapply(path, private$.s3_split_path)
+      bucket_list = unique(sapply(s3_parts, function(x) x$Bucket))
+      if(length(bucket_list) == 1)
+        self$s3_cache_bucket = bucket_list
+    },
+
+    .s3_bucket_ls = function(refresh=FALSE){
+      if(!("__buckets" %in% names(self$s3_cache)) || refresh) {
+        files = retry_api_call(
+          tryCatch({
+            self$s3_client$list_buckets()$Buckets
+          } # TODO: handle aws error
+          )
+        , self$retries)
+        self$s3_cache[["__buckets"]] = rbindlist(lapply(files, function(f){
+          list(
+            bucket_name = f$Name,
+            key = "",
+            uri = paste("s3:/", f$Name, sep = "/"),
+            size = 0,
+            type = "bucket",
+            owner = "",
+            etag = "",
+            last_modified = as.POSIXct(NA)
+          )
+        }))
+      }
+      return(self$s3_cache[["__buckets"]])
+    },
+
+    .s3_dir_ls = function(path,
+                          max_keys=NULL,
+                          delimiter="/",
+                          prefix="",
+                          recurse=FALSE,
+                          refresh=FALSE){
+      s3_parts = private$.s3_split_path(path)
+      if (is.null(prefix))
+        prefix = ""
+      if (nzchar(s3_parts$Key)) {
+        prefix = paste(trimws(s3_parts$Key, "left", "/"), prefix, sep = "/")
+      }
+      if(!(s3_parts$Key %in% names(self$s3_cache) || refresh || is.null(delimiter))){
+        LOGGER$debug("Get directory listing page for %s", path)
+
+        kwargs = list(
+          Bucket = s3_parts$Bucket,
+          Prefix = prefix,
+          Delimiter = delimiter
+        )
+
+        if (!is.null(max_keys)){
+          kwargs$MaxKeys = max_keys
+        }
+        if(recurse){
+          kwargs$Delimiter = NULL
+        }
+        i = 1
+        resp = list()
+        while (!identical(kwargs$ContinuationToken, character(0))){
+          batch_resp = retry_api_call(
+            tryCatch({
+              # Async while loop:
+              # https://stackoverflow.com/questions/43121109/parallel-while-loop-in-r
+              do.call(self$s3_client$list_objects_v2, kwargs)
+            } # TODO: handle aws error
+            ), self$retries
+          )
+          kwargs$ContinuationToken = batch_resp$NextContinuationToken
+          resp[[i]] = batch_resp
+          i = i + 1
+        }
+
+        s3_files = unlist(lapply(resp, function(i){
+          lapply(i$Contents, function(c){
+            list(
+              bucket_name = s3_parts$Bucket,
+              key = c$Key,
+              uri = paste("s3:/", s3_parts$Bucket, c$Key, sep = "/"),
+              size = c$Size,
+              type = ifelse(endsWith(c$Key, "/"), "directory", "file"),
+              owner = ifelse(
+                identical(c$Owner$DisplayName, character(0)), "", c$Owner$DisplayName
+              ),
+              etag = c$ETag,
+              last_modified = c$LastModified
+            )
+          })
+        }), recursive = F)
+
+        s3_dir = unlist(lapply(resp, function(i){
+          i$CommonPrefixes
+        }), recursive = F)
+
+        s3_dir = lapply(s3_dir, function(l){
+          list(
+            bucket_name = s3_parts$Bucket,
+            key = l$Prefix,
+            uri = paste('s3:/', s3_parts$Bucket, l$Prefix, sep = "/"),
+            size = 0,
+            type = "directory",
+            owner = "",
+            etag = "",
+            last_modified = as.POSIXct(NA)
+          )
+        })
+        s3_ls = rbind(rbindlist(s3_files),rbindlist(s3_dir))
+        if(!is.null(delimiter) && nrow(s3_ls) > 0)
+          self$s3_cache[[path]] = s3_ls
+      }
+      return(self$s3_cache[[path]])
+    },
+
+    .s3_download_file = function(src, dest, ...) {
+      s3_parts = private$.s3_split_path(src)
+      obj = retry_api_call(
+        self$s3_client$get_object(
+          Bucket = s3_parts$Bucket,
+          Key = s3_parts$Key,
+          VersionId = s3_parts$VersionId,
+          ...
+        )$Body, self$retries)
+      write_bin(obj, dest)
+    },
+
+    .s3_copy_standard = function(src,
+                                 dest,
+                                 overwrite = FALSE,
+                                 ...){
+      src_parts = private$.s3_split_path(src)
+      dest_parts = private$.s3_split_path(dest)
+
+      if (!is.null(dest_parts$VersionId))
+        stop("Unable to copy to a versioned file", call. = FALSE)
+
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+
+      copy_src = list(
+        Bucket = src_parts$Bucket, Key = src_parts$Key
+      )
+      copy_src$VersionId = src_parts$VersionId
+
+      retry_api_call(
+        tryCatch({
+          self$s3_client$copy_object(
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            CopySource = copy_src,
+            ...
+          )
+        }), self$retries)
+      self$clear_cache(dest)
+    },
+
+    .s3_copy_multipart = function(src,
+                                  dest,
+                                  size,
+                                  max_batch = 100 * MB,
+                                  overwrite = FALSE,
+                                  ...){
+      src_parts = private$.s3_split_path(src)
+      dest_parts = private$.s3_split_path(dest)
+
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+
+      if (!is.null(dest_parts$VersionId))
+        stop("Unable to copy to a versioned file", call. = FALSE)
+
+      upload_id = retry_api_call(
+        self$s3_client$create_multipart_upload(
+          Bucket = dest_parts$Bucket, Key = dest_parts$Key, ...
+        )$UploadId,
+        self$retries
+      )
+      copy_src = list(
+        Bucket = src_parts$Bucket, Key = srcparts$Key
+      )
+      copy_src$VersionId = src_parts$VersionId
+
+      batch_range <- c(seq(1, size, by=max_batch), size)
+      tryCatch({
+        parts = future_lapply(seq_along(batch_range[-1]), function(i){
+          etag = self$s3_client$upload_part_copy(
+            CopySource = copy_src,
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            UploadId = upload_id,
+            PartNumber = i,
+            CopySourceRange = sprintf("bytes=%s-%s", batch_range[i], batch_range[i+1])
+          )$CopyPartResult$Etag
+          return(list(ETag = etag, PartNumber = i))
+        })
+        self$s3_client$complete_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          MultipartUpload = list(Parts = parts),
+          UploadId = upload_id
+        )
+      }, error = function(cond){
+        self$s3_client$abort_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          UploadId = upload_id
+        )
+        LOGGER$error("Failed to copy file in multiparts")
+        stop(cond)
+      })
+      self$clear_cache(dest)
+    },
+
+    .s3_stream_in_file = function(src, ...) {
+      s3_parts = private$.s3_split_path(src)
+      obj = retry_api_call(
+        self$s3_client$get_object(
+          Bucket = s3_parts$Bucket,
+          Key = s3_parts$Key,
+          VersionId = s3_parts$VersionId,
+          ...
+        )$Body, self$retries
+      )
+      return(obj)
+    },
+
+    .s3_stream_out_file = function(obj,
+                                   dest,
+                                   size,
+                                   overwrite = FALSE,
+                                   ...){
+      dest_parts = private$.s3_split_path(dest)
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+
+      out = retry_api_call(
+        self$s3_client$put_object(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          Body = obj,
+          ...
+        ), self$retries)
+      self$clear_cache(dest)
+    },
+
+    .s3_stream_out_multipart_file = function(obj,
+                                             dest,
+                                             # Using 100 MB multipart upload size due to AWS recommendation:
+                                             # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
+                                             size,
+                                             max_batch = 100 * MB,
+                                             overwrite = FALSE,
+                                             ...){
+      dest_parts = private$.s3_split_path(dest)
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+      upload_id = retry_api_call(
+        self$s3_client$create_multipart_upload(
+          Bucket = dest_parts$Bucket, Key = dest_parts$Key, ...
+        )$UploadId, self$retries)
+      num_parts = ceiling(size / max_batch)
+
+      tryCatch({
+        parts = future_lapply(seq_len(num_parts), function(i){
+          etag <- self$s3_client$upload_part(
+            Body = obj[[i]],
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            PartNumber = i,
+            UploadId = upload_id
+          )$ETag
+          return(list(ETag = etag, PartNumber = i))
+        })
+        self$s3_client$complete_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          MultipartUpload = list(Parts = parts),
+          UploadId = upload_id
+        )
+      },
+      error = function(cond){
+        self$s3_client$abort_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          UploadId = upload_id
+        )
+        LOGGER$error("Failed to Upload file in Multiparts")
+        stop(cond)
+      })
+      self$clear_cache(dest)
+    },
+
+    .s3_upload_standard_file = function(src,
+                                        dest,
+                                        size,
+                                        overwrite = FALSE,
+                                        ...){
+      dest_parts = private$.s3_split_path(dest)
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+      out = retry_api_call(
+        self$s3_client$put_object(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          Body = readBin(src, what = "raw", n = size),
+          ...
+        ), self$retries)
+      self$clear_cache(dest)
+    },
+
+    .s3_upload_multipart_file = function(src,
+                                         dest,
+                                         # Using 100 MB multipart upload size due to AWS recommendation:
+                                         # https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
+                                         size,
+                                         max_batch = 100 * MB,
+                                         overwrite = FALSE,
+                                         ...){
+      dest_parts = private$.s3_split_path(dest)
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+
+      LOGGER$debug(
+        "Uploading file '%s' in multipart to: '%s'", src, dest
+      )
+      upload_id = retry_api_call(
+        self$s3_client$create_multipart_upload(
+          Bucket = dest_parts$Bucket, Key = dest_parts$Key, ...
+        )$UploadId, self$retries)
+      num_parts = ceiling(size / max_batch)
+      con = file(src, open = "rb")
+      on.exit({close(con)})
+
+      tryCatch({
+        parts = lapply(seq_len(num_parts), function(i){
+          etag <- self$s3_client$upload_part(
+            Body = readBin(con, what = "raw", n = max_batch),
+            Bucket = dest_parts$Bucket,
+            Key = dest_parts$Key,
+            PartNumber = i,
+            UploadId = upload_id
+          )$ETag
+          return(list(ETag = etag, PartNumber = i))
+        })
+        self$s3_client$complete_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          MultipartUpload = list(Parts = parts),
+          UploadId = upload_id
+        )
+      },
+      error = function(cond){
+        self$s3_client$abort_multipart_upload(
+          Bucket = dest_parts$Bucket,
+          Key = dest_parts$Key,
+          UploadId = upload_id
+        )
+        LOGGER$error("Failed to Upload file in Multiparts")
+        stop(cond)
+      })
+      self$clear_cache(dest)
+    },
+
+    .s3_pnt_dir = function(path){
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      if(any(grepl("/", path))) {
+        pnt = dirname(path)[dirname(path) !="."]
+        return(pnt)
+      } else {
+       return("")
+      }
+    },
+
+    .s3_strip_uri = function(path = "", dir = F){
+      s3_protocol = "s3://"
+      if (startsWith(tolower(path), s3_protocol)){
+        path = substr(path, nchar(s3_protocol) + 1, nchar(path))
+      }
+      if(!dir)
+        path = trimws(path, which = "right", whitespace = "/")
+      return (if(!is.na(path)) path else self$root_marker)
+    },
+
+    .s3_split_path = function(path) {
+      path = trimws(path, which = "left", "/")
+      if (!grepl("/", path)) {
+        return(list(Bucket = path, Key = "", VersionId = NULL))
+      } else {
+        parts = str_split(path, "/", n = 2)[[1]]
+        keyparts = str_split(parts[2],  "\\?versionId=")[[1]]
+        return(list(
+          Bucket = parts[1],
+          Key = keyparts[1],
+          VersionId = if(is.na(keyparts[2])) NULL else keyparts[2]
+        ))
+      }
+    },
+
+    .cred_set = function(aws_access_key_id,
+                         aws_secret_access_key,
+                         aws_session_token,
+                         profile_name,
+                         region_name,
+                         endpoint,
+                         ...){
+      add_list = function(x) if(length(x) == 0) NULL else x
+      config = list()
+      credentials = list()
+      cred = list()
+
+      cred$access_key_id = aws_access_key_id
+      cred$secret_access_key = aws_secret_access_key
+      cred$session_token = aws_session_token
+
+      credentials$creds = add_list(cred)
+      credentials$profile = profile_name
+      config$credentials = add_list(credentials)
+      config$region = region_name
+      config$endpoint = endpoint
+
+      return(modifyList(config, list(...)))
+    }
+  )
+)
