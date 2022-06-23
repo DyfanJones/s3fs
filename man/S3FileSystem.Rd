@@ -547,13 +547,15 @@ Test for file types
 \subsection{Method \code{is_bucket()}}{
 Test for file types
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_bucket(path)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$is_bucket(path, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{path}}{(character): A character vector of paths or uris}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}}
 }
 \if{html}{\out{</div>}}
 }

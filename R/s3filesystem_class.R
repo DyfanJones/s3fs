@@ -867,12 +867,30 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
-    is_bucket = function(path){
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}
+    is_bucket = function(path, ...){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      return(path %in% private$.s3_bucket_ls(path)$bucket_name)
+      found = path %in% private$.s3_bucket_ls(path)$bucket_name
+
+      # bucket not owned by user
+      s3_parts = lapply(path[!found], private$.s3_split_path)
+      exist = rep(TRUE, length(s3_parts))
+      future_lapply(seq_along(s3_parts), function(i){
+        tryCatch({
+          self$s3_client$list_object_v2(
+            Bucket = s3_parts[[i]]$Bucket,
+            MaxKeys = 1,
+            ...
+            )
+          }, error = function(e){
+            exist[[i]] <<- FALSE
+        })
+      })
+      found[!found] = exist
+      return(found)
     },
 
     #' @description Test for file types

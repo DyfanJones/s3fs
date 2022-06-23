@@ -333,6 +333,7 @@ s3_file_version_info = function(path,
 #' @title Functions to test for file types
 #' @description Test for file types
 #' @param path (character): A character vector of paths or uris
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}
 #' @name file_type
 #' @export
 s3_is_file = function(path){
@@ -349,9 +350,9 @@ s3_is_dir = function(path){
 
 #' @rdname file_type
 #' @export
-s3_is_bucket = function(path){
+s3_is_bucket = function(path, ...){
   s3fs = s3_file_system()
-  return(s3fs$is_bucke(path))
+  return(s3fs$is_bucket(path, ...))
 }
 
 #' @rdname file_type

@@ -12,12 +12,14 @@ s3_is_file(path)
 
 s3_is_dir(path)
 
-s3_is_bucket(path)
+s3_is_bucket(path, ...)
 
 s3_is_file_empty(path)
 }
 \arguments{
 \item{path}{(character): A character vector of paths or uris}
+
+\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}}
 }
 \description{
 Test for file types
