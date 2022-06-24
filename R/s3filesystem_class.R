@@ -527,6 +527,10 @@ S3FileSystem = R6Class("S3FileSystem",
           )
         )
       }
+      kwargs = list(...)
+      kwargs$max_batch = max_batch
+      kwargs$overwrite = overwrite
+
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
       obj = if(is.list(obj)) obj else list(obj)
@@ -542,17 +546,19 @@ S3FileSystem = R6Class("S3FileSystem",
 
       if (length(standard) > 0){
         future_lapply(standard, function(part){
-          private$.s3_stream_out_file(
-            part[[1]], part[[2]], part[[3]], overwrite
-          )
+          kwargs$obj = part[[1]]
+          kwargs$dest = part[[2]]
+          kwargs$size = part[[3]]
+          do.call(private$.s3_stream_out_file, kwargs)
         })
       }
       if (length(multipart) > 0){
         for(part in multipart){
           future_lapply(seq_along(part[[1]]), function(i) {
-            private$.s3_stream_out_multipart_file(
-              part[[1]][[i]], part[[2]], part[[3]], max_batch, overwrite, ...
-            )
+            kwargs$obj = part[[1]][[i]]
+            kwargs$dest = part[[2]][[i]]
+            kwargs$size = part[[3]][[i]]
+            do.call(private$.s3_stream_out_multipart_file, kwargs)
           })
         }
       }
