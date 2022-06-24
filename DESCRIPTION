@@ -1,19 +1,10 @@
 Package: s3fs
 Type: Package
-Title: File System like `API` for Amazon Web Service `S3`.
+Title: File System like `API` for Amazon Web Service `S3`
 Version: 0.1.0
-import:
-  data.table,
-  future,
-  future.apply,
-  R6,
-  fs,
-  paws.storage,
-  lgr,
-  utils
 Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
 Description: Access Amazon Web Service `S3` as if it were a file system. 
-    File system `API` design around R package `fs`
+    File system `API` design around R package `fs`.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -25,6 +16,16 @@ Collate:
     's3filesystem_class.R'
     'file_system.R'
     'file_system_async.R'
+Imports:
+    R6,
+    data.table,
+    fs,
+    future,
+    future.apply,
+    lgr,
+    paws.storage,
+    utils
 Suggests: 
-    testthat (>= 3.0.0)
+    brio,
+    testthat (>= 3.1.4)
 Config/testthat/edition: 3
