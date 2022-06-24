@@ -15,6 +15,7 @@ s3fs_cache = new.env(parent = emptyenv())
 #'              then the default profile is used.
 #' @param endpoint (character): The complete URL to use for the constructed client.
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
+#' @param retries (numeric): max number of retry attempts
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
 #' @examples
@@ -40,6 +41,7 @@ s3_file_system = function(aws_access_key_id = NULL,
                           profile_name = NULL,
                           endpoint = NULL,
                           disable_ssl = FALSE,
+                          retries = 5,
                           refresh = FALSE,
                           ...){
   s3fs = NULL
@@ -60,6 +62,7 @@ s3_file_system = function(aws_access_key_id = NULL,
       ...
     )
   assign("service", s3fs, envir = s3fs_cache)
+  s3fs$retries = retries
   return(invisible(s3fs))
 }
 

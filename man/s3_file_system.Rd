@@ -12,6 +12,7 @@ s3_file_system(
   profile_name = NULL,
   endpoint = NULL,
   disable_ssl = FALSE,
+  retries = 5,
   refresh = FALSE,
   ...
 )
@@ -31,6 +32,8 @@ then the default profile is used.}
 \item{endpoint}{(character): The complete URL to use for the constructed client.}
 
 \item{disable_ssl}{(logical): Whether or not to use SSL. By default, SSL is used.}
+
+\item{retries}{(numeric): max number of retry attempts}
 
 \item{refresh}{(logical): Refresh cached S3FileSystem class}
 

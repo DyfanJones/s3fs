@@ -61,6 +61,7 @@ credentials please look at
   profile_name <span class="op">=</span> <span class="cn">NULL</span>,
   endpoint <span class="op">=</span> <span class="cn">NULL</span>,
   disable_ssl <span class="op">=</span> <span class="cn">FALSE</span>,
+  retries <span class="op">=</span> <span class="fl">5</span>,
   refresh <span class="op">=</span> <span class="cn">FALSE</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
@@ -95,6 +96,10 @@ then the default profile is used.</p></dd>
 
 <dt>disable_ssl</dt>
 <dd><p>(logical): Whether or not to use SSL. By default, SSL is used.</p></dd>
+
+
+<dt>retries</dt>
+<dd><p>(numeric): max number of retry attempts</p></dd>
 
 
 <dt>refresh</dt>
