@@ -209,6 +209,10 @@ then the default profile is used.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_copy"></a><div class="section">
 <h3 id="method-file-copy-">Method <code>file_copy()</code><a class="anchor" aria-label="anchor" href="#method-file-copy-"></a></h3>
@@ -248,6 +252,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_create"></a><div class="section">
 <h3 id="method-file-create-">Method <code>file_create()</code><a class="anchor" aria-label="anchor" href="#method-file-create-"></a></h3>
@@ -274,6 +282,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_delete"></a><div class="section">
 <h3 id="method-file-delete-">Method <code>file_delete()</code><a class="anchor" aria-label="anchor" href="#method-file-delete-"></a></h3>
@@ -293,6 +305,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_download"></a><div class="section">
@@ -323,6 +339,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_exists"></a><div class="section">
 <h3 id="method-file-exists-">Method <code>file_exists()</code><a class="anchor" aria-label="anchor" href="#method-file-exists-"></a></h3>
@@ -338,6 +358,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
+<p>logical vector if file exists</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_info"></a><div class="section">
@@ -355,6 +379,45 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
+<p>A data.table with metadata for each file. Columns returned are as follows.</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>type (character): file type (file or directory)</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file.</p></li>
+<li><p>delete_marker (logical): Specifies retrieved a logical marker</p></li>
+<li><p>accept_ranges (character): Indicates that a range of bytes was specified.</p></li>
+<li><p>expiration (character): File expiration</p></li>
+<li><p>restore (character): If file is archived</p></li>
+<li><p>archive_status (character): Archive status</p></li>
+<li><p>missing_meta (integer): Number of metadata entries not returned in "x-amz-meta" headers</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>cache_control (character): caching behaviour for the request/reply chain</p></li>
+<li><p>content_disposition (character): presentational information of file</p></li>
+<li><p>content_encoding (character): file content encodings</p></li>
+<li><p>content_language (character): what language the content is in</p></li>
+<li><p>content_type (character): file MIME type</p></li>
+<li><p>expires (POSIXct): date and time the file is no longer cacheable</p></li>
+<li><p>website_redirect_location (character): redirecs request for file to another</p></li>
+<li><p>server_side_encryption (character): File server side encryption</p></li>
+<li><p>metadata (list): metadata of file</p></li>
+<li><p>sse_customer_algorithm (character): server-side encryption with a customer-provided encryption key</p></li>
+<li><p>sse_customer_key_md5 (character): server-side encryption with a customer-provided encryption key</p></li>
+<li><p>ssekms_key_id (character): ID of the Amazon Web Services Key Management Service</p></li>
+<li><p>bucket_key_enabled (logical): s3 bucket key for server-side encryption with</p></li>
+<li><p>storage_class (character): file storage class information</p></li>
+<li><p>request_charged (character): indicates successfully charged for request</p></li>
+<li><p>replication_status (character): return specific header if request
+involves a bucket that is either a source or a destination in a replication rule
+<a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object" class="external-link">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object</a></p></li>
+<li><p>parts_count (integer): number of count parts the file has</p></li>
+<li><p>object_lock_mode (character): the file lock mode</p></li>
+<li><p>object_lock_retain_until_date (POSIXct): date and time of when object_lock_mode expires</p></li>
+<li><p>object_lock_legal_hold_status (character): file legal holding</p></li>
+</ul></div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_move"></a><div class="section">
 <h3 id="method-file-move-">Method <code>file_move()</code><a class="anchor" aria-label="anchor" href="#method-file-move-"></a></h3>
@@ -394,6 +457,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_stream_in"></a><div class="section">
 <h3 id="method-file-stream-in-">Method <code>file_stream_in()</code><a class="anchor" aria-label="anchor" href="#method-file-stream-in-"></a></h3>
@@ -413,6 +480,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
+<p>list of raw vectors containing the contents of the file</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_stream_out"></a><div class="section">
@@ -453,6 +524,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_temp"></a><div class="section">
 <h3 id="method-file-temp-">Method <code>file_temp()</code><a class="anchor" aria-label="anchor" href="#method-file-temp-"></a></h3>
@@ -477,6 +552,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_tag_delete"></a><div class="section">
 <h3 id="method-file-tag-delete-">Method <code>file_tag_delete()</code><a class="anchor" aria-label="anchor" href="#method-file-tag-delete-"></a></h3>
@@ -492,6 +571,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-11">Returns<a class="anchor" aria-label="anchor" href="#returns-11"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_tag_info"></a><div class="section">
@@ -509,6 +592,16 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-12">Returns<a class="anchor" aria-label="anchor" href="#returns-12"></a></h4>
+<p>data.table of file version metadata</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>tag_key (character): name of tag</p></li>
+<li><p>tag_value (character): tag value</p></li>
+</ul></div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_tag_update"></a><div class="section">
 <h3 id="method-file-tag-update-">Method <code>file_tag_update()</code><a class="anchor" aria-label="anchor" href="#method-file-tag-update-"></a></h3>
@@ -534,6 +627,10 @@ modify inplace.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-13">Returns<a class="anchor" aria-label="anchor" href="#returns-13"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_touch"></a><div class="section">
 <h3 id="method-file-touch-">Method <code>file_touch()</code><a class="anchor" aria-label="anchor" href="#method-file-touch-"></a></h3>
@@ -554,6 +651,10 @@ it does not exist. Use <code>s3fs$file_create()</code> to do this if needed.</p>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-14">Returns<a class="anchor" aria-label="anchor" href="#returns-14"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_upload"></a><div class="section">
@@ -595,6 +696,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-15">Returns<a class="anchor" aria-label="anchor" href="#returns-15"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-file_version_info"></a><div class="section">
 <h3 id="method-file-version-info-">Method <code>file_version_info()</code><a class="anchor" aria-label="anchor" href="#method-file-version-info-"></a></h3>
@@ -615,6 +720,17 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-16">Returns<a class="anchor" aria-label="anchor" href="#returns-16"></a></h4>
+<p>return data.table with file version info, columns below:</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>owner (character): file owner</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file.</p></li>
+</ul></div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_file"></a><div class="section">
 <h3 id="method-is-file-">Method <code>is_file()</code><a class="anchor" aria-label="anchor" href="#method-is-file-"></a></h3>
@@ -631,6 +747,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-17">Returns<a class="anchor" aria-label="anchor" href="#returns-17"></a></h4>
+<p>logical vector if object is a file</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_dir"></a><div class="section">
 <h3 id="method-is-dir-">Method <code>is_dir()</code><a class="anchor" aria-label="anchor" href="#method-is-dir-"></a></h3>
@@ -646,6 +766,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-18">Returns<a class="anchor" aria-label="anchor" href="#returns-18"></a></h4>
+<p>logical vector if object is a directory</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_bucket"></a><div class="section">
@@ -667,6 +791,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-19">Returns<a class="anchor" aria-label="anchor" href="#returns-19"></a></h4>
+<p>logical vector if object is a <code>AWS S3</code> bucket</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_file_empty"></a><div class="section">
 <h3 id="method-is-file-empty-">Method <code>is_file_empty()</code><a class="anchor" aria-label="anchor" href="#method-is-file-empty-"></a></h3>
@@ -682,6 +810,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-20">Returns<a class="anchor" aria-label="anchor" href="#returns-20"></a></h4>
+<p>logical vector if file is empty</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_copy"></a><div class="section">
@@ -723,6 +855,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-21">Returns<a class="anchor" aria-label="anchor" href="#returns-21"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_create"></a><div class="section">
 <h3 id="method-dir-create-">Method <code>dir_create()</code><a class="anchor" aria-label="anchor" href="#method-dir-create-"></a></h3>
@@ -748,6 +884,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-22">Returns<a class="anchor" aria-label="anchor" href="#returns-22"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_delete"></a><div class="section">
 <h3 id="method-dir-delete-">Method <code>dir_delete()</code><a class="anchor" aria-label="anchor" href="#method-dir-delete-"></a></h3>
@@ -764,6 +904,10 @@ and the file exists an error will be thrown.</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-23">Returns<a class="anchor" aria-label="anchor" href="#returns-23"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_exists"></a><div class="section">
 <h3 id="method-dir-exists-">Method <code>dir_exists()</code><a class="anchor" aria-label="anchor" href="#method-dir-exists-"></a></h3>
@@ -779,6 +923,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-24">Returns<a class="anchor" aria-label="anchor" href="#returns-24"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_download"></a><div class="section">
@@ -809,6 +957,10 @@ and the file exists an error will be thrown.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-25">Returns<a class="anchor" aria-label="anchor" href="#returns-25"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_info"></a><div class="section">
@@ -862,6 +1014,16 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-26">Returns<a class="anchor" aria-label="anchor" href="#returns-26"></a></h4>
+<p>data.table with directory metadata</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file</p></li>
+</ul></div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_ls"></a><div class="section">
 <h3 id="method-dir-ls-">Method <code>dir_ls()</code><a class="anchor" aria-label="anchor" href="#method-dir-ls-"></a></h3>
@@ -914,6 +1076,10 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-27">Returns<a class="anchor" aria-label="anchor" href="#returns-27"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_upload"></a><div class="section">
 <h3 id="method-dir-upload-">Method <code>dir_upload()</code><a class="anchor" aria-label="anchor" href="#method-dir-upload-"></a></h3>
@@ -954,6 +1120,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-28">Returns<a class="anchor" aria-label="anchor" href="#returns-28"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path"></a><div class="section">
 <h3 id="method-path-">Method <code><a href="path.html">path()</a></code><a class="anchor" aria-label="anchor" href="#method-path-"></a></h3>
@@ -974,6 +1144,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-29">Returns<a class="anchor" aria-label="anchor" href="#returns-29"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_dir"></a><div class="section">
 <h3 id="method-path-dir-">Method <code>path_dir()</code><a class="anchor" aria-label="anchor" href="#method-path-dir-"></a></h3>
@@ -989,6 +1163,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-30">Returns<a class="anchor" aria-label="anchor" href="#returns-30"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_ext"></a><div class="section">
@@ -1006,6 +1184,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-31">Returns<a class="anchor" aria-label="anchor" href="#returns-31"></a></h4>
+<p>character s3 uri file extension</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_ext_remove"></a><div class="section">
 <h3 id="method-path-ext-remove-">Method <code>path_ext_remove()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-remove-"></a></h3>
@@ -1021,6 +1203,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-32">Returns<a class="anchor" aria-label="anchor" href="#returns-32"></a></h4>
+<p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_ext_set"></a><div class="section">
@@ -1042,6 +1228,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-33">Returns<a class="anchor" aria-label="anchor" href="#returns-33"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_file"></a><div class="section">
 <h3 id="method-path-file-">Method <code>path_file()</code><a class="anchor" aria-label="anchor" href="#method-path-file-"></a></h3>
@@ -1057,6 +1247,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-34">Returns<a class="anchor" aria-label="anchor" href="#returns-34"></a></h4>
+<p>character vector of file names</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_join"></a><div class="section">
@@ -1074,6 +1268,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns-35">Returns<a class="anchor" aria-label="anchor" href="#returns-35"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_split"></a><div class="section">
 <h3 id="method-path-split-">Method <code>path_split()</code><a class="anchor" aria-label="anchor" href="#method-path-split-"></a></h3>
@@ -1089,6 +1287,10 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-36">Returns<a class="anchor" aria-label="anchor" href="#returns-36"></a></h4>
+<p>list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-clear_cache"></a><div class="section">

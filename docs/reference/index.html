@@ -46,7 +46,11 @@
         </td>
         <td><p>Access AWS S3 as if it were a file system.</p></td>
       </tr><tr><td>
-          <p><code><a href="copy.html">s3_file_copy()</a></code> <code><a href="copy.html">s3_dir_copy()</a></code> <code><a href="copy.html">s3_file_copy_async()</a></code> <code><a href="copy.html">s3_dir_copy_async()</a></code> </p>
+          <p><code><a href="copy.html">s3_file_copy()</a></code> <code><a href="copy.html">s3_dir_copy()</a></code> </p>
+        </td>
+        <td><p>Copy files and directories</p></td>
+      </tr><tr><td>
+          <p><code><a href="copy_async.html">s3_file_copy_async()</a></code> <code><a href="copy_async.html">s3_dir_copy_async()</a></code> </p>
         </td>
         <td><p>Copy files and directories</p></td>
       </tr><tr><td>
@@ -54,11 +58,19 @@
         </td>
         <td><p>Create files and directories</p></td>
       </tr><tr><td>
-          <p><code><a href="delete.html">s3_file_delete()</a></code> <code><a href="delete.html">s3_dir_delete()</a></code> <code><a href="delete.html">s3_file_delete_async()</a></code> <code><a href="delete.html">s3_dir_delete_async()</a></code> </p>
+          <p><code><a href="delete.html">s3_file_delete()</a></code> <code><a href="delete.html">s3_dir_delete()</a></code> </p>
         </td>
         <td><p>Delete files and directories</p></td>
       </tr><tr><td>
-          <p><code><a href="download.html">s3_file_download()</a></code> <code><a href="download.html">s3_dir_download()</a></code> <code><a href="download.html">s3_file_download_async()</a></code> <code><a href="download.html">s3_dir_download_async()</a></code> </p>
+          <p><code><a href="delete_async.html">s3_file_delete_async()</a></code> <code><a href="delete_async.html">s3_dir_delete_async()</a></code> </p>
+        </td>
+        <td><p>Delete files and directories</p></td>
+      </tr><tr><td>
+          <p><code><a href="download.html">s3_file_download()</a></code> <code><a href="download.html">s3_dir_download()</a></code> </p>
+        </td>
+        <td><p>Download files and directories</p></td>
+      </tr><tr><td>
+          <p><code><a href="download_async.html">s3_file_download_async()</a></code> <code><a href="download_async.html">s3_dir_download_async()</a></code> </p>
         </td>
         <td><p>Download files and directories</p></td>
       </tr><tr><td>
@@ -70,7 +82,7 @@
         </td>
         <td><p>Functions to test for file types</p></td>
       </tr><tr><td>
-          <p><code><a href="info.html">s3_file_info()</a></code> <code><a href="info.html">s3_dir_info()</a></code> <code><a href="info.html">s3_dir_ls()</a></code> <code><a href="info.html">s3_file_info_async()</a></code> <code><a href="info.html">s3_dir_info_async()</a></code> <code><a href="info.html">s3_dir_ls_async()</a></code> </p>
+          <p><code><a href="info.html">s3_file_info()</a></code> <code><a href="info.html">s3_dir_info()</a></code> <code><a href="info.html">s3_dir_ls()</a></code> </p>
         </td>
         <td><p>Get files and directories information</p></td>
       </tr><tr><td>
@@ -82,11 +94,15 @@
         </td>
         <td><p>Manipulate s3 uri paths</p></td>
       </tr><tr><td>
-          <p><code><a href="permission.html">s3_file_chmod()</a></code> <code><a href="permission.html">s3_file_chmod_async()</a></code> </p>
+          <p><code><a href="permission.html">s3_file_chmod()</a></code> </p>
         </td>
         <td><p>Change file permissions</p></td>
       </tr><tr><td>
           <p><code><a href="s3_file_move.html">s3_file_move()</a></code> </p>
+        </td>
+        <td><p>Move or rename S3 files</p></td>
+      </tr><tr><td>
+          <p><code><a href="s3_file_move_async.html">s3_file_move_async()</a></code> </p>
         </td>
         <td><p>Move or rename S3 files</p></td>
       </tr><tr><td>
@@ -97,6 +113,10 @@
           <p><code><a href="s3_file_temp.html">s3_file_temp()</a></code> </p>
         </td>
         <td><p>Create name for temporary files</p></td>
+      </tr><tr><td>
+          <p><code><a href="s3_file_touch_async.html">s3_file_touch_async()</a></code> </p>
+        </td>
+        <td><p>Change file modification time</p></td>
       </tr><tr><td>
           <p><code><a href="s3_file_version_info.html">s3_file_version_info()</a></code> </p>
         </td>
@@ -114,7 +134,11 @@
         </td>
         <td><p>s3fs: File System like `API` for Amazon Web Service `S3`</p></td>
       </tr><tr><td>
-          <p><code><a href="stream.html">s3_file_stream_in()</a></code> <code><a href="stream.html">s3_file_stream_out()</a></code> <code><a href="stream.html">s3_file_stream_in_async()</a></code> <code><a href="stream.html">s3_file_stream_out_async()</a></code> </p>
+          <p><code><a href="stream.html">s3_file_stream_in()</a></code> <code><a href="stream.html">s3_file_stream_out()</a></code> </p>
+        </td>
+        <td><p>Streams data from R to AWS S3.</p></td>
+      </tr><tr><td>
+          <p><code><a href="stream_async.html">s3_file_stream_in_async()</a></code> <code><a href="stream_async.html">s3_file_stream_out_async()</a></code> </p>
         </td>
         <td><p>Streams data from R to AWS S3.</p></td>
       </tr><tr><td>
@@ -122,11 +146,15 @@
         </td>
         <td><p>Modifying file tags</p></td>
       </tr><tr><td>
-          <p><code><a href="touch.html">s3_file_touch()</a></code> <code><a href="touch.html">s3_file_touch_async()</a></code> </p>
+          <p><code><a href="touch.html">s3_file_touch()</a></code> </p>
         </td>
         <td><p>Change file modification time</p></td>
       </tr><tr><td>
-          <p><code><a href="upload.html">s3_file_upload()</a></code> <code><a href="upload.html">s3_dir_upload()</a></code> <code><a href="upload.html">s3_file_upload_async()</a></code> <code><a href="upload.html">s3_dir_upload_async()</a></code> </p>
+          <p><code><a href="upload.html">s3_file_upload()</a></code> <code><a href="upload.html">s3_dir_upload()</a></code> </p>
+        </td>
+        <td><p>Upload file and directory</p></td>
+      </tr><tr><td>
+          <p><code><a href="upload_async.html">s3_file_upload_async()</a></code> <code><a href="upload_async.html">s3_dir_upload_async()</a></code> </p>
         </td>
         <td><p>Upload file and directory</p></td>
       </tr></tbody></table></div>

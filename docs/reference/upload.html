@@ -48,17 +48,7 @@ s3_dir_upload upload directory to AWS S3"><!-- mathjax --><script src="https://c
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">s3_file_upload</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, max_batch <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">MB</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span>
 
-<span class="fu">s3_dir_upload</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, <span class="va">max_batch</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">s3_file_upload_async</span><span class="op">(</span>
-  <span class="va">path</span>,
-  <span class="va">new_path</span>,
-  max_batch <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">MB</span>,
-  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">s3_dir_upload_async</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, <span class="va">max_batch</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+<span class="fu">s3_dir_upload</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, <span class="va">max_batch</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -85,6 +75,12 @@ and the file exists an error will be thrown.</p></dd>
 and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_upload.html" class="external-link">s3_create_multipart_upload</a></code></p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>character vector of s3 uri paths</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

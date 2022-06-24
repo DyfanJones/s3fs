@@ -68,28 +68,6 @@ s3_dir_ls returns file name within AWS S3 directory"><!-- mathjax --><script src
   invert <span class="op">=</span> <span class="cn">FALSE</span>,
   recurse <span class="op">=</span> <span class="cn">FALSE</span>,
   refresh <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span>
-
-<span class="fu">s3_file_info_async</span><span class="op">(</span><span class="va">path</span><span class="op">)</span>
-
-<span class="fu">s3_dir_info_async</span><span class="op">(</span>
-  path <span class="op">=</span> <span class="st">"."</span>,
-  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"bucket"</span>, <span class="st">"directory"</span>, <span class="st">"file"</span><span class="op">)</span>,
-  glob <span class="op">=</span> <span class="cn">NULL</span>,
-  regexp <span class="op">=</span> <span class="cn">NULL</span>,
-  invert <span class="op">=</span> <span class="cn">FALSE</span>,
-  recurse <span class="op">=</span> <span class="cn">FALSE</span>,
-  refresh <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span>
-
-<span class="fu">s3_dir_ls_async</span><span class="op">(</span>
-  path <span class="op">=</span> <span class="st">"."</span>,
-  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"bucket"</span>, <span class="st">"directory"</span>, <span class="st">"file"</span><span class="op">)</span>,
-  glob <span class="op">=</span> <span class="cn">NULL</span>,
-  regexp <span class="op">=</span> <span class="cn">NULL</span>,
-  invert <span class="op">=</span> <span class="cn">FALSE</span>,
-  recurse <span class="op">=</span> <span class="cn">FALSE</span>,
-  refresh <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -127,6 +105,55 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 <dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p><code>s3_file_info</code> A data.table with metadata for each file. Columns returned are as follows.</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>type (character): file type (file or directory)</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file.</p></li>
+<li><p>delete_marker (logical): Specifies retrieved a logical marker</p></li>
+<li><p>accept_ranges (character): Indicates that a range of bytes was specified.</p></li>
+<li><p>expiration (character): File expiration</p></li>
+<li><p>restore (character): If file is archived</p></li>
+<li><p>archive_status (character): Archive status</p></li>
+<li><p>missing_meta (integer): Number of metadata entries not returned in "x-amz-meta" headers</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>cache_control (character): caching behaviour for the request/reply chain</p></li>
+<li><p>content_disposition (character): presentational information of file</p></li>
+<li><p>content_encoding (character): file content encodings</p></li>
+<li><p>content_language (character): what language the content is in</p></li>
+<li><p>content_type (character): file MIME type</p></li>
+<li><p>expires (POSIXct): date and time the file is no longer cacheable</p></li>
+<li><p>website_redirect_location (character): redirecs request for file to another</p></li>
+<li><p>server_side_encryption (character): File server side encryption</p></li>
+<li><p>metadata (list): metadata of file</p></li>
+<li><p>sse_customer_algorithm (character): server-side encryption with a customer-provided encryption key</p></li>
+<li><p>sse_customer_key_md5 (character): server-side encryption with a customer-provided encryption key</p></li>
+<li><p>ssekms_key_id (character): ID of the Amazon Web Services Key Management Service</p></li>
+<li><p>bucket_key_enabled (logical): s3 bucket key for server-side encryption with</p></li>
+<li><p>storage_class (character): file storage class information</p></li>
+<li><p>request_charged (character): indicates successfully charged for request</p></li>
+<li><p>replication_status (character): return specific header if request
+involves a bucket that is either a source or a destination in a replication rule
+<a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object" class="external-link">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object</a></p></li>
+<li><p>parts_count (integer): number of count parts the file has</p></li>
+<li><p>object_lock_mode (character): the file lock mode</p></li>
+<li><p>object_lock_retain_until_date (POSIXct): date and time of when object_lock_mode expires</p></li>
+<li><p>object_lock_legal_hold_status (character): file legal holding</p></li>
+</ul><p><code>s3_dir_info</code> data.table with directory metadata</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file</p></li>
+</ul><p><code>s3_dir_ls</code> character vector of s3 uri paths</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

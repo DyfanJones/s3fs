@@ -22,13 +22,22 @@
     <loc>/reference/copy.html</loc>
   </url>
   <url>
+    <loc>/reference/copy_async.html</loc>
+  </url>
+  <url>
     <loc>/reference/create.html</loc>
   </url>
   <url>
     <loc>/reference/delete.html</loc>
   </url>
   <url>
+    <loc>/reference/delete_async.html</loc>
+  </url>
+  <url>
     <loc>/reference/download.html</loc>
+  </url>
+  <url>
+    <loc>/reference/download_async.html</loc>
   </url>
   <url>
     <loc>/reference/exists.html</loc>
@@ -55,10 +64,16 @@
     <loc>/reference/s3_file_move.html</loc>
   </url>
   <url>
+    <loc>/reference/s3_file_move_async.html</loc>
+  </url>
+  <url>
     <loc>/reference/s3_file_system.html</loc>
   </url>
   <url>
     <loc>/reference/s3_file_temp.html</loc>
+  </url>
+  <url>
+    <loc>/reference/s3_file_touch_async.html</loc>
   </url>
   <url>
     <loc>/reference/s3_file_version_info.html</loc>
@@ -76,6 +91,9 @@
     <loc>/reference/stream.html</loc>
   </url>
   <url>
+    <loc>/reference/stream_async.html</loc>
+  </url>
+  <url>
     <loc>/reference/tag.html</loc>
   </url>
   <url>
@@ -83,5 +101,8 @@
   </url>
   <url>
     <loc>/reference/upload.html</loc>
+  </url>
+  <url>
+    <loc>/reference/upload_async.html</loc>
   </url>
 </urlset>
