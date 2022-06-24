@@ -51,7 +51,7 @@ s3_file_system = function(aws_access_key_id = NULL,
     }, error = function(e) NULL
     )
   }
-  if (is.null(s3fs))
+  if (is.null(s3fs)) {
     s3fs = S3FileSystem$new(
       aws_access_key_id = aws_access_key_id,
       aws_secret_access_key = aws_secret_access_key,
@@ -61,8 +61,9 @@ s3_file_system = function(aws_access_key_id = NULL,
       endpoint = endpoint,
       ...
     )
-  assign("service", s3fs, envir = s3fs_cache)
-  s3fs$retries = retries
+    assign("service", s3fs, envir = s3fs_cache)
+    s3fs$retries = retries
+  }
   return(invisible(s3fs))
 }
 
