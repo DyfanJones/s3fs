@@ -116,7 +116,7 @@ s3_file_chmod = function(path,
 #' # Require AWS S3 credentials
 #'
 #' temp_file = "temp.txt"
-#' file.create("temp.txt")
+#' file.create(temp_file)
 #'
 #' s3_file_copy(
 #'     temp_file,
