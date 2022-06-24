@@ -4,7 +4,9 @@ s3fs_cache = new.env(parent = emptyenv())
 
 #' @title Access AWS S3 as if it were a file system.
 #' @description This creates a file system "like" API based off \code{fs}
-#'              (e.g. dir_ls, file_copy, etc.) for AWS S3 storage.
+#'              (e.g. dir_ls, file_copy, etc.) for AWS S3 storage. To set up `AWS`
+#'              credentials please look at
+#'              \url{https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html}
 #' @param aws_access_key_id (character): AWS access key ID
 #' @param aws_secret_access_key (character): AWS secret access key
 #' @param aws_session_token (character): AWS temporary session token
@@ -15,6 +17,20 @@ s3fs_cache = new.env(parent = emptyenv())
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' # Set up connection using profile
+#' s3_file_system(profile_name = "s3fs_example")
+#'
+#' # Reset connection to connect to a different region
+#' s3_file_system(
+#'     profile_name = "s3fs_example",
+#'     region_name = "us-east-1",
+#'     refresh = TRUE
+#'  )
+#' }
 #' @return S3FileSystem class invisible
 #' @export
 s3_file_system = function(aws_access_key_id = NULL,
@@ -53,8 +69,21 @@ s3_file_system = function(aws_access_key_id = NULL,
 
 #' @title Change file permissions
 #' @param path (character): A character vector of path or s3 uri.
-#' @param mode (character): A character of the mode
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir = "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' # Reset connection to connect to a different region
+#' s3_file_chmod(
+#'     profile_name = "s3fs_example",
+#'     region_name = "us-east-1",
+#'     refresh = TRUE
+#'  )
+#' }
 #' @name permission
 #' @export
 s3_file_chmod = function(path,
@@ -82,6 +111,18 @@ s3_file_chmod = function(path,
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = "temp.txt"
+#' file.create("temp.txt")
+#'
+#' s3_file_copy(
+#'     temp_file,
+#'     "s3://MyBucket/temp_file.txt"
+#'  )
+#' }
 #' @name copy
 #' @export
 s3_file_copy = function(path,
@@ -101,8 +142,19 @@ s3_file_copy = function(path,
 #' @param path (character): A character vector of path or s3 uri.
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
-#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+#' @param region_name (character): region for `AWS S3` bucket, defaults
+#'              to [s3_file_system()] class region.
+#' @param mode (character): A character of the mode
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}},
+#'              \code{\link[paws.storage]{s3_create_bucket}}
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#' }
 #' @name create
 #' @export
 s3_file_create = function(path,
@@ -121,6 +173,15 @@ s3_file_create = function(path,
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}
 #' @name delete
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' s3_file_delete(temp_file)
+#' }
 #' @export
 s3_file_delete = function(path, ...){
   s3fs = s3_file_system()
@@ -138,6 +199,15 @@ s3_file_delete = function(path, ...){
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' s3_file_download(temp_file, "temp_file.txt")
+#' }
 #' @name download
 #' @export
 s3_file_download = function(path,
@@ -155,6 +225,15 @@ s3_file_download = function(path,
 #' `s3_dir_exists` check if path is a directory in AWS S3
 #' @param path (character) s3 path to check
 #' @return logical vector if file exists
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' s3_file_exists(temp_file)
+#' }
 #' @name exists
 #' @export
 s3_file_exists = function(path){
@@ -233,7 +312,15 @@ s3_file_exists = function(path){
 #'}
 #'
 #' `s3_dir_ls` character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
 #'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' s3_file_info(temp_file)
+#' }
 #' @name info
 #' @export
 s3_file_info = function(path){
@@ -250,6 +337,15 @@ s3_file_info = function(path){
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' temp_file = s3_file_temp(tmp_dir= "MyBucket")
+#' s3_file_create(temp_file)
+#'
+#' s3_file_move(temp_file, "s3://MyBucket/new_file.txt")
+#' }
 #' @export
 s3_file_move = function(path,
                         new_path,
@@ -273,6 +369,18 @@ s3_file_move = function(path,
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}} and
 #'              \code{\link[paws.storage]{s3_put_object}}
 #' @return list of raw vectors containing the contents of the file
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' obj = list(charToRaw("contents1"), charToRaw("contents2"))
+#'
+#' dir = s3_file_temp(tmp_dir = "MyBucket")
+#' path = s3_path(dir, letters[1:2], ext = "txt")
+#'
+#' s3_file_stream_out(obj, path)
+#' s3_file_stream_in(path)
+#' }
 #' @name stream
 #' @export
 s3_file_stream_in = function(path,
@@ -300,6 +408,12 @@ s3_file_stream_out = function(obj,
 #'              the cached s3 bucket will be applied otherwise \code{""} will be used.
 #' @param ext (character): A character vector of one or more paths.
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' s3_file_temp(tmp_dir = "MyBucket")
+#' }
 #' @export
 s3_file_temp = function(pattern = "file",
                         tmp_dir = "",
@@ -316,6 +430,15 @@ s3_file_temp = function(pattern = "file",
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
 #' @note This method will only update the modification time of the AWS S3 object.
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' dir = s3_file_temp(tmp_dir = "MyBucket")
+#' path = s3_path(dir, letters[1:2], ext = "txt")
+#'
+#' s3_file_touch(path)
+#' }
 #' @name touch
 #' @export
 s3_file_touch = function(path,
@@ -429,6 +552,36 @@ s3_is_file_empty = function(path){
 }
 
 ############################################################################
+# Bucket methods
+############################################################################
+
+#' @rdname permission
+#' @export
+s3_bucket_chmod = function(path,
+                           mode = c(
+                             "private",
+                             "public-read",
+                             "public-read-write",
+                             "authenticated-read")){
+  s3fs = s3_file_system()
+  return(s3fs$bucket_chmod(path, mode))
+}
+
+#' @rdname create
+#' @export
+s3_bucket_create = function(path,
+                            region_name = NULL,
+                            mode = c(
+                              "private",
+                              "public-read",
+                              "public-read-write",
+                              "authenticated-read"),
+                            ...){
+  s3fs = s3_file_system()
+  return(s3fs$bucket_create(path, region_name, mode, ...))
+}
+
+############################################################################
 # Directory methods
 ############################################################################
 
@@ -523,6 +676,12 @@ s3_dir_upload = function(path,
 #' @param ext (character): An optional extension to append to the generated path
 #' @name path
 #' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' s3_path("my_bucket1", "my_bucket2")
+#' }
 #' @export
 s3_path = function(..., ext = ""){
   s3fs = s3_file_system()
@@ -542,6 +701,14 @@ s3_path = function(..., ext = ""){
 #' `s3_path_ext_set` replace the extension with a new extension.
 #' @param path (character): A character vector of paths
 #' @param ext (character): New file extension
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' s3_path_dir("s3://my_bucket1/hi.txt")
+#'
+#' s3_path_file("s3://my_bucket1/hi.txt")
+#' }
 #' @name path_manipulate
 #' @export
 s3_path_dir = function(path){
@@ -581,6 +748,13 @@ s3_path_ext_set = function(path,
 #' @title Construct AWS S3 path
 #' @description Construct an s3 uri path from path vector
 #' @param path (character): A character vector of one or more paths
+#' @return character vector of s3 uri paths
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' s3_path_dir(c("s3://my_bucket1/hi.txt", "s3://my_bucket/bye.txt"))
+#' }
 #' @export
 s3_path_join = function(path){
   s3fs = s3_file_system()
@@ -590,6 +764,13 @@ s3_path_join = function(path){
 #' @title Split s3 path and uri
 #' @description Split s3 uri path to core components bucket, key and version id
 #' @param path (character): A character vector of one or more paths or s3 uri
+#' @return list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"
+#' @examples
+#' \dontrun{
+#' # Require AWS S3 credentials
+#'
+#' s3_path_dir("s3://my_bucket1/hi.txt")
+#' }
 #' @export
 s3_path_split = function(path){
   s3fs = s3_file_system()
