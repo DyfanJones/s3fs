@@ -22,3 +22,13 @@ it does not exist. Use \code{s3fs$file_create()} to do this if needed.
 \note{
 This method will only update the modification time of the AWS S3 object.
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+dir = s3_file_temp(tmp_dir = "MyBucket")
+path = s3_path(dir, letters[1:2], ext = "txt")
+
+s3_file_touch(path)
+}
+}

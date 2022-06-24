@@ -28,3 +28,13 @@ character vector of s3 uri paths
 
 \code{s3_file_download} downloads \verb{AWS s3} directory to local
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+
+s3_file_download(temp_file, "temp_file.txt")
+}
+}

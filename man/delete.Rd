@@ -23,3 +23,13 @@ character vector of s3 uri paths
 
 \code{s3_dir_delete} delete directories in AWS S3 recursively.
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+
+s3_file_delete(temp_file)
+}
+}

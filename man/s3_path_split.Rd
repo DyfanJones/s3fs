@@ -9,6 +9,16 @@ s3_path_split(path)
 \arguments{
 \item{path}{(character): A character vector of one or more paths or s3 uri}
 }
+\value{
+list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"
+}
 \description{
 Split s3 uri path to core components bucket, key and version id
+}
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+s3_path_dir("s3://my_bucket1/hi.txt")
+}
 }

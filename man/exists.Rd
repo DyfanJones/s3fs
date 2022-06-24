@@ -21,3 +21,13 @@ logical vector if file exists
 
 \code{s3_dir_exists} check if path is a directory in AWS S3
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+
+s3_file_exists(temp_file)
+}
+}

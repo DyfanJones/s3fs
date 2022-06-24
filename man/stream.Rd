@@ -31,3 +31,16 @@ list of raw vectors containing the contents of the file
 
 \code{s3_file_stream_out} streams raw vector out to AWS S3 file
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+obj = list(charToRaw("contents1"), charToRaw("contents2"))
+
+dir = s3_file_temp(tmp_dir = "MyBucket")
+path = s3_path(dir, letters[1:2], ext = "txt")
+
+s3_file_stream_out(obj, path)
+s3_file_stream_in(path)
+}
+}

@@ -9,6 +9,16 @@ s3_path_join(path)
 \arguments{
 \item{path}{(character): A character vector of one or more paths}
 }
+\value{
+character vector of s3 uri paths
+}
 \description{
 Construct an s3 uri path from path vector
+}
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+s3_path_dir(c("s3://my_bucket1/hi.txt", "s3://my_bucket/bye.txt"))
+}
 }

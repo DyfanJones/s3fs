@@ -3,10 +3,18 @@
 \name{create}
 \alias{create}
 \alias{s3_file_create}
+\alias{s3_bucket_create}
 \alias{s3_dir_create}
 \title{Create files and directories}
 \usage{
 s3_file_create(path, overwrite = FALSE, ...)
+
+s3_bucket_create(
+  path,
+  region_name = NULL,
+  mode = c("private", "public-read", "public-read-write", "authenticated-read"),
+  ...
+)
 
 s3_dir_create(path, overwrite = FALSE, ...)
 }
@@ -16,7 +24,13 @@ s3_dir_create(path, overwrite = FALSE, ...)
 \item{overwrite}{(logical): Overwrite files if the exist. If this is \code{FALSE}
 and the file exists an error will be thrown.}
 
-\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}}
+\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}},
+\code{\link[paws.storage]{s3_create_bucket}}}
+
+\item{region_name}{(character): region for \verb{AWS S3} bucket, defaults
+to \code{\link[=s3_file_system]{s3_file_system()}} class region.}
+
+\item{mode}{(character): A character of the mode}
 }
 \value{
 character vector of s3 uri paths
@@ -25,4 +39,12 @@ character vector of s3 uri paths
 \code{s3_file_create} create file on \verb{AWS S3}, if file already exists it will be left unchanged.
 
 \code{s3_dir_create} create empty directory of \verb{AWS S3}.
+}
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+}
 }

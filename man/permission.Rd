@@ -3,6 +3,7 @@
 \name{permission}
 \alias{permission}
 \alias{s3_file_chmod}
+\alias{s3_bucket_chmod}
 \title{Change file permissions}
 \usage{
 s3_file_chmod(
@@ -10,15 +11,33 @@ s3_file_chmod(
   mode = c("private", "public-read", "public-read-write", "authenticated-read",
     "aws-exec-read", "bucket-owner-read", "bucket-owner-full-control")
 )
+
+s3_bucket_chmod(
+  path,
+  mode = c("private", "public-read", "public-read-write", "authenticated-read")
+)
 }
 \arguments{
 \item{path}{(character): A character vector of path or s3 uri.}
-
-\item{mode}{(character): A character of the mode}
 }
 \value{
 character vector of s3 uri paths
 }
 \description{
 Change file permissions
+}
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir = "MyBucket")
+s3_file_create(temp_file)
+
+# Reset connection to connect to a different region
+s3_file_chmod(
+    profile_name = "s3fs_example",
+    region_name = "us-east-1",
+    refresh = TRUE
+ )
+}
 }

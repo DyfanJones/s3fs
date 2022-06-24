@@ -24,3 +24,13 @@ character vector of s3 uri paths
 \description{
 Move files to another location on AWS S3
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+
+s3_file_move(temp_file, "s3://MyBucket/new_file.txt")
+}
+}

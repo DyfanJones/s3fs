@@ -18,3 +18,10 @@ character vector of s3 uri paths
 \description{
 Constructs a s3 uri path
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+s3_path("my_bucket1", "my_bucket2")
+}
+}

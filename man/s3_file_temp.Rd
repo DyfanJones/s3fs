@@ -20,3 +20,10 @@ character vector of s3 uri paths
 \description{
 return the name which can be used as a temporary file
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+s3_file_temp(tmp_dir = "MyBucket")
+}
+}

@@ -59,6 +59,8 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-is_dir}{\code{S3FileSystem$is_dir()}}
 \item \href{#method-S3FileSystem-is_bucket}{\code{S3FileSystem$is_bucket()}}
 \item \href{#method-S3FileSystem-is_file_empty}{\code{S3FileSystem$is_file_empty()}}
+\item \href{#method-S3FileSystem-bucket_chmod}{\code{S3FileSystem$bucket_chmod()}}
+\item \href{#method-S3FileSystem-bucket_create}{\code{S3FileSystem$bucket_create()}}
 \item \href{#method-S3FileSystem-dir_copy}{\code{S3FileSystem$dir_copy()}}
 \item \href{#method-S3FileSystem-dir_create}{\code{S3FileSystem$dir_create()}}
 \item \href{#method-S3FileSystem-dir_delete}{\code{S3FileSystem$dir_delete()}}
@@ -695,6 +697,62 @@ Test for file types
 }
 \subsection{Returns}{
 logical vector if file is empty
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-bucket_chmod"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_chmod}{}}}
+\subsection{Method \code{bucket_chmod()}}{
+Change bucket permissions
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$bucket_chmod(
+  path,
+  mode = c("private", "public-read", "public-read-write", "authenticated-read")
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of path or s3 uri.}
+
+\item{\code{mode}}{(character): A character of the mode}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-bucket_create"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_create}{}}}
+\subsection{Method \code{bucket_create()}}{
+Create bucket
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$bucket_create(
+  path,
+  region_name = NULL,
+  mode = c("private", "public-read", "public-read-write", "authenticated-read"),
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of path or s3 uri.}
+
+\item{\code{region_name}}{()}
+
+\item{\code{mode}}{(character): A character of the mode}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_create_bucket}}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}

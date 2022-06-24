@@ -35,3 +35,12 @@ s3_path_ext_set(path, ext)
 
 \code{s3_path_ext_set} replace the extension with a new extension.
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+s3_path_dir("s3://my_bucket1/hi.txt")
+
+s3_path_file("s3://my_bucket1/hi.txt")
+}
+}

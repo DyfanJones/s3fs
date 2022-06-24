@@ -41,5 +41,22 @@ S3FileSystem class invisible
 }
 \description{
 This creates a file system "like" API based off \code{fs}
-(e.g. dir_ls, file_copy, etc.) for AWS S3 storage.
+(e.g. dir_ls, file_copy, etc.) for AWS S3 storage. To set up \code{AWS}
+credentials please look at
+\url{https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html}
+}
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+# Set up connection using profile
+s3_file_system(profile_name = "s3fs_example")
+
+# Reset connection to connect to a different region
+s3_file_system(
+    profile_name = "s3fs_example",
+    region_name = "us-east-1",
+    refresh = TRUE
+ )
+}
 }

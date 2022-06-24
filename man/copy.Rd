@@ -30,3 +30,16 @@ character vector of s3 uri paths
 
 \code{s3_dir_copy} copies the directory recursively to the new location
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = "temp.txt"
+file.create("temp.txt")
+
+s3_file_copy(
+    temp_file,
+    "s3://MyBucket/temp_file.txt"
+ )
+}
+}

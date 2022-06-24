@@ -109,3 +109,13 @@ involves a bucket that is either a source or a destination in a replication rule
 
 \code{s3_dir_ls} returns file name within AWS S3 directory
 }
+\examples{
+\dontrun{
+# Require AWS S3 credentials
+
+temp_file = s3_file_temp(tmp_dir= "MyBucket")
+s3_file_create(temp_file)
+
+s3_file_info(temp_file)
+}
+}
