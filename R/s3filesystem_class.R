@@ -136,7 +136,7 @@ S3FileSystem = R6Class("S3FileSystem",
         ...
       )
 
-      self$region_name = region_name
+      self$region_name = region_name %||% get_region(profile_name)
       self$profile_name = profile_name
       self$s3_client = paws.storage::s3(config)
     },
@@ -164,13 +164,13 @@ S3FileSystem = R6Class("S3FileSystem",
       mode = match.arg(mode)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       s3_parts = lapply(path, private$.s3_split_path)
-
       future_lapply(seq_along(s3_parts), function(i){
         retry_api_call(
           self$s3_client$put_object_acl(
             Bucket = s3_parts[[i]]$Bucket,
             Key = s3_parts[[i]]$Key,
-            VersionId = s3_parts[[i]]$VersionId
+            VersionId = s3_parts[[i]]$VersionId,
+            ACL = mode
           ), self$retries)
       })
       return(self$path_join(path))
@@ -737,27 +737,34 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
       found = self$file_exists(path)
-      found_path = path[found]
-
       file_size = self$file_info(path)$size
-
       multipart = (5 * GB) < file_size
 
-      standard_path = path[!multipart]
-      multipart_path = list_zip(path[multipart], file_size[multipart])
+      metadata = private$.s3_metadata(path)
+      standard_path = list_zip(path[!multipart], metadata[!multipart])
+      multipart_path = list_zip(path[multipart], file_size[multipart], metadata[!multipart])
 
+      kwargs = list(...)
+      kwargs$overwrite = TRUE
+      kwargs$MetadataDirective = "REPLACE"
+
+      s3fs_touch = list("s3fs_touch" = now_utc())
       if(length(standard_path) > 0){
-        future_lapply(standard_path, function(s) {
-          private$.s3_copy_standard(
-            src = s, dest = s, overwrite = TRUE, ...
-          )
+        lapply(standard_path, function(s) {
+          kwargs$src = s[[1]]
+          kwargs$dest = s[[1]]
+          kwargs$Metadata = modifyList(s[2], s3fs_touch)
+          do.call(private$.s3_copy_standard, kwargs)
         })
       }
-      if (length(multipart) > 0){
-        future_lapply(multipart, function(m){
-          private$.s3_copy_multipart(
-            m[[1]], m[[1]], m[[2]], max_batch = 100 * MB, overwrite = TRUE, ...
-          )
+      if (length(multipart_path) > 0){
+        kwargs$max_batch = 100 * MB
+        future_lapply(multipart_path, function(m){
+          kwargs$src = m[[1]]
+          kwargs$dest = m[[1]]
+          kwargs$size = m[[2]]
+          kwargs$Metadata = modifyList(s[3], s3fs_touch)
+          do.call(private$.s3_copy_multipart, kwargs)
         })
       }
       return(self$path_join(path))
@@ -975,6 +982,71 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       return(self$file_info(path)$size == 0)
+    },
+
+    ############################################################################
+    # Bucket methods
+    ############################################################################
+
+    #' @description Change bucket permissions
+    #' @param path (character): A character vector of path or s3 uri.
+    #' @param mode (character): A character of the mode
+    #' @return character vector of s3 uri paths
+    bucket_chmod = function(path,
+                            mode = c(
+                              "private",
+                              "public-read",
+                              "public-read-write",
+                              "authenticated-read")){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      mode = match.arg(mode)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+      future_lapply(seq_along(s3_parts), function(i){
+        retry_api_call(
+          self$s3_client$put_bucket_acl(
+            Bucket = s3_parts[[i]]$Bucket,
+            ACL = mode
+          ), self$retries)
+      })
+      return(self$path_join(path))
+    },
+
+    #' @description Create bucket
+    #' @param path (character): A character vector of path or s3 uri.
+    #' @param region_name ()
+    #' @param mode (character): A character of the mode
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_create_bucket}}
+    #' @return character vector of s3 uri paths
+    bucket_create = function(path,
+                             region_name = NULL,
+                             mode = c(
+                               "private",
+                               "public-read",
+                               "public-read-write",
+                               "authenticated-read"),
+                             ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path)
+      )
+      mode = match.arg(mode)
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+
+      s3_parts = lapply(path, private$.s3_split_path)
+      future_lapply(seq_along(s3_parts), function(i){
+        retry_api_call(
+          self$s3_client$create_bucket(
+            Bucket = s3_parts[[i]]$Bucket,
+            CreateBucketConfiguration=list(
+              'LocationConstraint' = region_name %||% self$region_name
+            ),
+            ACL = mode,
+            ...
+          ), self$retries)
+      })
+      return(self$path_join(path))
     },
 
     ############################################################################
@@ -1730,13 +1802,12 @@ S3FileSystem = R6Class("S3FileSystem",
         Bucket = src_parts$Bucket, Key = src_parts$Key
       )
       copy_src$VersionId = src_parts$VersionId
-
       retry_api_call(
         tryCatch({
           self$s3_client$copy_object(
             Bucket = dest_parts$Bucket,
             Key = dest_parts$Key,
-            CopySource = copy_src,
+            CopySource = sprintf("/%s/%s", dest_parts$Bucket, dest_parts$Key),
             ...
           )
         }), self$retries)
@@ -1773,7 +1844,7 @@ S3FileSystem = R6Class("S3FileSystem",
       tryCatch({
         parts = future_lapply(seq_along(batch_range[-1]), function(i){
           etag = retry_api_call(
-            self$retry_api_callupload_part_copy(
+            self$upload_part_copy(
               CopySource = copy_src,
               Bucket = dest_parts$Bucket,
               Key = dest_parts$Key,
@@ -1806,6 +1877,19 @@ S3FileSystem = R6Class("S3FileSystem",
         stop(cond)
       })
       self$clear_cache(dest)
+    },
+
+    .s3_metadata = function(path){
+      s3_parts = lapply(path, private$.s3_split_path)
+      obj = future_lapply(seq_along(s3_parts), function(i){
+        retry_api_call(
+          self$s3_client$head_object(
+            Bucket = s3_parts[[i]]$Bucket,
+            Key = s3_parts[[i]]$Key,
+            VersionId = s3_parts[[i]]$VersionId
+          )$Metadata, self$retries
+        )
+      })
     },
 
     .s3_stream_in_file = function(src, ...) {
