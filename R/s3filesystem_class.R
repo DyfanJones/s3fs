@@ -1540,7 +1540,7 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       parts = str_split(path, "/", 2)
       root = path == lapply(parts, function(p) p[[1]])
-      return(c(dirname(path[!root]), path[root]))
+      return(self$path_join(c(dirname(path[!root]), path[root])))
     },
 
     #' @description Returns the last extension for a path.
