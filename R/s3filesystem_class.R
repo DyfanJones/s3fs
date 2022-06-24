@@ -18,7 +18,7 @@ retry_api_call = function(expr, retries){
     return(eval.parent(substitute(expr)))
   }
 
-  for (i in seq_len(retries)){
+  for (i in seq_len(retries + 1)){
     tryCatch({
       return(eval.parent(substitute(expr)))
     }, http_300 = function(err) {
@@ -46,7 +46,11 @@ retry_api_call = function(expr, retries){
       # HTTP Status Code: 503
       #     Error Code: NotImplemented
       #     Description: Reduce your request rate.
-      Sys.sleep(2**i * 0.1)
+      if(i == (retries + 1))
+        stop(err)
+      time = 2**i * 0.1
+      LOGGER$error("Request failed. Retrying in %s seconds...", time)
+      Sys.sleep(time)
     }, error = function(err) {
       stop(err)
     })
