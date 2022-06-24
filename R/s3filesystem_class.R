@@ -539,7 +539,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
       standard = list_zip(obj[!multipart], path[!multipart], obj_size[!multipart])
       multipart = list_zip(
-        lapply(obj[multipart],split_vec, len = 100 * MB),
+        lapply(obj[multipart],split_vec, len = max_batch),
         path[multipart],
         obj_size[multipart]
       )
@@ -556,8 +556,8 @@ S3FileSystem = R6Class("S3FileSystem",
         for(part in multipart){
           future_lapply(seq_along(part[[1]]), function(i) {
             kwargs$obj = part[[1]][[i]]
-            kwargs$dest = part[[2]][[i]]
-            kwargs$size = part[[3]][[i]]
+            kwargs$dest = part[[2]]
+            kwargs$size = part[[3]]
             do.call(private$.s3_stream_out_multipart_file, kwargs)
           })
         }
