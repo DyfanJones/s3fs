@@ -29,9 +29,16 @@ is_uri <- function(path){
   startsWith(path, "s3://")
 }
 
-paws_error_code <- function(error){
-  return(error[["error_response"]][["__type"]] %||% error[["error_response"]][["Code"]])
+# get parent pkg function and method
+pkg_method <- function(fun, pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    stop(fun,' requires the ', pkg,' package, please install it first and try again',
+         call. = F)}
+  fun_name <- utils::getFromNamespace(fun, pkg)
+  return(fun_name)
 }
+
+get_region <- pkg_method("get_region", "paws.common")
 
 split_vec <- function(vec, len, max_len = length(vec)){
   start <- seq(1, max_len, len)
@@ -86,3 +93,10 @@ list_zip = function(...){
   kwargs = list(...)
   .mapply(list, kwargs, NULL)
 }
+
+now_utc = function(){
+  now <- Sys.time()
+  attr(now, "tzone") <- "UTC"
+  now
+}
+
