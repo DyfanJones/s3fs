@@ -76,15 +76,15 @@ s3_dir_ls("s3://MyBucket5")
 #> [7] "s3://MyBucket5/test_df/"
 
 # create a new directory
-tmp <- s3_dir_create(s3_path("MyBucket5", fs::file_temp()))
+tmp <- s3_dir_create(s3_file_temp(tmp_dir = "MyBucket5"))
 tmp
-#> [1] "s3://MyBucket5/var/folders/sp/scbzkbwx6hbchmylsx0y52k80000gn/T/RtmpjtH1NO/file160d04e147723"
+#> [1] "s3://MyBucket5/filezwkcxx9q5562"
 
 # create new files in that directory
 s3_file_create(s3_path(tmp, "my-file.txt"))
-#> [1] "s3://MyBucket5/var/folders/sp/scbzkbwx6hbchmylsx0y52k80000gn/T/RtmpjtH1NO/file160d04e147723/my-file.txt"
+#> [1] "s3://MyBucket5/filezwkcxx9q5562/my-file.txt"
 s3_dir_ls(tmp)
-#> [1] "s3://MyBucket5/var/folders/sp/scbzkbwx6hbchmylsx0y52k80000gn/T/RtmpjtH1NO/file160d04e147723/my-file.txt"
+#> [1] "s3://MyBucket5/filezwkcxx9q5562/my-file.txt"
 
 # remove files from the directory
 s3_file_delete(s3_path(tmp, "my-file.txt"))
