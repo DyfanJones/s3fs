@@ -21,10 +21,6 @@ retry_api_call = function(expr, retries){
   for (i in seq_len(retries + 1)){
     tryCatch({
       return(eval.parent(substitute(expr)))
-    }, http_300 = function(err) {
-      stop(err)
-    }, http_400 = function(err) {
-      stop(err)
     }, http_500 = function(err) {
       # https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html
       # HTTP Status Code: 500
