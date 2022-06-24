@@ -28,7 +28,7 @@ s3_file_system = function(aws_access_key_id = NULL,
   s3fs = NULL
   if(!refresh){
     s3fs = tryCatch({
-      get(service, envir = s3fs_cache, inherits = FALSE)
+      get("service", envir = s3fs_cache, inherits = FALSE)
     }, error = function(e) NULL
     )
   }
@@ -297,7 +297,7 @@ s3_file_upload = function(path,
 #' @export
 s3_file_tag_delete = function(path){
   s3fs = s3_file_system()
-  return(s3fs$file_tag_delete(path, ...))
+  return(s3fs$file_tag_delete(path))
 }
 
 #' @rdname tag
@@ -333,7 +333,7 @@ s3_file_version_info = function(path,
 #' @title Functions to test for file types
 #' @description Test for file types
 #' @param path (character): A character vector of paths or uris
-#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}
 #' @name file_type
 #' @export
 s3_is_file = function(path){
@@ -479,7 +479,7 @@ s3_path = function(..., ext = ""){
 #' @export
 s3_path_dir = function(path){
   s3fs = s3_file_system()
-  return(s3fs$path_dir(...))
+  return(s3fs$path_dir(path))
 }
 
 #' @name path_manipulate

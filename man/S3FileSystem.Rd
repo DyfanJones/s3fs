@@ -555,7 +555,7 @@ Test for file types
 \describe{
 \item{\code{path}}{(character): A character vector of paths or uris}
 
-\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \if{html}{\out{</div>}}
 }

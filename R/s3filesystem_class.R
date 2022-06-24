@@ -867,7 +867,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
-    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}
+    #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}
     is_bucket = function(path, ...){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)

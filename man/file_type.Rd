@@ -19,7 +19,7 @@ s3_is_file_empty(path)
 \arguments{
 \item{path}{(character): A character vector of paths or uris}
 
-\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \description{
 Test for file types

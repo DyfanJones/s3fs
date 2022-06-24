@@ -4,7 +4,7 @@
 \name{s3fs-package}
 \alias{s3fs}
 \alias{s3fs-package}
-\title{s3fs: File System like `API` for Amazon Web Service `S3`.}
+\title{s3fs: File System like `API` for Amazon Web Service `S3`}
 \description{
 Access Amazon Web Service `S3` as if it were a file system. File system `API` design around R package `fs`
 }
