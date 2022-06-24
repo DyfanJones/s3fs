@@ -14,6 +14,9 @@ the cached s3 bucket will be applied otherwise \code{""} will be used.}
 
 \item{ext}{(character): A character vector of one or more paths.}
 }
+\value{
+character vector of s3 uri paths
+}
 \description{
 return the name which can be used as a temporary file
 }

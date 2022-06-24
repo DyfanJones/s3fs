@@ -148,6 +148,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Change file permissions
     #' @param path (character): A character vector of path or s3 uri.
     #' @param mode (character): A character of the mode
+    #' @return character vector of s3 uri paths
     file_chmod = function(path,
                           mode = c(
                             'private',
@@ -182,6 +183,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #' @return character vector of s3 uri paths
     file_copy = function(path,
                          new_path,
                          max_batch = 100 * MB,
@@ -204,25 +206,21 @@ S3FileSystem = R6Class("S3FileSystem",
 
         multipart = (5 * GB) < file_size
 
-        standard_path = list_zip(path[!multipart], new_path[!multipart])
-        multipart_path = list_zip(path[multipart], new_path[multipart], file_size[multipart])
+        standard = list_zip(path[!multipart], new_path[!multipart])
+        multipart = list_zip(path[multipart], new_path[multipart], file_size[multipart])
 
-        if (length(standard_path) > 0){
-          lapply(standard_path, function(part){
-            future_lapply(seq_along(part[[1]]), function(i) {
-              private$.s3_copy_standard(
-                part[[1]][i], part[[2]][i], overwrite, ...
-              )
-            })
+        if (length(standard) > 0){
+          future_lapply(standard, function(part){
+            private$.s3_copy_standard(
+              part[[1]], part[[2]], overwrite, ...
+            )
           })
         }
-        if (length(multipart_path) > 0){
-          lapply(multipart_path, function(part){
-            lapply(seq_along(part[[1]]), function(i) {
-              private$.s3_copy_multipart(
-                part[[1]][i], part[[2]][i], part[[3]][i], max_batch, overwrite, ...
-              )
-            })
+        if (length(multipart) > 0){
+          lapply(multipart, function(part){
+            private$.s3_copy_multipart(
+              part[[1]], part[[2]], part[[3]], max_batch, overwrite, ...
+            )
           })
         }
         self$clear_cache(private$.s3_pnt_dir(path))
@@ -242,6 +240,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #' @return character vector of s3 uri paths
     file_create = function(path,
                            overwrite = FALSE,
                            ...){
@@ -276,6 +275,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Delete files in AWS S3
     #' @param path (character): A character vector of paths or s3 uris.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}
+    #' @return character vector of s3 uri paths
     file_delete = function(path,
                            ...){
       stopifnot(
@@ -314,6 +314,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    #' @return character vector of s3 uri paths
     file_download = function(path,
                              new_path,
                              overwrite=FALSE,
@@ -346,6 +347,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Check if file exists in AWS S3
     #' @param path (character) s3 path to check
+    #' @return logical vector if file exists
     file_exists = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -382,6 +384,45 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Returns file information within AWS S3 directory
     #' @param path (character): A character vector of paths or uris.
+    #' @return A data.table with metadata for each file. Columns returned are as follows.
+    #' \itemize{
+    #' \item{bucket_name} {(character): AWS S3 bucket of file}
+    #' \item{key} {(character): AWS S3 path key of file}
+    #' \item{uri} {(character): S3 uri of file}
+    #' \item{size} {(numeric): file size in bytes}
+    #' \item{type} {(character): file type (file or directory)}
+    #' \item{etag} {(character): An entity tag is an opague identifier}
+    #' \item{last_modified} {(POSIXct): Created date of file.}
+    #' \item{delete_marker} {(logical): Specifies retrieved a logical marker}
+    #' \item{accept_ranges} {(character): Indicates that a range of bytes was specified.}
+    #' \item{expiration} {(character): File expiration}
+    #' \item{restore} {(character): If file is archived}
+    #' \item{archive_status} {(character): Archive status}
+    #' \item{missing_meta} {(integer): Number of metadata entries not returned in "x-amz-meta" headers}
+    #' \item{version_id} {(character): version id of file}
+    #' \item{cache_control} {(character): caching behaviour for the request/reply chain}
+    #' \item{content_disposition} {(character): presentational information of file}
+    #' \item{content_encoding} {(character): file content encodings}
+    #' \item{content_language} {(character): what language the content is in}
+    #' \item{content_type} {(character): file MIME type}
+    #' \item{expires} {(POSIXct): date and time the file is no longer cacheable}
+    #' \item{website_redirect_location} {(character): redirecs request for file to another}
+    #' \item{server_side_encryption} {(character): File server side encryption}
+    #' \item{metadata} {(list): metadata of file}
+    #' \item{sse_customer_algorithm} {(character): server-side encryption with a customer-provided encryption key}
+    #' \item{sse_customer_key_md5} {(character): server-side encryption with a customer-provided encryption key}
+    #' \item{ssekms_key_id} {(character): ID of the Amazon Web Services Key Management Service}
+    #' \item{bucket_key_enabled} {(logical): s3 bucket key for server-side encryption with}
+    #' \item{storage_class} {(character): file storage class information}
+    #' \item{request_charged} {(character): indicates successfully charged for request}
+    #' \item{replication_status} {(character): return specific header if request
+    #'      involves a bucket that is either a source or a destination in a replication rule
+    #'      \url{https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object}}
+    #' \item{parts_count} {(integer): number of count parts the file has}
+    #' \item{object_lock_mode} {(character): the file lock mode}
+    #' \item{object_lock_retain_until_date} {(POSIXct): date and time of when object_lock_mode expires}
+    #' \item{object_lock_legal_hold_status} {(character): file legal holding}
+    #' }
     file_info = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -404,9 +445,7 @@ S3FileSystem = R6Class("S3FileSystem",
         resp$uri = self$path(
           s3_parts[[i]]$Bucket,
           s3_parts[[i]]$Key,
-          if(!is.null(version_id))
-            paste0("?versionId=", version_id)
-          else ""
+          version_id
         )
         resp$size = resp$ContentLength
         resp$ContentLength = NULL
@@ -430,6 +469,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+    #' @return character vector of s3 uri paths
     file_move = function(path,
                          new_path,
                          max_batch = 100*MB,
@@ -445,6 +485,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Streams in AWS S3 file as a raw vector
     #' @param path (character): A character vector of paths or s3 uri
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    #' @return list of raw vectors containing the contents of the file
     file_stream_in = function(path,
                               ...){
       stopifnot(
@@ -464,6 +505,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #' @return character vector of s3 uri paths
     file_stream_out = function(obj,
                                path,
                                max_batch = 100 * MB,
@@ -485,28 +527,34 @@ S3FileSystem = R6Class("S3FileSystem",
           )
         )
       }
-      new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
       obj = if(is.list(obj)) obj else list(obj)
       obj_size = sapply(obj, length)
       multipart = (5 * GB) < obj_size
 
-      standard = list_zip(path[!multipart], path_size[!multipart], lapply(obj[!multipart], split_vec))
-      multipart = list_zip(path[multipart], path_size[multipart], lapply(obj[multipart], split_vec))
+      standard = list_zip(obj[!multipart], path[!multipart], obj_size[!multipart])
+      multipart = list_zip(
+        lapply(obj[multipart],split_vec, len = 100 * MB),
+        path[multipart],
+        obj_size[multipart]
+      )
 
       if (length(standard) > 0){
-        future_lapply(standard, function(s){
+        future_lapply(standard, function(part){
           private$.s3_stream_out_file(
-            s[1], s[3], s[2], overwrite, ...
+            part[[1]], part[[2]], part[[3]], overwrite
           )
         })
       }
       if (length(multipart) > 0){
-        lapply(multipart, function(m){
-          private$.s3_stream_out_multipart_file(
-            m[1], m[3], m[2], max_batch, overwrite, ...
-          )
-        })
+        for(part in multipart){
+          future_lapply(seq_along(part[[1]]), function(i) {
+            private$.s3_stream_out_multipart_file(
+              part[[1]][[i]], part[[2]], part[[3]], max_batch, overwrite, ...
+            )
+          })
+        }
       }
       self$clear_cache(path)
       return(self$path_join(path))
@@ -516,6 +564,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param pattern (character): A character vector with the non-random portion of the name.
     #' @param tmp_dir (character): The directory the file will be created in.
     #' @param ext (character): A character vector of one or more paths.
+    #' @return character vector of s3 uri paths
     file_temp = function(pattern = "file", tmp_dir = "", ext = ""){
       stopifnot(
         "`pattern` is required to be a character vector" = is.character(pattern),
@@ -535,6 +584,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Delete file tags
     #' @param path (character): A character vector of paths or s3 uri
+    #' @return character vector of s3 uri paths
     file_tag_delete = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -562,6 +612,16 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Get file tags
     #' @param path (character): A character vector of paths or s3 uri
+    #' @return data.table of file version metadata
+    #' \itemize{
+    #' \item{bucket_name} {(character): AWS S3 bucket of file}
+    #' \item{key} {(character): AWS S3 path key of file}
+    #' \item{uri} {(character): S3 uri of file}
+    #' \item{size} {(numeric): file size in bytes}
+    #' \item{version_id} {(character): version id of file}
+    #' \item{tag_key} {(character): name of tag}
+    #' \item{tag_value} {(character): tag value}
+    #' }
     file_tag_info = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -608,6 +668,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param tags (list): Tags to be applied
     #' @param overwrite (logical): To overwrite tagging or to modify inplace. Default will
     #'             modify inplace.
+    #' @return character vector of s3 uri paths
     file_tag_update = function(path,
                                tags,
                                overwrite=FALSE){
@@ -667,6 +728,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param path (character): A character vector of paths or s3 uri
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
     #' @note This method will only update the modification time of the AWS S3 object.
+    #' @return character vector of s3 uri paths
     file_touch = function(path,
                           ...) {
       stopifnot(
@@ -691,10 +753,10 @@ S3FileSystem = R6Class("S3FileSystem",
           )
         })
       }
-      if(length(multipart_path) > 0){
-        lapply(multipart, function(m){
+      if (length(multipart) > 0){
+        future_lapply(multipart, function(m){
           private$.s3_copy_multipart(
-            src = m[1], dest = m[1], size = m[2], max_batch = 100 * MB, overwrite = TRUE, ...
+            m[[1]], m[[1]], m[[2]], max_batch = 100 * MB, overwrite = TRUE, ...
           )
         })
       }
@@ -709,6 +771,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
     #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    #' @return character vector of s3 uri paths
     file_upload = function(path,
                            new_path,
                            max_batch = 100 * MB,
@@ -751,21 +814,17 @@ S3FileSystem = R6Class("S3FileSystem",
       standard = list_zip(path[!multipart], path_size[!multipart], new_path[!multipart])
       multipart = list_zip(path[multipart], path_size[multipart], new_path[multipart])
       if (length(standard) > 0){
-        lapply(standard, function(part){
-          future_lapply(seq_along(part[[1]]), function(i) {
-            private$.s3_upload_standard_file(
-              part[[1]][i], part[[3]][i], part[[2]][i], overwrite, ...
-            )
-          })
+        future_lapply(standard, function(part){
+          private$.s3_upload_standard_file(
+            part[[1]], part[[3]], part[[2]], overwrite, ...
+          )
         })
       }
       if (length(multipart) > 0){
-        lapply(multipart, function(part){
-          future_lapply(seq_along(part[[1]]), function(i) {
-            private$.s3_upload_multipart_file(
-              part[[1]][i], part[[3]][i], part[[2]][i], max_batch, overwrite, ...
-            )
-          })
+        future_lapply(multipart, function(part){
+          private$.s3_upload_multipart_file(
+            part[[1]], part[[3]], part[[2]], max_batch, overwrite, ...
+          )
         })
       }
       self$clear_cache(private$.s3_pnt_dir(new_path))
@@ -775,6 +834,17 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Get file versions
     #' @param path (character): A character vector of paths or uris
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_versions}}
+    #' @return return data.table with file version info, columns below:
+    #' \itemize{
+    #' \item{bucket_name} {(character): AWS S3 bucket of file}
+    #' \item{key} {(character): AWS S3 path key of file}
+    #' \item{uri} {(character): S3 uri of file}
+    #' \item{size} {(numeric): file size in bytes}
+    #' \item{version_id} {(character): version id of file}
+    #' \item{owner} {(character): file owner}
+    #' \item{etag} {(character): An entity tag is an opague identifier}
+    #' \item{last_modified} {(POSIXct): Created date of file.}
+    #' }
     file_version_info = function(path, ...){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -841,6 +911,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
+    #' @return logical vector if object is a file
     is_file = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -850,6 +921,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
+    #' @return logical vector if object is a directory
     is_dir = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -868,6 +940,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}
+    #' @return logical vector if object is a `AWS S3` bucket
     is_bucket = function(path, ...){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -895,6 +968,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Test for file types
     #' @param path (character): A character vector of paths or uris
+    #' @return logical vector if file is empty
     is_file_empty = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -915,6 +989,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
     #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    #' @return character vector of s3 uri paths
     dir_copy = function(path,
                         new_path,
                         max_batch = 100 * MB,
@@ -989,6 +1064,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+    #' @return character vector of s3 uri paths
     dir_create = function(path,
                           overwrite=FALSE,
                           ...){
@@ -1023,6 +1099,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Delete contents and directory in AWS S3
     #' @param path (character): A vector of paths or uris to directories to be deleted.
+    #' @return character vector of s3 uri paths
     dir_delete = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -1039,6 +1116,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Check if path exists in AWS S3
     #' @param path (character) aws s3 path to be checked
+    #' @return character vector of s3 uri paths
     dir_exists = function(path = "."){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -1090,6 +1168,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+    #' @return character vector of s3 uri paths
     dir_download = function(path,
                             new_path,
                             overwrite = FALSE,
@@ -1134,8 +1213,10 @@ S3FileSystem = R6Class("S3FileSystem",
       })
       # download s3 files
       paths = list_zip(src_files, dest_files)
-      future_lapply(paths, function(p){
-        private$.s3_download_file(p[1], p[2], ...)
+      lapply(paths, function(parts){
+        future_lapply(seq_along(parts), function(i){
+          private$.s3_download_file(parts[[1]][[i]], parts[[1]][[i]], ...)
+        })
       })
       return(path_rel(new_path))
     },
@@ -1152,6 +1233,16 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param invert (logical): If \code{code} return files which do not match.
     #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
     #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+    #' @return data.table with directory metadata
+    #' \itemize{
+    #' \item{bucket_name} {(character): AWS S3 bucket of file}
+    #' \item{key} {(character): AWS S3 path key of file}
+    #' \item{uri} {(character): S3 uri of file}
+    #' \item{size} {(numeric): file size in bytes}
+    #' \item{version_id} {(character): version id of file}
+    #' \item{etag} {(character): An entity tag is an opague identifier}
+    #' \item{last_modified} {(POSIXct): Created date of file}
+    #' }
     dir_info = function(path = ".",
                         type = c("any", "bucket", "directory", "file"),
                         glob = NULL,
@@ -1212,6 +1303,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param invert (logical): If \code{code} return files which do not match.
     #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
     #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+    #' @return character vector of s3 uri paths
     dir_ls = function(path = ".",
                       type = c("any", "bucket", "directory", "file"),
                       glob = NULL,
@@ -1278,6 +1370,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
     #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+    #' @return character vector of s3 uri paths
     dir_upload = function(path,
                           new_path,
                           max_batch = 100 * MB,
@@ -1350,6 +1443,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Constructs a s3 uri path
     #' @param ... (character): Character vectors
     #' @param ext (character): An optional extension to append to the generated path
+    #' @return character vector of s3 uri paths
     path = function(..., ext = ""){
       stopifnot(
         "ext is required to be a character" = is.character(ext)
@@ -1360,15 +1454,20 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Returns the directory portion of s3 uri
     #' @param path (character): A character vector of paths
+    #' @return character vector of s3 uri paths
     path_dir = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
       )
-      return(dirname(path))
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      parts = str_split(path, "/", 2)
+      root = path == lapply(parts, function(p) p[[1]])
+      return(c(dirname(path[!root]), path[root]))
     },
 
     #' @description Returns the last extension for a path.
     #' @param path (character): A character vector of paths
+    #' @return character s3 uri file extension
     path_ext = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -1380,27 +1479,30 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Removes the last extension and return the rest of the s3 uri.
     #' @param path (character): A character vector of paths
+    #' @return character vector of s3 uri paths
     path_ext_remove = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
       )
       pattern = "(?<!^|[.]|/)[.]([^.]+)$"
       pos = regexpr(pattern, path, perl = TRUE)
-      return(Filter(nzchar, unlist(regmatches(path, pos, invert = TRUE))))
+      return(self$path_join(Filter(nzchar, unlist(regmatches(path, pos, invert = TRUE)))))
     },
 
     #' @description Replace the extension with a new extension.
     #' @param path (character): A character vector of paths
     #' @param ext (character): New file extension
+    #' @return character vector of s3 uri paths
     path_ext_set = function(path, ext){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
       )
-      return(paste(self$path_ext_remove(path), ext, sep = "."))
+      return(self$path_join(paste(self$path_ext_remove(path), ext, sep = ".")))
     },
 
     #' @description Returns the file name portion of the s3 uri path
     #' @param path (character): A character vector of paths
+    #' @return character vector of file names
     path_file = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -1410,6 +1512,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Construct an s3 uri path from path vector
     #' @param parts (character): A character vector of one or more paths
+    #' @return character vector of s3 uri paths
     path_join = function(parts){
       stopifnot(
         "`parts` is required to be a character vector" = is.character(parts) || is.list(parts)
@@ -1423,6 +1526,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Split s3 uri path to core components bucket, key and version id
     #' @param path (character): A character vector of one or more paths or s3 uri
+    #' @return list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"
     path_split = function(path){
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
@@ -1492,7 +1596,7 @@ S3FileSystem = R6Class("S3FileSystem",
           list(
             bucket_name = f$Name,
             key = "",
-            uri = paste("s3:/", f$Name, sep = "/"),
+            uri = self$path(f$Name),
             size = 0,
             type = "bucket",
             owner = "",
@@ -1518,7 +1622,6 @@ S3FileSystem = R6Class("S3FileSystem",
       }
       if(!(s3_parts$Key %in% names(self$s3_cache) || refresh || is.null(delimiter))){
         LOGGER$debug("Get directory listing page for %s", path)
-
         kwargs = list(
           Bucket = s3_parts$Bucket,
           Prefix = prefix,
@@ -1553,10 +1656,10 @@ S3FileSystem = R6Class("S3FileSystem",
               bucket_name = s3_parts$Bucket,
               key = c$Key,
               uri = self$path(
-                s3_parts[[i]]$Bucket,
-                s3_parts[[i]]$Key,
-                if(!is.null(s3_parts[[i]]$Bucket$VersionId))
-                  paste0("?versionId=", s3_parts[[i]]$Bucket$VersionId)
+                s3_parts$Bucket,
+                c$Key,
+                if(!is.null(s3_parts$VersionId))
+                  paste0("?versionId=", s3_parts$VersionId)
                 else ""
               ),
               size = c$Size,
@@ -1573,7 +1676,6 @@ S3FileSystem = R6Class("S3FileSystem",
         s3_dir = unlist(lapply(resp, function(i){
           i$CommonPrefixes
         }), recursive = F)
-
         s3_dir = lapply(s3_dir, function(l){
           list(
             bucket_name = s3_parts$Bucket,
@@ -1581,8 +1683,8 @@ S3FileSystem = R6Class("S3FileSystem",
             uri = self$path(
               s3_parts$Bucket,
               l$Prefix,
-              if(!is.null(s3_parts$Bucket$VersionId))
-                paste0("?versionId=", s3_parts$Bucket$VersionId)
+              if(!is.null(s3_parts$VersionId))
+                paste0("?versionId=", s3_parts$VersionId)
               else ""
             ),
             size = 0,
@@ -1726,7 +1828,6 @@ S3FileSystem = R6Class("S3FileSystem",
       dest_parts = private$.s3_split_path(dest)
       if(isFALSE(overwrite) & self$file_exists(dest))
         stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
-
       out = retry_api_call(
         self$s3_client$put_object(
           Bucket = dest_parts$Bucket,

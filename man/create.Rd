@@ -18,6 +18,9 @@ and the file exists an error will be thrown.}
 
 \item{...}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}}
 }
+\value{
+character vector of s3 uri paths
+}
 \description{
 \code{s3_file_create} create file on \verb{AWS S3}, if file already exists it will be left unchanged.
 

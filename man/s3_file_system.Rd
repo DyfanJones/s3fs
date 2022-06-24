@@ -36,6 +36,9 @@ then the default profile is used.}
 
 \item{...}{Other parameters within \code{paws} client.}
 }
+\value{
+S3FileSystem class invisible
+}
 \description{
 This creates a file system "like" API based off \code{fs}
 (e.g. dir_ls, file_copy, etc.) for AWS S3 storage.

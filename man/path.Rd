@@ -12,6 +12,9 @@ s3_path(..., ext = "")
 
 \item{ext}{(character): An optional extension to append to the generated path}
 }
+\value{
+character vector of s3 uri paths
+}
 \description{
 Constructs a s3 uri path
 }

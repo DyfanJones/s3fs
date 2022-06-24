@@ -15,6 +15,7 @@ s3fs_cache = new.env(parent = emptyenv())
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
+#' @return S3FileSystem class invisible
 #' @export
 s3_file_system = function(aws_access_key_id = NULL,
                           aws_secret_access_key = NULL,
@@ -53,6 +54,7 @@ s3_file_system = function(aws_access_key_id = NULL,
 #' @title Change file permissions
 #' @param path (character): A character vector of path or s3 uri.
 #' @param mode (character): A character of the mode
+#' @return character vector of s3 uri paths
 #' @name permission
 #' @export
 s3_file_chmod = function(path,
@@ -79,6 +81,7 @@ s3_file_chmod = function(path,
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+#' @return character vector of s3 uri paths
 #' @name copy
 #' @export
 s3_file_copy = function(path,
@@ -99,6 +102,7 @@ s3_file_copy = function(path,
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+#' @return character vector of s3 uri paths
 #' @name create
 #' @export
 s3_file_create = function(path,
@@ -116,6 +120,7 @@ s3_file_create = function(path,
 #' @param path (character): A character vector of paths or s3 uris.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}
 #' @name delete
+#' @return character vector of s3 uri paths
 #' @export
 s3_file_delete = function(path, ...){
   s3fs = s3_file_system()
@@ -132,6 +137,7 @@ s3_file_delete = function(path, ...){
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+#' @return character vector of s3 uri paths
 #' @name download
 #' @export
 s3_file_download = function(path,
@@ -148,6 +154,7 @@ s3_file_download = function(path,
 #'
 #' `s3_dir_exists` check if path is a directory in AWS S3
 #' @param path (character) s3 path to check
+#' @return logical vector if file exists
 #' @name exists
 #' @export
 s3_file_exists = function(path){
@@ -173,6 +180,60 @@ s3_file_exists = function(path){
 #' @param invert (logical): If \code{code} return files which do not match.
 #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
 #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+#' @return
+#' `s3_file_info` A data.table with metadata for each file. Columns returned are as follows.
+#' \itemize{
+#' \item{bucket_name} {(character): AWS S3 bucket of file}
+#' \item{key} {(character): AWS S3 path key of file}
+#' \item{uri} {(character): S3 uri of file}
+#' \item{size} {(numeric): file size in bytes}
+#' \item{type} {(character): file type (file or directory)}
+#' \item{etag} {(character): An entity tag is an opague identifier}
+#' \item{last_modified} {(POSIXct): Created date of file.}
+#' \item{delete_marker} {(logical): Specifies retrieved a logical marker}
+#' \item{accept_ranges} {(character): Indicates that a range of bytes was specified.}
+#' \item{expiration} {(character): File expiration}
+#' \item{restore} {(character): If file is archived}
+#' \item{archive_status} {(character): Archive status}
+#' \item{missing_meta} {(integer): Number of metadata entries not returned in "x-amz-meta" headers}
+#' \item{version_id} {(character): version id of file}
+#' \item{cache_control} {(character): caching behaviour for the request/reply chain}
+#' \item{content_disposition} {(character): presentational information of file}
+#' \item{content_encoding} {(character): file content encodings}
+#' \item{content_language} {(character): what language the content is in}
+#' \item{content_type} {(character): file MIME type}
+#' \item{expires} {(POSIXct): date and time the file is no longer cacheable}
+#' \item{website_redirect_location} {(character): redirecs request for file to another}
+#' \item{server_side_encryption} {(character): File server side encryption}
+#' \item{metadata} {(list): metadata of file}
+#' \item{sse_customer_algorithm} {(character): server-side encryption with a customer-provided encryption key}
+#' \item{sse_customer_key_md5} {(character): server-side encryption with a customer-provided encryption key}
+#' \item{ssekms_key_id} {(character): ID of the Amazon Web Services Key Management Service}
+#' \item{bucket_key_enabled} {(logical): s3 bucket key for server-side encryption with}
+#' \item{storage_class} {(character): file storage class information}
+#' \item{request_charged} {(character): indicates successfully charged for request}
+#' \item{replication_status} {(character): return specific header if request
+#'      involves a bucket that is either a source or a destination in a replication rule
+#'      \url{https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object}}
+#' \item{parts_count} {(integer): number of count parts the file has}
+#' \item{object_lock_mode} {(character): the file lock mode}
+#' \item{object_lock_retain_until_date} {(POSIXct): date and time of when object_lock_mode expires}
+#' \item{object_lock_legal_hold_status} {(character): file legal holding}
+#' }
+#'
+#' `s3_dir_info` data.table with directory metadata
+#' \itemize{
+#' \item{bucket_name} {(character): AWS S3 bucket of file}
+#' \item{key} {(character): AWS S3 path key of file}
+#' \item{uri} {(character): S3 uri of file}
+#' \item{size} {(numeric): file size in bytes}
+#' \item{version_id} {(character): version id of file}
+#' \item{etag} {(character): An entity tag is an opague identifier}
+#' \item{last_modified} {(POSIXct): Created date of file}
+#'}
+#'
+#' `s3_dir_ls` character vector of s3 uri paths
+#'
 #' @name info
 #' @export
 s3_file_info = function(path){
@@ -188,6 +249,7 @@ s3_file_info = function(path){
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+#' @return character vector of s3 uri paths
 #' @export
 s3_file_move = function(path,
                         new_path,
@@ -210,6 +272,7 @@ s3_file_move = function(path,
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}} and
 #'              \code{\link[paws.storage]{s3_put_object}}
+#' @return list of raw vectors containing the contents of the file
 #' @name stream
 #' @export
 s3_file_stream_in = function(path,
@@ -236,6 +299,7 @@ s3_file_stream_out = function(obj,
 #' @param tmp_dir (character): The directory the file will be created in. By default
 #'              the cached s3 bucket will be applied otherwise \code{""} will be used.
 #' @param ext (character): A character vector of one or more paths.
+#' @return character vector of s3 uri paths
 #' @export
 s3_file_temp = function(pattern = "file",
                         tmp_dir = "",
@@ -251,6 +315,7 @@ s3_file_temp = function(pattern = "file",
 #' @param path (character): A character vector of paths or s3 uri
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
 #' @note This method will only update the modification time of the AWS S3 object.
+#' @return character vector of s3 uri paths
 #' @name touch
 #' @export
 s3_file_touch = function(path,
@@ -271,6 +336,7 @@ s3_file_touch = function(path,
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
 #'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+#' @return character vector of s3 uri paths
 #' @name upload
 #' @export
 s3_file_upload = function(path,
@@ -456,6 +522,7 @@ s3_dir_upload = function(path,
 #' @param ... (character): Character vectors
 #' @param ext (character): An optional extension to append to the generated path
 #' @name path
+#' @return character vector of s3 uri paths
 #' @export
 s3_path = function(..., ext = ""){
   s3fs = s3_file_system()

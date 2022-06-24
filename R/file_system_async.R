@@ -6,22 +6,20 @@
 # File methods
 ############################################################################
 
-#' @rdname permission
-#' @export
-s3_file_chmod_async = function(path,
-                               mode = c(
-                                 'private',
-                                 'public-read',
-                                 'public-read-write',
-                                 'authenticated-read',
-                                 'aws-exec-read',
-                                 'bucket-owner-read',
-                                 'bucket-owner-full-control')){
-  s3fs = s3_file_system()
-  return(future({s3fs$file_chmod(path, mode)}))
-}
-
-#' @rdname copy
+#' @title Copy files and directories
+#' @description
+#' `s3_file_copy` copies files
+#'
+#' `s3_dir_copy` copies the directory recursively to the new location
+#' @param path (character): path to a local directory of file or a uri.
+#' @param new_path (character): path to a local directory of file or a uri.
+#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+#' @return return \code{\link[future]{future}} object of [s3_file_copy()], [s3_dir_copy()]
+#' @seealso \code{\link[future]{future}} [s3_file_copy()] [s3_dir_copy()]
+#' @name copy_async
 #' @export
 s3_file_copy_async = function(path,
                               new_path,
@@ -32,14 +30,35 @@ s3_file_copy_async = function(path,
   return(future({s3fs$file_copy(path, new_path, max_batch, overwrite, ...)}))
 }
 
-#' @rdname delete
+#' @title Delete files and directories
+#' @description
+#' `s3_file_delete` delete files in AWS S3
+#'
+#' `s3_dir_delete` delete directories in AWS S3 recursively.
+#' @param path (character): A character vector of paths or s3 uris.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}
+#' @return return \code{\link[future]{future}} object of [s3_file_delete()] [s3_dir_delete()]
+#' @seealso \code{\link[future]{future}} [s3_file_delete()] [s3_dir_delete()]
+#' @name delete_async
 #' @export
 s3_file_delete_async = function(path, ...){
   s3fs = s3_file_system()
   return(future({s3fs$file_delete(path, ...)}))
 }
 
-#' @rdname download
+#' @title Download files and directories
+#' @description
+#' `s3_file_download` downloads `AWS S3` files to local
+#'
+#' `s3_file_download` downloads `AWS s3` directory to local
+#' @param path (character): A character vector of paths or uris
+#' @param new_path (character): A character vector of paths to the new locations.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}}
+#' @return return \code{\link[future]{future}} object of [s3_file_download()] [s3_dir_download()]
+#' @seealso \code{\link[future]{future}} [s3_file_download()] [s3_dir_download()]
+#' @name download_async
 #' @export
 s3_file_download_async = function(path,
                                   new_path,
@@ -49,14 +68,42 @@ s3_file_download_async = function(path,
   return(future({s3fs$file_download(path, new_path, overwrite, ...)}))
 }
 
-#' @rdname info
+
+#' @title Move or rename S3 files
+#' @description Move files to another location on AWS S3
+#' @param path (character): A character vector of s3 uri
+#' @param new_path (character): A character vector of s3 uri.
+#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+#' @return return \code{\link[future]{future}} object of [s3_file_move()]
+#' @seealso \code{\link[future]{future}} [s3_file_move()]
 #' @export
-s3_file_info_async = function(path){
+s3_file_move_async = function(path,
+                        new_path,
+                        max_batch = 100*MB,
+                        overwrite = FALSE,
+                        ...){
   s3fs = s3_file_system()
-  return(future({s3fs$file_info(path)}))
+  return(future({s3fs$file_move(path, new_path, max_batch, overwrite, ...)}))
 }
 
-#' @rdname stream
+#' @title Streams data from R to AWS S3.
+#' @description
+#' `s3_file_stream_in` streams in AWS S3 file as a raw vector
+#'
+#' `s3_file_stream_out` streams raw vector out to AWS S3 file
+#' @param path (character): A character vector of paths or s3 uri
+#' @param obj (raw): A raw vector or rawConnection to be streamed up to AWS S3.
+#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}} and
+#'              \code{\link[paws.storage]{s3_put_object}}
+#' @return return \code{\link[future]{future}} object of [s3_file_stream_in()] [s3_file_stream_out()]
+#' @seealso \code{\link[future]{future}} [s3_file_move()] [s3_file_stream_in()] [s3_file_stream_out()]
+#' @name stream_async
 #' @export
 s3_file_stream_in_async = function(path,
                                    ...){
@@ -64,7 +111,7 @@ s3_file_stream_in_async = function(path,
   return(future({s3fs$file_stream_in(path, ...)}))
 }
 
-#' @rdname stream
+#' @rdname stream_async
 #' @export
 s3_file_stream_out_async = function(obj,
                                     path,
@@ -75,7 +122,14 @@ s3_file_stream_out_async = function(obj,
   return(future({s3fs$file_stream_out(obj, path, max_batch, overwrite, ...)}))
 }
 
-#' @rdname touch
+#' @title Change file modification time
+#' @description Similar to `fs::file_touch` this does not create the file if
+#'              it does not exist. Use `s3fs$file_create()` to do this if needed.
+#' @param path (character): A character vector of paths or s3 uri
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
+#' @return return \code{\link[future]{future}} object of [s3_file_touch()]
+#' @seealso \code{\link[future]{future}} [s3_file_move()] [s3_file_touch()]
+#' @note This method will only update the modification time of the AWS S3 object.
 #' @export
 s3_file_touch_async = function(path,
                                ...){
@@ -83,7 +137,21 @@ s3_file_touch_async = function(path,
   return(future({s3fs$file_touch(path, ...)}))
 }
 
-#' @rdname upload
+#' @title Upload file and directory
+#' @description
+#' `s3_file_upload` upload files to AWS S3
+#'
+#' `s3_dir_upload` upload directory to AWS S3
+#' @param path (character): A character vector of local file paths to upload to AWS S3
+#' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
+#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
+#'              and the file exists an error will be thrown.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
+#'              and \code{\link[paws.storage]{s3_create_multipart_upload}}
+#' @return return \code{\link[future]{future}} object of [s3_file_upload()] [s3_dir_upload()]
+#' @seealso \code{\link[future]{future}} [s3_file_move()] [s3_file_upload()] [s3_dir_upload()]
+#' @name upload_async
 #' @export
 s3_file_upload_async = function(path,
                                 new_path,
@@ -98,7 +166,7 @@ s3_file_upload_async = function(path,
 # Directory methods
 ############################################################################
 
-#' @rdname copy
+#' @rdname copy_async
 #' @export
 s3_dir_copy_async = function(path,
                              new_path,
@@ -109,14 +177,14 @@ s3_dir_copy_async = function(path,
   return(future({s3fs$dir_copy(path, new_path, max_batch, overwrite, ...)}))
 }
 
-#' @rdname delete
+#' @rdname delete_async
 #' @export
 s3_dir_delete_async = function(path){
   s3fs = s3_file_system()
   return(future({s3fs$dir_delete(path)}))
 }
 
-#' @rdname download
+#' @rdname download_async
 #' @export
 s3_dir_download_async = function(path,
                                  new_path,
@@ -126,33 +194,7 @@ s3_dir_download_async = function(path,
   return(future({s3fs$dir_download(path, new_path, overwrite, ...)}))
 }
 
-#' @rdname info
-#' @export
-s3_dir_info_async = function(path = ".",
-                             type = c("any", "bucket", "directory", "file"),
-                             glob = NULL,
-                             regexp = NULL,
-                             invert = FALSE,
-                             recurse = FALSE,
-                             refresh = FALSE){
-  s3fs = s3_file_system()
-  return(future({s3fs$dir_info(path, type, glob, regexp, invert, recurse, refresh)}))
-}
-
-#' @rdname info
-#' @export
-s3_dir_ls_async = function(path = ".",
-                           type = c("any", "bucket", "directory", "file"),
-                           glob = NULL,
-                           regexp = NULL,
-                           invert = FALSE,
-                           recurse = FALSE,
-                           refresh = FALSE){
-  s3fs = s3_file_system()
-  return(future({s3fs$dir_ls(path, type, glob, regexp, invert, recurse, refresh)}))
-}
-
-#' @rdname upload
+#' @rdname upload_async
 #' @export
 s3_dir_upload_async = function(path,
                                new_path,

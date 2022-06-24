@@ -13,6 +13,9 @@ s3_dir_exists(path = ".")
 \arguments{
 \item{path}{(character) s3 path to check}
 }
+\value{
+logical vector if file exists
+}
 \description{
 \code{s3_file_exists} check if file exists in AWS S3
 

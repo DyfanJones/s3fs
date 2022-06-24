@@ -142,6 +142,9 @@ Change file permissions
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_copy"></a>}}
@@ -174,6 +177,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_create"></a>}}
@@ -197,6 +203,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_delete"></a>}}
@@ -215,6 +224,9 @@ Delete files in AWS S3
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_delete_objects}}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -240,6 +252,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_exists"></a>}}
@@ -257,6 +272,9 @@ Check if file exists in AWS S3
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+logical vector if file exists
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_info"></a>}}
@@ -273,6 +291,47 @@ Returns file information within AWS S3 directory
 \item{\code{path}}{(character): A character vector of paths or uris.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table with metadata for each file. Columns returned are as follows.
+\itemize{
+\item{bucket_name} {(character): AWS S3 bucket of file}
+\item{key} {(character): AWS S3 path key of file}
+\item{uri} {(character): S3 uri of file}
+\item{size} {(numeric): file size in bytes}
+\item{type} {(character): file type (file or directory)}
+\item{etag} {(character): An entity tag is an opague identifier}
+\item{last_modified} {(POSIXct): Created date of file.}
+\item{delete_marker} {(logical): Specifies retrieved a logical marker}
+\item{accept_ranges} {(character): Indicates that a range of bytes was specified.}
+\item{expiration} {(character): File expiration}
+\item{restore} {(character): If file is archived}
+\item{archive_status} {(character): Archive status}
+\item{missing_meta} {(integer): Number of metadata entries not returned in "x-amz-meta" headers}
+\item{version_id} {(character): version id of file}
+\item{cache_control} {(character): caching behaviour for the request/reply chain}
+\item{content_disposition} {(character): presentational information of file}
+\item{content_encoding} {(character): file content encodings}
+\item{content_language} {(character): what language the content is in}
+\item{content_type} {(character): file MIME type}
+\item{expires} {(POSIXct): date and time the file is no longer cacheable}
+\item{website_redirect_location} {(character): redirecs request for file to another}
+\item{server_side_encryption} {(character): File server side encryption}
+\item{metadata} {(list): metadata of file}
+\item{sse_customer_algorithm} {(character): server-side encryption with a customer-provided encryption key}
+\item{sse_customer_key_md5} {(character): server-side encryption with a customer-provided encryption key}
+\item{ssekms_key_id} {(character): ID of the Amazon Web Services Key Management Service}
+\item{bucket_key_enabled} {(logical): s3 bucket key for server-side encryption with}
+\item{storage_class} {(character): file storage class information}
+\item{request_charged} {(character): indicates successfully charged for request}
+\item{replication_status} {(character): return specific header if request
+involves a bucket that is either a source or a destination in a replication rule
+\url{https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object}}
+\item{parts_count} {(integer): number of count parts the file has}
+\item{object_lock_mode} {(character): the file lock mode}
+\item{object_lock_retain_until_date} {(POSIXct): date and time of when object_lock_mode expires}
+\item{object_lock_legal_hold_status} {(character): file legal holding}
+}
 }
 }
 \if{html}{\out{<hr>}}
@@ -306,6 +365,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_stream_in"></a>}}
@@ -324,6 +386,9 @@ Streams in AWS S3 file as a raw vector
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_get_object}}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+list of raw vectors containing the contents of the file
 }
 }
 \if{html}{\out{<hr>}}
@@ -357,6 +422,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_temp"></a>}}
@@ -378,6 +446,9 @@ return the name which can be used as a temporary file
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_tag_delete"></a>}}
@@ -395,6 +466,9 @@ Delete file tags
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_tag_info"></a>}}
@@ -411,6 +485,18 @@ Get file tags
 \item{\code{path}}{(character): A character vector of paths or s3 uri}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data.table of file version metadata
+\itemize{
+\item{bucket_name} {(character): AWS S3 bucket of file}
+\item{key} {(character): AWS S3 path key of file}
+\item{uri} {(character): S3 uri of file}
+\item{size} {(numeric): file size in bytes}
+\item{version_id} {(character): version id of file}
+\item{tag_key} {(character): name of tag}
+\item{tag_value} {(character): tag value}
+}
 }
 }
 \if{html}{\out{<hr>}}
@@ -434,6 +520,9 @@ modify inplace.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_touch"></a>}}
@@ -453,6 +542,9 @@ it does not exist. Use \code{s3fs$file_create()} to do this if needed.
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -487,6 +579,9 @@ and \code{\link[paws.storage]{s3_create_multipart_upload}}}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_version_info"></a>}}
@@ -506,6 +601,19 @@ Get file versions
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+return data.table with file version info, columns below:
+\itemize{
+\item{bucket_name} {(character): AWS S3 bucket of file}
+\item{key} {(character): AWS S3 path key of file}
+\item{uri} {(character): S3 uri of file}
+\item{size} {(numeric): file size in bytes}
+\item{version_id} {(character): version id of file}
+\item{owner} {(character): file owner}
+\item{etag} {(character): An entity tag is an opague identifier}
+\item{last_modified} {(POSIXct): Created date of file.}
+}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-is_file"></a>}}
@@ -523,6 +631,9 @@ Test for file types
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+logical vector if object is a file
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-is_dir"></a>}}
@@ -539,6 +650,9 @@ Test for file types
 \item{\code{path}}{(character): A character vector of paths or uris}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+logical vector if object is a directory
 }
 }
 \if{html}{\out{<hr>}}
@@ -559,6 +673,9 @@ Test for file types
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+logical vector if object is a \verb{AWS S3} bucket
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-is_file_empty"></a>}}
@@ -575,6 +692,9 @@ Test for file types
 \item{\code{path}}{(character): A character vector of paths or uris}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+logical vector if file is empty
 }
 }
 \if{html}{\out{<hr>}}
@@ -609,6 +729,9 @@ and \code{\link[paws.storage]{s3_create_multipart_upload}}}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-dir_create"></a>}}
@@ -631,6 +754,9 @@ and the file exists an error will be thrown.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-dir_delete"></a>}}
@@ -648,6 +774,9 @@ Delete contents and directory in AWS S3
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-dir_exists"></a>}}
@@ -664,6 +793,9 @@ Check if path exists in AWS S3
 \item{\code{path}}{(character) aws s3 path to be checked}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -689,6 +821,9 @@ and the file exists an error will be thrown.}
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_get_object}}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -731,6 +866,18 @@ passed onto \code{grep()} to filter paths.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+data.table with directory metadata
+\itemize{
+\item{bucket_name} {(character): AWS S3 bucket of file}
+\item{key} {(character): AWS S3 path key of file}
+\item{uri} {(character): S3 uri of file}
+\item{size} {(numeric): file size in bytes}
+\item{version_id} {(character): version id of file}
+\item{etag} {(character): An entity tag is an opague identifier}
+\item{last_modified} {(POSIXct): Created date of file}
+}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-dir_ls"></a>}}
@@ -772,6 +919,9 @@ passed onto \code{grep()} to filter paths.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-dir_upload"></a>}}
@@ -805,6 +955,9 @@ and \code{\link[paws.storage]{s3_create_multipart_upload}}}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-path"></a>}}
@@ -824,6 +977,9 @@ Constructs a s3 uri path
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-path_dir"></a>}}
@@ -840,6 +996,9 @@ Returns the directory portion of s3 uri
 \item{\code{path}}{(character): A character vector of paths}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -858,6 +1017,9 @@ Returns the last extension for a path.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character s3 uri file extension
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-path_ext_remove"></a>}}
@@ -874,6 +1036,9 @@ Removes the last extension and return the rest of the s3 uri.
 \item{\code{path}}{(character): A character vector of paths}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
@@ -894,6 +1059,9 @@ Replace the extension with a new extension.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-path_file"></a>}}
@@ -910,6 +1078,9 @@ Returns the file name portion of the s3 uri path
 \item{\code{path}}{(character): A character vector of paths}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of file names
 }
 }
 \if{html}{\out{<hr>}}
@@ -928,6 +1099,9 @@ Construct an s3 uri path from path vector
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+character vector of s3 uri paths
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-path_split"></a>}}
@@ -944,6 +1118,9 @@ Split s3 uri path to core components bucket, key and version id
 \item{\code{path}}{(character): A character vector of one or more paths or s3 uri}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"
 }
 }
 \if{html}{\out{<hr>}}
