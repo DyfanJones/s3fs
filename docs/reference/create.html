@@ -26,6 +26,9 @@ s3_dir_create create empty directory of AWS S3."><!-- mathjax --><script src="ht
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -48,6 +51,13 @@ s3_dir_create create empty directory of AWS S3."><!-- mathjax --><script src="ht
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span>
 
+<span class="fu">s3_bucket_create</span><span class="op">(</span>
+  <span class="va">path</span>,
+  region_name <span class="op">=</span> <span class="cn">NULL</span>,
+  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"private"</span>, <span class="st">"public-read"</span>, <span class="st">"public-read-write"</span>, <span class="st">"authenticated-read"</span><span class="op">)</span>,
+  <span class="va">...</span>
+<span class="op">)</span>
+
 <span class="fu">s3_dir_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
@@ -63,7 +73,17 @@ and the file exists an error will be thrown.</p></dd>
 
 
 <dt>...</dt>
-<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_put_object.html" class="external-link">s3_put_object</a></code></p></dd>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_put_object.html" class="external-link">s3_put_object</a></code>,
+<code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_bucket.html" class="external-link">s3_create_bucket</a></code></p></dd>
+
+
+<dt>region_name</dt>
+<dd><p>(character): region for <code>AWS S3</code> bucket, defaults
+to <code><a href="s3_file_system.html">s3_file_system()</a></code> class region.</p></dd>
+
+
+<dt>mode</dt>
+<dd><p>(character): A character of the mode</p></dd>
 
 </dl></div>
     <div id="value">
@@ -73,6 +93,16 @@ and the file exists an error will be thrown.</p></dd>
 <p>character vector of s3 uri paths</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span class="r-in"><span class="co"># Require AWS S3 credentials</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">temp_file</span> <span class="op">=</span> <span class="fu"><a href="s3_file_temp.html">s3_file_temp</a></span><span class="op">(</span>tmp_dir<span class="op">=</span> <span class="st">"MyBucket"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">temp_file</span><span class="op">)</span></span>
+<span class="r-in"><span class="op">}</span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
