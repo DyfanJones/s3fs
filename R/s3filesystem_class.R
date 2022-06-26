@@ -1140,7 +1140,7 @@ S3FileSystem = R6Class("S3FileSystem",
           ), self$retries
         )
       })
-      self$clear_cache(private$.s3_pnt_dir(path))
+      self$clear_cache("__buckets")
       return(self$path_join(original_path))
     },
 
