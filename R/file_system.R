@@ -15,6 +15,8 @@ s3fs_cache = new.env(parent = emptyenv())
 #'              then the default profile is used.
 #' @param endpoint (character): The complete URL to use for the constructed client.
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
+#' @param multipart_threshold (numeric): Threshold to use multipart instead of standard
+#'              copy and upload methods.
 #' @param retries (numeric): max number of retry attempts
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
@@ -41,6 +43,7 @@ s3_file_system = function(aws_access_key_id = NULL,
                           profile_name = NULL,
                           endpoint = NULL,
                           disable_ssl = FALSE,
+                          multipart_threshold = 2 * GB,
                           retries = 5,
                           refresh = FALSE,
                           ...){
@@ -59,6 +62,8 @@ s3_file_system = function(aws_access_key_id = NULL,
       region_name = region_name,
       profile_name = profile_name,
       endpoint = endpoint,
+      disable_ssl = disable_ssl,
+      multipart_threshold = multipart_threshold,
       ...
     )
     assign("service", s3fs, envir = s3fs_cache)
@@ -73,6 +78,7 @@ s3_file_system = function(aws_access_key_id = NULL,
 
 #' @title Change file permissions
 #' @param path (character): A character vector of path or s3 uri.
+#' @param mode (character): A character of the mode
 #' @return character vector of s3 uri paths
 #' @examples
 #' \dontrun{
@@ -149,6 +155,7 @@ s3_file_copy = function(path,
 #' @param region_name (character): region for `AWS S3` bucket, defaults
 #'              to [s3_file_system()] class region.
 #' @param mode (character): A character of the mode
+#' @param versioning (logical)
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}},
 #'              \code{\link[paws.storage]{s3_create_bucket}}
 #' @return character vector of s3 uri paths
@@ -580,9 +587,19 @@ s3_bucket_create = function(path,
                               "public-read",
                               "public-read-write",
                               "authenticated-read"),
+                            versioning = FALSE,
                             ...){
   s3fs = s3_file_system()
-  return(s3fs$bucket_create(path, region_name, mode, ...))
+  return(s3fs$bucket_create(path, region_name, mode, versioning, ...))
+}
+
+#' @title Delete bucket
+#' @description Delete `AWS S3` bucket including all objects in the bucket itself.
+#' @param path (character): A character vector of path or s3 uri.
+#' @export
+s3_bucket_delete = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$bucket_delete(path))
 }
 
 ############################################################################

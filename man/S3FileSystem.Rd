@@ -19,11 +19,13 @@ This method will only update the modification time of the AWS S3 object.
 
 \item{\code{s3_client}}{paws s3 client}
 
-\item{\code{pid}}{Get the process ID of the R Session}
-
 \item{\code{region_name}}{AWS region when creating new connections}
 
 \item{\code{profile_name}}{The name of a profile to use}
+
+\item{\code{multipart_threshold}}{Threshold to use multipart}
+
+\item{\code{pid}}{Get the process ID of the R Session}
 }
 \if{html}{\out{</div>}}
 }
@@ -61,6 +63,7 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-is_file_empty}{\code{S3FileSystem$is_file_empty()}}
 \item \href{#method-S3FileSystem-bucket_chmod}{\code{S3FileSystem$bucket_chmod()}}
 \item \href{#method-S3FileSystem-bucket_create}{\code{S3FileSystem$bucket_create()}}
+\item \href{#method-S3FileSystem-bucket_delete}{\code{S3FileSystem$bucket_delete()}}
 \item \href{#method-S3FileSystem-dir_copy}{\code{S3FileSystem$dir_copy()}}
 \item \href{#method-S3FileSystem-dir_create}{\code{S3FileSystem$dir_create()}}
 \item \href{#method-S3FileSystem-dir_delete}{\code{S3FileSystem$dir_delete()}}
@@ -95,6 +98,7 @@ Initialize S3FileSystem class
   profile_name = NULL,
   endpoint = NULL,
   disable_ssl = FALSE,
+  multipart_threshold = 2 * GB,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -116,6 +120,9 @@ then the default profile is used.}
 \item{\code{endpoint}}{(character): The complete URL to use for the constructed client.}
 
 \item{\code{disable_ssl}}{(logical): Whether or not to use SSL. By default, SSL is used.}
+
+\item{\code{multipart_threshold}}{(numeric): Threshold to use multipart instead of standard
+copy and upload methods.}
 
 \item{\code{...}}{Other parameters within \code{paws} client.}
 }
@@ -734,6 +741,7 @@ Create bucket
   path,
   region_name = NULL,
   mode = c("private", "public-read", "public-read-write", "authenticated-read"),
+  versioning = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -743,9 +751,11 @@ Create bucket
 \describe{
 \item{\code{path}}{(character): A character vector of path or s3 uri.}
 
-\item{\code{region_name}}{()}
+\item{\code{region_name}}{(character): aws region}
 
 \item{\code{mode}}{(character): A character of the mode}
+
+\item{\code{versioning}}{(logical): Whether to set the bucket to versioning or not.}
 
 \item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_create_bucket}}}
 }
@@ -753,6 +763,23 @@ Create bucket
 }
 \subsection{Returns}{
 character vector of s3 uri paths
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-bucket_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_delete}{}}}
+\subsection{Method \code{bucket_delete()}}{
+Delete bucket
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$bucket_delete(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of path or s3 uri.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

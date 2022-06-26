@@ -3,6 +3,7 @@
 export(S3FileSystem)
 export(s3_bucket_chmod)
 export(s3_bucket_create)
+export(s3_bucket_delete)
 export(s3_dir_copy)
 export(s3_dir_copy_async)
 export(s3_dir_create)

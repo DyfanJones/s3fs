@@ -13,6 +13,7 @@ s3_bucket_create(
   path,
   region_name = NULL,
   mode = c("private", "public-read", "public-read-write", "authenticated-read"),
+  versioning = FALSE,
   ...
 )
 
@@ -31,6 +32,8 @@ and the file exists an error will be thrown.}
 to \code{\link[=s3_file_system]{s3_file_system()}} class region.}
 
 \item{mode}{(character): A character of the mode}
+
+\item{versioning}{(logical)}
 }
 \value{
 character vector of s3 uri paths

@@ -19,6 +19,8 @@ s3_bucket_chmod(
 }
 \arguments{
 \item{path}{(character): A character vector of path or s3 uri.}
+
+\item{mode}{(character): A character of the mode}
 }
 \value{
 character vector of s3 uri paths
