@@ -61,6 +61,7 @@ credentials please look at
   profile_name <span class="op">=</span> <span class="cn">NULL</span>,
   endpoint <span class="op">=</span> <span class="cn">NULL</span>,
   disable_ssl <span class="op">=</span> <span class="cn">FALSE</span>,
+  multipart_threshold <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">GB</span>,
   retries <span class="op">=</span> <span class="fl">5</span>,
   refresh <span class="op">=</span> <span class="cn">FALSE</span>,
   <span class="va">...</span>
@@ -96,6 +97,11 @@ then the default profile is used.</p></dd>
 
 <dt>disable_ssl</dt>
 <dd><p>(logical): Whether or not to use SSL. By default, SSL is used.</p></dd>
+
+
+<dt>multipart_threshold</dt>
+<dd><p>(numeric): Threshold to use multipart instead of standard
+copy and upload methods.</p></dd>
 
 
 <dt>retries</dt>

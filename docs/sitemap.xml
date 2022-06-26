@@ -64,6 +64,9 @@
     <loc>/reference/permission.html</loc>
   </url>
   <url>
+    <loc>/reference/s3_bucket_delete.html</loc>
+  </url>
+  <url>
     <loc>/reference/s3_file_move.html</loc>
   </url>
   <url>

@@ -55,6 +55,7 @@ s3_dir_create create empty directory of AWS S3."><!-- mathjax --><script src="ht
   <span class="va">path</span>,
   region_name <span class="op">=</span> <span class="cn">NULL</span>,
   mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"private"</span>, <span class="st">"public-read"</span>, <span class="st">"public-read-write"</span>, <span class="st">"authenticated-read"</span><span class="op">)</span>,
+  versioning <span class="op">=</span> <span class="cn">FALSE</span>,
   <span class="va">...</span>
 <span class="op">)</span>
 
@@ -84,6 +85,10 @@ to <code><a href="s3_file_system.html">s3_file_system()</a></code> class region.
 
 <dt>mode</dt>
 <dd><p>(character): A character of the mode</p></dd>
+
+
+<dt>versioning</dt>
+<dd><p>(logical)</p></dd>
 
 </dl></div>
     <div id="value">
