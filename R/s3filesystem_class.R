@@ -1132,7 +1132,6 @@ S3FileSystem = R6Class("S3FileSystem",
       path = self$dir_ls(original_path, recurse = TRUE, refresh = TRUE)
       if(all(nzchar(path)))
         self$file_delete(path)
-
       s3_parts = lapply(original_path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
         retry_api_call(
@@ -1820,7 +1819,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if (nzchar(s3_parts$Key)) {
         prefix = paste(trimws(s3_parts$Key, "left", "/"), prefix, sep = "/")
       }
-      if(!(s3_parts$Key %in% names(self$s3_cache) || refresh || is.null(delimiter))){
+      if(!(s3_parts$Key %in% names(self$s3_cache)) || refresh || is.null(delimiter)){
         LOGGER$debug("Get directory listing page for %s", path)
         kwargs = list(
           Bucket = s3_parts$Bucket,
