@@ -3,11 +3,14 @@
 \name{info}
 \alias{info}
 \alias{s3_file_info}
+\alias{s3_file_size}
 \alias{s3_dir_info}
 \alias{s3_dir_ls}
 \title{Get files and directories information}
 \usage{
 s3_file_info(path)
+
+s3_file_size(path)
 
 s3_dir_info(
   path = ".",
@@ -104,6 +107,8 @@ involves a bucket that is either a source or a destination in a replication rule
 }
 \description{
 \code{s3_file_info} returns file information within AWS S3 directory
+
+\code{s3_file_size} returns file size in bytes
 
 \code{s3_dir_info} returns file name information within AWS S3 directory
 

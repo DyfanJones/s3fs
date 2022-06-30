@@ -49,17 +49,17 @@ s3_dir_create create empty directory of AWS S3."><!-- mathjax --><script src="ht
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">s3_bucket_create</span><span class="op">(</span>
-  <span class="va">path</span>,
-  region_name <span class="op">=</span> <span class="cn">NULL</span>,
-  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"private"</span>, <span class="st">"public-read"</span>, <span class="st">"public-read-write"</span>, <span class="st">"authenticated-read"</span><span class="op">)</span>,
-  versioning <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">s3_dir_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">s3_bucket_create</span><span class="op">(</span></span>
+<span>  <span class="va">path</span>,</span>
+<span>  region_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"private"</span>, <span class="st">"public-read"</span>, <span class="st">"public-read-write"</span>, <span class="st">"authenticated-read"</span><span class="op">)</span>,</span>
+<span>  versioning <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">s3_dir_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -100,12 +100,12 @@ to <code><a href="s3_file_system.html">s3_file_system()</a></code> class region.
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># Require AWS S3 credentials</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">temp_file</span> <span class="op">=</span> <span class="fu"><a href="s3_file_temp.html">s3_file_temp</a></span><span class="op">(</span>tmp_dir<span class="op">=</span> <span class="st">"MyBucket"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">temp_file</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Require AWS S3 credentials</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">temp_file</span> <span class="op">=</span> <span class="fu"><a href="s3_file_temp.html">s3_file_temp</a></span><span class="op">(</span>tmp_dir<span class="op">=</span> <span class="st">"MyBucket"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">s3_file_create</span><span class="op">(</span><span class="va">temp_file</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -120,7 +120,7 @@ to <code><a href="s3_file_system.html">s3_file_system()</a></code> class region.
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

@@ -15,6 +15,7 @@ s3_file_system(
   multipart_threshold = 2 * GB,
   retries = 5,
   refresh = FALSE,
+  request_payer = FALSE,
   ...
 )
 }
@@ -40,6 +41,9 @@ copy and upload methods.}
 \item{retries}{(numeric): max number of retry attempts}
 
 \item{refresh}{(logical): Refresh cached S3FileSystem class}
+
+\item{request_payer}{(logical): Confirms that the requester knows that they
+will be charged for the request.}
 
 \item{...}{Other parameters within \code{paws} client.}
 }

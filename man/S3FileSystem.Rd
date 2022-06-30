@@ -25,6 +25,8 @@ This method will only update the modification time of the AWS S3 object.
 
 \item{\code{multipart_threshold}}{Threshold to use multipart}
 
+\item{\code{request_payer}}{Threshold to use multipart}
+
 \item{\code{pid}}{Get the process ID of the R Session}
 }
 \if{html}{\out{</div>}}
@@ -48,6 +50,7 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-file_exists}{\code{S3FileSystem$file_exists()}}
 \item \href{#method-S3FileSystem-file_info}{\code{S3FileSystem$file_info()}}
 \item \href{#method-S3FileSystem-file_move}{\code{S3FileSystem$file_move()}}
+\item \href{#method-S3FileSystem-file_size}{\code{S3FileSystem$file_size()}}
 \item \href{#method-S3FileSystem-file_stream_in}{\code{S3FileSystem$file_stream_in()}}
 \item \href{#method-S3FileSystem-file_stream_out}{\code{S3FileSystem$file_stream_out()}}
 \item \href{#method-S3FileSystem-file_temp}{\code{S3FileSystem$file_temp()}}
@@ -99,6 +102,7 @@ Initialize S3FileSystem class
   endpoint = NULL,
   disable_ssl = FALSE,
   multipart_threshold = 2 * GB,
+  request_payer = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -123,6 +127,9 @@ then the default profile is used.}
 
 \item{\code{multipart_threshold}}{(numeric): Threshold to use multipart instead of standard
 copy and upload methods.}
+
+\item{\code{request_payer}}{(logical): Confirms that the requester knows that they
+will be charged for the request.}
 
 \item{\code{...}}{Other parameters within \code{paws} client.}
 }
@@ -376,6 +383,23 @@ and the file exists an error will be thrown.}
 }
 \subsection{Returns}{
 character vector of s3 uri paths
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_size"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_size}{}}}
+\subsection{Method \code{file_size()}}{
+Return file size in bytes
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_size(path)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of s3 uri}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
