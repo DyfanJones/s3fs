@@ -17,6 +17,8 @@ s3fs_cache = new.env(parent = emptyenv())
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
 #' @param multipart_threshold (numeric): Threshold to use multipart instead of standard
 #'              copy and upload methods.
+#' @param request_payer (logical): Confirms that the requester knows that they
+#'              will be charged for the request.
 #' @param retries (numeric): max number of retry attempts
 #' @param refresh (logical): Refresh cached S3FileSystem class
 #' @param ... Other parameters within \code{paws} client.
@@ -46,6 +48,7 @@ s3_file_system = function(aws_access_key_id = NULL,
                           multipart_threshold = 2 * GB,
                           retries = 5,
                           refresh = FALSE,
+                          request_payer = FALSE,
                           ...){
   s3fs = NULL
   if(!refresh){
@@ -64,6 +67,7 @@ s3_file_system = function(aws_access_key_id = NULL,
       endpoint = endpoint,
       disable_ssl = disable_ssl,
       multipart_threshold = multipart_threshold,
+      request_payer = request_payer,
       ...
     )
     assign("service", s3fs, envir = s3fs_cache)
@@ -256,6 +260,8 @@ s3_file_exists = function(path){
 #' @description
 #' `s3_file_info` returns file information within AWS S3 directory
 #'
+#' `s3_file_size` returns file size in bytes
+#'
 #' `s3_dir_info` returns file name information within AWS S3 directory
 #'
 #' `s3_dir_ls` returns file name within AWS S3 directory
@@ -365,6 +371,13 @@ s3_file_move = function(path,
                         ...){
   s3fs = s3_file_system()
   return(s3fs$file_move(path, new_path, max_batch, overwrite, ...))
+}
+
+#' @rdname info
+#' @export
+s3_file_size = function(path){
+  s3fs = s3_file_system()
+  return(s3fs$file_size(path))
 }
 
 #' @title Streams data from R to AWS S3.
