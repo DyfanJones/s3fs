@@ -122,21 +122,6 @@ s3_file_stream_out_async = function(obj,
   return(future({s3fs$file_stream_out(obj, path, max_batch, overwrite, ...)}))
 }
 
-#' @title Change file modification time
-#' @description Similar to `fs::file_touch` this does not create the file if
-#'              it does not exist. Use `s3fs$file_create()` to do this if needed.
-#' @param path (character): A character vector of paths or s3 uri
-#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
-#' @return return \code{\link[future]{future}} object of [s3_file_touch()]
-#' @seealso \code{\link[future]{future}} [s3_file_move()] [s3_file_touch()]
-#' @note This method will only update the modification time of the AWS S3 object.
-#' @export
-s3_file_touch_async = function(path,
-                               ...){
-  s3fs = s3_file_system()
-  return(future({s3fs$file_touch(path, ...)}))
-}
-
 #' @title Upload file and directory
 #' @description
 #' `s3_file_upload` upload files to AWS S3
