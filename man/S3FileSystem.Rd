@@ -41,55 +41,55 @@ This method will only update the modification time of the AWS S3 object.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-S3FileSystem-new}{\code{S3FileSystem$new()}}
-\item \href{#method-S3FileSystem-file_chmod}{\code{S3FileSystem$file_chmod()}}
-\item \href{#method-S3FileSystem-file_copy}{\code{S3FileSystem$file_copy()}}
-\item \href{#method-S3FileSystem-file_create}{\code{S3FileSystem$file_create()}}
-\item \href{#method-S3FileSystem-file_delete}{\code{S3FileSystem$file_delete()}}
-\item \href{#method-S3FileSystem-file_download}{\code{S3FileSystem$file_download()}}
-\item \href{#method-S3FileSystem-file_exists}{\code{S3FileSystem$file_exists()}}
-\item \href{#method-S3FileSystem-file_info}{\code{S3FileSystem$file_info()}}
-\item \href{#method-S3FileSystem-file_move}{\code{S3FileSystem$file_move()}}
-\item \href{#method-S3FileSystem-file_size}{\code{S3FileSystem$file_size()}}
-\item \href{#method-S3FileSystem-file_stream_in}{\code{S3FileSystem$file_stream_in()}}
-\item \href{#method-S3FileSystem-file_stream_out}{\code{S3FileSystem$file_stream_out()}}
-\item \href{#method-S3FileSystem-file_temp}{\code{S3FileSystem$file_temp()}}
-\item \href{#method-S3FileSystem-file_tag_delete}{\code{S3FileSystem$file_tag_delete()}}
-\item \href{#method-S3FileSystem-file_tag_info}{\code{S3FileSystem$file_tag_info()}}
-\item \href{#method-S3FileSystem-file_tag_update}{\code{S3FileSystem$file_tag_update()}}
-\item \href{#method-S3FileSystem-file_touch}{\code{S3FileSystem$file_touch()}}
-\item \href{#method-S3FileSystem-file_upload}{\code{S3FileSystem$file_upload()}}
-\item \href{#method-S3FileSystem-file_version_info}{\code{S3FileSystem$file_version_info()}}
-\item \href{#method-S3FileSystem-is_file}{\code{S3FileSystem$is_file()}}
-\item \href{#method-S3FileSystem-is_dir}{\code{S3FileSystem$is_dir()}}
-\item \href{#method-S3FileSystem-is_bucket}{\code{S3FileSystem$is_bucket()}}
-\item \href{#method-S3FileSystem-is_file_empty}{\code{S3FileSystem$is_file_empty()}}
-\item \href{#method-S3FileSystem-bucket_chmod}{\code{S3FileSystem$bucket_chmod()}}
-\item \href{#method-S3FileSystem-bucket_create}{\code{S3FileSystem$bucket_create()}}
-\item \href{#method-S3FileSystem-bucket_delete}{\code{S3FileSystem$bucket_delete()}}
-\item \href{#method-S3FileSystem-dir_copy}{\code{S3FileSystem$dir_copy()}}
-\item \href{#method-S3FileSystem-dir_create}{\code{S3FileSystem$dir_create()}}
-\item \href{#method-S3FileSystem-dir_delete}{\code{S3FileSystem$dir_delete()}}
-\item \href{#method-S3FileSystem-dir_exists}{\code{S3FileSystem$dir_exists()}}
-\item \href{#method-S3FileSystem-dir_download}{\code{S3FileSystem$dir_download()}}
-\item \href{#method-S3FileSystem-dir_info}{\code{S3FileSystem$dir_info()}}
-\item \href{#method-S3FileSystem-dir_ls}{\code{S3FileSystem$dir_ls()}}
-\item \href{#method-S3FileSystem-dir_upload}{\code{S3FileSystem$dir_upload()}}
-\item \href{#method-S3FileSystem-path}{\code{S3FileSystem$path()}}
-\item \href{#method-S3FileSystem-path_dir}{\code{S3FileSystem$path_dir()}}
-\item \href{#method-S3FileSystem-path_ext}{\code{S3FileSystem$path_ext()}}
-\item \href{#method-S3FileSystem-path_ext_remove}{\code{S3FileSystem$path_ext_remove()}}
-\item \href{#method-S3FileSystem-path_ext_set}{\code{S3FileSystem$path_ext_set()}}
-\item \href{#method-S3FileSystem-path_file}{\code{S3FileSystem$path_file()}}
-\item \href{#method-S3FileSystem-path_join}{\code{S3FileSystem$path_join()}}
-\item \href{#method-S3FileSystem-path_split}{\code{S3FileSystem$path_split()}}
-\item \href{#method-S3FileSystem-clear_cache}{\code{S3FileSystem$clear_cache()}}
-\item \href{#method-S3FileSystem-clone}{\code{S3FileSystem$clone()}}
+\item \href{#method-new}{\code{S3FileSystem$new()}}
+\item \href{#method-file_chmod}{\code{S3FileSystem$file_chmod()}}
+\item \href{#method-file_copy}{\code{S3FileSystem$file_copy()}}
+\item \href{#method-file_create}{\code{S3FileSystem$file_create()}}
+\item \href{#method-file_delete}{\code{S3FileSystem$file_delete()}}
+\item \href{#method-file_download}{\code{S3FileSystem$file_download()}}
+\item \href{#method-file_exists}{\code{S3FileSystem$file_exists()}}
+\item \href{#method-file_info}{\code{S3FileSystem$file_info()}}
+\item \href{#method-file_move}{\code{S3FileSystem$file_move()}}
+\item \href{#method-file_size}{\code{S3FileSystem$file_size()}}
+\item \href{#method-file_stream_in}{\code{S3FileSystem$file_stream_in()}}
+\item \href{#method-file_stream_out}{\code{S3FileSystem$file_stream_out()}}
+\item \href{#method-file_temp}{\code{S3FileSystem$file_temp()}}
+\item \href{#method-file_tag_delete}{\code{S3FileSystem$file_tag_delete()}}
+\item \href{#method-file_tag_info}{\code{S3FileSystem$file_tag_info()}}
+\item \href{#method-file_tag_update}{\code{S3FileSystem$file_tag_update()}}
+\item \href{#method-file_touch}{\code{S3FileSystem$file_touch()}}
+\item \href{#method-file_upload}{\code{S3FileSystem$file_upload()}}
+\item \href{#method-file_version_info}{\code{S3FileSystem$file_version_info()}}
+\item \href{#method-is_file}{\code{S3FileSystem$is_file()}}
+\item \href{#method-is_dir}{\code{S3FileSystem$is_dir()}}
+\item \href{#method-is_bucket}{\code{S3FileSystem$is_bucket()}}
+\item \href{#method-is_file_empty}{\code{S3FileSystem$is_file_empty()}}
+\item \href{#method-bucket_chmod}{\code{S3FileSystem$bucket_chmod()}}
+\item \href{#method-bucket_create}{\code{S3FileSystem$bucket_create()}}
+\item \href{#method-bucket_delete}{\code{S3FileSystem$bucket_delete()}}
+\item \href{#method-dir_copy}{\code{S3FileSystem$dir_copy()}}
+\item \href{#method-dir_create}{\code{S3FileSystem$dir_create()}}
+\item \href{#method-dir_delete}{\code{S3FileSystem$dir_delete()}}
+\item \href{#method-dir_exists}{\code{S3FileSystem$dir_exists()}}
+\item \href{#method-dir_download}{\code{S3FileSystem$dir_download()}}
+\item \href{#method-dir_info}{\code{S3FileSystem$dir_info()}}
+\item \href{#method-dir_ls}{\code{S3FileSystem$dir_ls()}}
+\item \href{#method-dir_upload}{\code{S3FileSystem$dir_upload()}}
+\item \href{#method-path}{\code{S3FileSystem$path()}}
+\item \href{#method-path_dir}{\code{S3FileSystem$path_dir()}}
+\item \href{#method-path_ext}{\code{S3FileSystem$path_ext()}}
+\item \href{#method-path_ext_remove}{\code{S3FileSystem$path_ext_remove()}}
+\item \href{#method-path_ext_set}{\code{S3FileSystem$path_ext_set()}}
+\item \href{#method-path_file}{\code{S3FileSystem$path_file()}}
+\item \href{#method-path_join}{\code{S3FileSystem$path_join()}}
+\item \href{#method-path_split}{\code{S3FileSystem$path_split()}}
+\item \href{#method-clear_cache}{\code{S3FileSystem$clear_cache()}}
+\item \href{#method-clone}{\code{S3FileSystem$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-new"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-new}{}}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 Initialize S3FileSystem class
 \subsection{Usage}{
@@ -137,8 +137,8 @@ will be charged for the request.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_chmod"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_chmod}{}}}
+\if{html}{\out{<a id="method-file_chmod"></a>}}
+\if{latex}{\out{\hypertarget{method-file_chmod}{}}}
 \subsection{Method \code{file_chmod()}}{
 Change file permissions
 \subsection{Usage}{
@@ -163,8 +163,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_copy"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_copy}{}}}
+\if{html}{\out{<a id="method-file_copy"></a>}}
+\if{latex}{\out{\hypertarget{method-file_copy}{}}}
 \subsection{Method \code{file_copy()}}{
 copy files
 \subsection{Usage}{
@@ -198,8 +198,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_create"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_create}{}}}
+\if{html}{\out{<a id="method-file_create"></a>}}
+\if{latex}{\out{\hypertarget{method-file_create}{}}}
 \subsection{Method \code{file_create()}}{
 Create file on AWS S3, if file already
 exists it will be left unchanged.
@@ -224,8 +224,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_delete"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_delete}{}}}
+\if{html}{\out{<a id="method-file_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-file_delete}{}}}
 \subsection{Method \code{file_delete()}}{
 Delete files in AWS S3
 \subsection{Usage}{
@@ -246,8 +246,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_download"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_download}{}}}
+\if{html}{\out{<a id="method-file_download"></a>}}
+\if{latex}{\out{\hypertarget{method-file_download}{}}}
 \subsection{Method \code{file_download()}}{
 Downloads AWS S3 files to local
 \subsection{Usage}{
@@ -273,8 +273,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_exists"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_exists}{}}}
+\if{html}{\out{<a id="method-file_exists"></a>}}
+\if{latex}{\out{\hypertarget{method-file_exists}{}}}
 \subsection{Method \code{file_exists()}}{
 Check if file exists in AWS S3
 \subsection{Usage}{
@@ -293,8 +293,8 @@ logical vector if file exists
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_info"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_info}{}}}
+\if{html}{\out{<a id="method-file_info"></a>}}
+\if{latex}{\out{\hypertarget{method-file_info}{}}}
 \subsection{Method \code{file_info()}}{
 Returns file information within AWS S3 directory
 \subsection{Usage}{
@@ -351,8 +351,8 @@ involves a bucket that is either a source or a destination in a replication rule
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_move"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_move}{}}}
+\if{html}{\out{<a id="method-file_move"></a>}}
+\if{latex}{\out{\hypertarget{method-file_move}{}}}
 \subsection{Method \code{file_move()}}{
 Move files to another location on AWS S3
 \subsection{Usage}{
@@ -386,8 +386,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_size"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_size}{}}}
+\if{html}{\out{<a id="method-file_size"></a>}}
+\if{latex}{\out{\hypertarget{method-file_size}{}}}
 \subsection{Method \code{file_size()}}{
 Return file size in bytes
 \subsection{Usage}{
@@ -403,8 +403,8 @@ Return file size in bytes
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_stream_in"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_stream_in}{}}}
+\if{html}{\out{<a id="method-file_stream_in"></a>}}
+\if{latex}{\out{\hypertarget{method-file_stream_in}{}}}
 \subsection{Method \code{file_stream_in()}}{
 Streams in AWS S3 file as a raw vector
 \subsection{Usage}{
@@ -425,8 +425,8 @@ list of raw vectors containing the contents of the file
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_stream_out"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_stream_out}{}}}
+\if{html}{\out{<a id="method-file_stream_out"></a>}}
+\if{latex}{\out{\hypertarget{method-file_stream_out}{}}}
 \subsection{Method \code{file_stream_out()}}{
 Streams out raw vector to AWS S3 file
 \subsection{Usage}{
@@ -460,8 +460,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_temp"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_temp}{}}}
+\if{html}{\out{<a id="method-file_temp"></a>}}
+\if{latex}{\out{\hypertarget{method-file_temp}{}}}
 \subsection{Method \code{file_temp()}}{
 return the name which can be used as a temporary file
 \subsection{Usage}{
@@ -484,8 +484,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_tag_delete"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_delete}{}}}
+\if{html}{\out{<a id="method-file_tag_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-file_tag_delete}{}}}
 \subsection{Method \code{file_tag_delete()}}{
 Delete file tags
 \subsection{Usage}{
@@ -504,8 +504,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_tag_info"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_info}{}}}
+\if{html}{\out{<a id="method-file_tag_info"></a>}}
+\if{latex}{\out{\hypertarget{method-file_tag_info}{}}}
 \subsection{Method \code{file_tag_info()}}{
 Get file tags
 \subsection{Usage}{
@@ -533,8 +533,8 @@ data.table of file version metadata
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_tag_update"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_tag_update}{}}}
+\if{html}{\out{<a id="method-file_tag_update"></a>}}
+\if{latex}{\out{\hypertarget{method-file_tag_update}{}}}
 \subsection{Method \code{file_tag_update()}}{
 Update file tags
 \subsection{Usage}{
@@ -558,8 +558,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_touch"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_touch}{}}}
+\if{html}{\out{<a id="method-file_touch"></a>}}
+\if{latex}{\out{\hypertarget{method-file_touch}{}}}
 \subsection{Method \code{file_touch()}}{
 Similar to \code{fs::file_touch} this does not create the file if
 it does not exist. Use \code{s3fs$file_create()} to do this if needed.
@@ -581,8 +581,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_upload"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_upload}{}}}
+\if{html}{\out{<a id="method-file_upload"></a>}}
+\if{latex}{\out{\hypertarget{method-file_upload}{}}}
 \subsection{Method \code{file_upload()}}{
 Uploads files to AWS S3
 \subsection{Usage}{
@@ -617,8 +617,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-file_version_info"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-file_version_info}{}}}
+\if{html}{\out{<a id="method-file_version_info"></a>}}
+\if{latex}{\out{\hypertarget{method-file_version_info}{}}}
 \subsection{Method \code{file_version_info()}}{
 Get file versions
 \subsection{Usage}{
@@ -649,8 +649,8 @@ return data.table with file version info, columns below:
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-is_file"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-is_file}{}}}
+\if{html}{\out{<a id="method-is_file"></a>}}
+\if{latex}{\out{\hypertarget{method-is_file}{}}}
 \subsection{Method \code{is_file()}}{
 Test for file types
 \subsection{Usage}{
@@ -669,8 +669,8 @@ logical vector if object is a file
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-is_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-is_dir}{}}}
+\if{html}{\out{<a id="method-is_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-is_dir}{}}}
 \subsection{Method \code{is_dir()}}{
 Test for file types
 \subsection{Usage}{
@@ -689,8 +689,8 @@ logical vector if object is a directory
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-is_bucket"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-is_bucket}{}}}
+\if{html}{\out{<a id="method-is_bucket"></a>}}
+\if{latex}{\out{\hypertarget{method-is_bucket}{}}}
 \subsection{Method \code{is_bucket()}}{
 Test for file types
 \subsection{Usage}{
@@ -711,8 +711,8 @@ logical vector if object is a \verb{AWS S3} bucket
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-is_file_empty"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-is_file_empty}{}}}
+\if{html}{\out{<a id="method-is_file_empty"></a>}}
+\if{latex}{\out{\hypertarget{method-is_file_empty}{}}}
 \subsection{Method \code{is_file_empty()}}{
 Test for file types
 \subsection{Usage}{
@@ -731,8 +731,8 @@ logical vector if file is empty
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-bucket_chmod"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_chmod}{}}}
+\if{html}{\out{<a id="method-bucket_chmod"></a>}}
+\if{latex}{\out{\hypertarget{method-bucket_chmod}{}}}
 \subsection{Method \code{bucket_chmod()}}{
 Change bucket permissions
 \subsection{Usage}{
@@ -756,8 +756,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-bucket_create"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_create}{}}}
+\if{html}{\out{<a id="method-bucket_create"></a>}}
+\if{latex}{\out{\hypertarget{method-bucket_create}{}}}
 \subsection{Method \code{bucket_create()}}{
 Create bucket
 \subsection{Usage}{
@@ -790,8 +790,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-bucket_delete"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-bucket_delete}{}}}
+\if{html}{\out{<a id="method-bucket_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-bucket_delete}{}}}
 \subsection{Method \code{bucket_delete()}}{
 Delete bucket
 \subsection{Usage}{
@@ -807,8 +807,8 @@ Delete bucket
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_copy"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_copy}{}}}
+\if{html}{\out{<a id="method-dir_copy"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_copy}{}}}
 \subsection{Method \code{dir_copy()}}{
 Copies the direcotry recursively to the new location.
 \subsection{Usage}{
@@ -843,8 +843,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_create"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_create}{}}}
+\if{html}{\out{<a id="method-dir_create"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_create}{}}}
 \subsection{Method \code{dir_create()}}{
 Create empty directory
 \subsection{Usage}{
@@ -868,8 +868,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_delete"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_delete}{}}}
+\if{html}{\out{<a id="method-dir_delete"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_delete}{}}}
 \subsection{Method \code{dir_delete()}}{
 Delete contents and directory in AWS S3
 \subsection{Usage}{
@@ -888,8 +888,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_exists"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_exists}{}}}
+\if{html}{\out{<a id="method-dir_exists"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_exists}{}}}
 \subsection{Method \code{dir_exists()}}{
 Check if path exists in AWS S3
 \subsection{Usage}{
@@ -908,8 +908,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_download"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_download}{}}}
+\if{html}{\out{<a id="method-dir_download"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_download}{}}}
 \subsection{Method \code{dir_download()}}{
 Downloads AWS S3 files to local
 \subsection{Usage}{
@@ -936,8 +936,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_info"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_info}{}}}
+\if{html}{\out{<a id="method-dir_info"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_info}{}}}
 \subsection{Method \code{dir_info()}}{
 Returns file information within AWS S3 directory
 \subsection{Usage}{
@@ -989,8 +989,8 @@ data.table with directory metadata
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_ls"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_ls}{}}}
+\if{html}{\out{<a id="method-dir_ls"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_ls}{}}}
 \subsection{Method \code{dir_ls()}}{
 Returns file name within AWS S3 directory
 \subsection{Usage}{
@@ -1033,8 +1033,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-dir_upload"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_upload}{}}}
+\if{html}{\out{<a id="method-dir_upload"></a>}}
+\if{latex}{\out{\hypertarget{method-dir_upload}{}}}
 \subsection{Method \code{dir_upload()}}{
 Uploads local directory to AWS S3
 \subsection{Usage}{
@@ -1069,8 +1069,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path}{}}}
+\if{html}{\out{<a id="method-path"></a>}}
+\if{latex}{\out{\hypertarget{method-path}{}}}
 \subsection{Method \code{path()}}{
 Constructs a s3 uri path
 \subsection{Usage}{
@@ -1091,8 +1091,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_dir}{}}}
+\if{html}{\out{<a id="method-path_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-path_dir}{}}}
 \subsection{Method \code{path_dir()}}{
 Returns the directory portion of s3 uri
 \subsection{Usage}{
@@ -1111,8 +1111,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_ext"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_ext}{}}}
+\if{html}{\out{<a id="method-path_ext"></a>}}
+\if{latex}{\out{\hypertarget{method-path_ext}{}}}
 \subsection{Method \code{path_ext()}}{
 Returns the last extension for a path.
 \subsection{Usage}{
@@ -1131,8 +1131,8 @@ character s3 uri file extension
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_ext_remove"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_ext_remove}{}}}
+\if{html}{\out{<a id="method-path_ext_remove"></a>}}
+\if{latex}{\out{\hypertarget{method-path_ext_remove}{}}}
 \subsection{Method \code{path_ext_remove()}}{
 Removes the last extension and return the rest of the s3 uri.
 \subsection{Usage}{
@@ -1151,8 +1151,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_ext_set"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_ext_set}{}}}
+\if{html}{\out{<a id="method-path_ext_set"></a>}}
+\if{latex}{\out{\hypertarget{method-path_ext_set}{}}}
 \subsection{Method \code{path_ext_set()}}{
 Replace the extension with a new extension.
 \subsection{Usage}{
@@ -1173,8 +1173,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_file"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_file}{}}}
+\if{html}{\out{<a id="method-path_file"></a>}}
+\if{latex}{\out{\hypertarget{method-path_file}{}}}
 \subsection{Method \code{path_file()}}{
 Returns the file name portion of the s3 uri path
 \subsection{Usage}{
@@ -1193,8 +1193,8 @@ character vector of file names
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_join"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_join}{}}}
+\if{html}{\out{<a id="method-path_join"></a>}}
+\if{latex}{\out{\hypertarget{method-path_join}{}}}
 \subsection{Method \code{path_join()}}{
 Construct an s3 uri path from path vector
 \subsection{Usage}{
@@ -1213,8 +1213,8 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-path_split"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-path_split}{}}}
+\if{html}{\out{<a id="method-path_split"></a>}}
+\if{latex}{\out{\hypertarget{method-path_split}{}}}
 \subsection{Method \code{path_split()}}{
 Split s3 uri path to core components bucket, key and version id
 \subsection{Usage}{
@@ -1233,8 +1233,8 @@ list character vectors splitting the s3 uri path in "Bucket", "Key" and "Version
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-clear_cache"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-clear_cache}{}}}
+\if{html}{\out{<a id="method-clear_cache"></a>}}
+\if{latex}{\out{\hypertarget{method-clear_cache}{}}}
 \subsection{Method \code{clear_cache()}}{
 Clear S3 Cache
 \subsection{Usage}{
@@ -1250,8 +1250,8 @@ Clear S3 Cache
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-S3FileSystem-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-S3FileSystem-clone}{}}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

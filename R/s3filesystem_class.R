@@ -3,11 +3,11 @@
 
 #' @import R6
 #' @import paws.storage
-#' @import fs
 #' @import future
 #' @import future.apply
 #' @import data.table
 #' @importFrom utils modifyList
+#' @importFrom fs path path_join is_dir dir_exists dir_info
 
 KB = 1024
 MB = KB ^ 2
@@ -195,7 +195,7 @@ S3FileSystem = R6Class("S3FileSystem",
             ACL = mode
           ), self$retries)
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description copy files
@@ -252,7 +252,7 @@ S3FileSystem = R6Class("S3FileSystem",
           })
         }
         self$clear_cache(private$.s3_pnt_dir(new_path))
-        return(self$path_join(new_path))
+        return(private$.s3_build_uri(new_path))
       # s3 uri to local
       } else if (any(is_uri(path)) & !any(is_uri(new_path))) {
         self$file_download(path, new_path, overwrite, ...)
@@ -282,7 +282,7 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       s3_parts = lapply(path, private$.s3_split_path)
       if (any(sapply(s3_parts, function(l) !is.null(l$VersionId))))
-        stop("S3 does not support touching existing versions of files")
+        stop("S3 does not support touching existing versions of files", call. = FALSE)
 
       kwargs = list(...)
       kwargs$RequestPayer = self$request_payer
@@ -299,7 +299,7 @@ S3FileSystem = R6Class("S3FileSystem",
         self$clear_cache(private$.s3_pnt_dir(path[i]))
         return(resp)
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Delete files in AWS S3
@@ -318,8 +318,12 @@ S3FileSystem = R6Class("S3FileSystem",
       buckets = unique(vapply(s3_parts, function(x) x$Bucket, FUN.VALUE = ""))
       status = vapply(buckets, private$.s3_is_bucket_version, FUN.VALUE = logical(1))
 
-      path_version = grepl(paste0("^", buckets[status]), path)
-      path_version[path_version] = !grepl("?versionId=", path[path_version], fixed = T)
+      if (any(status)){
+        path_version = grepl(paste0("^", buckets[status]), path)
+        path_version[path_version] = !grepl("?versionId=", path[path_version], fixed = T)
+      } else {
+        path_version = status
+      }
 
       # Add file version uri
       if(length(path[path_version]) > 0){
@@ -330,8 +334,11 @@ S3FileSystem = R6Class("S3FileSystem",
       }
 
       # re-apply directory "/" so that they can be removed
-      y = lapply(s3_parts[endsWith(path, "/")], function(x) {x$Key = paste0(x$Key, "/"); x})
-      s3_parts[endsWith(path, "/")] <- y
+      dirs = self$is_dir(path)
+      if(length(path[dirs]) > 0) {
+        s3_dir = lapply(s3_parts[dirs], function(x) {x$Key = paste0(x$Key, "/"); x})
+        s3_parts[dirs] = s3_dir
+      }
       s3_parts = split(s3_parts, sapply(s3_parts, function(x) x$Bucket), drop = T)
       key_parts = lapply(s3_parts, split_vec, 1000)
 
@@ -352,7 +359,7 @@ S3FileSystem = R6Class("S3FileSystem",
         })
       })
       self$clear_cache(private$.s3_pnt_dir(origin_path))
-      return(self$path_join(origin_path))
+      return(private$.s3_build_uri(origin_path))
     },
 
     #' @description Downloads AWS S3 files to local
@@ -530,10 +537,10 @@ S3FileSystem = R6Class("S3FileSystem",
                          max_batch = 100*MB,
                          overwrite = FALSE,
                          ...){
-      path = self$path_join(path)
-      new_path = self$path_join(new_path)
+      path = private$.s3_build_uri(path)
+      new_path = private$.s3_build_uri(new_path)
       self$file_copy(path, new_path, max_batch, overwrite, ...)
-      self$file_delete(path, new_path)
+      self$file_delete(path)
       return(new_path)
     },
 
@@ -618,17 +625,15 @@ S3FileSystem = R6Class("S3FileSystem",
       }
       if (length(multipart) > 0){
         kwargs$max_batch = max_batch
-        for(part in multipart){
-          future_lapply(seq_along(part[[1]]), function(i) {
-            kwargs$obj = part[[1]][[i]]
-            kwargs$dest = part[[2]]
-            kwargs$size = part[[3]]
-            do.call(private$.s3_stream_out_multipart_file, kwargs)
-          })
-        }
+        lapply(seq_along(multipart), function(i) {
+          kwargs$obj = multipart[[i]][[1]]
+          kwargs$dest = multipart[[i]][[2]]
+          kwargs$size = multipart[[i]][[3]]
+          do.call(private$.s3_stream_out_multipart_file, kwargs)
+        })
       }
       self$clear_cache(path)
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description return the name which can be used as a temporary file
@@ -666,7 +671,7 @@ S3FileSystem = R6Class("S3FileSystem",
       found = self$file_exists(path)
       if(!any(self$file_exists(path))){
         stop(sprintf(
-          "Following files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n'")),
+          "Following files don't exist:\n'%s'", paste(private$.s3_build_uri(path[!found]), collapse = "',\n'")),
           call. = F
         )
       }
@@ -680,7 +685,7 @@ S3FileSystem = R6Class("S3FileSystem",
           ), self$retries
         )
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Get file tags
@@ -703,20 +708,24 @@ S3FileSystem = R6Class("S3FileSystem",
       found = self$file_exists(path)
       if(!any(self$file_exists(path))){
         stop(sprintf(
-          "Following files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n'")),
+          "Following files don't exist:\n'%s'", paste(private$.s3_build_uri(path[!found]), collapse = "',\n'")),
           call. = F
         )
       }
       s3_parts = lapply(path, private$.s3_split_path)
+      kwargs = list()
+      kwargs$RequestPayer =self$request_payer
       out = future_lapply(seq_along(s3_parts), function(i){
+        kwargs$Bucket = s3_parts[[i]]$Bucket
+        kwargs$Key = s3_parts[[i]]$Key
+        kwargs$VersionId = s3_parts[[i]]$VersionId
         resp = retry_api_call(
-          self$s3_client$get_object_tagging(
-            Bucket = s3_parts[[i]]$Bucket,
-            Key = s3_parts[[i]]$Key,
-            VersionId = s3_parts[[i]]$VersionId
-          ), self$retries
+          do.call(self$s3_client$get_object_tagging, kwargs),
+          self$retries
         )
         tag = suppressWarnings(rbindlist(resp$TagSet, fill = T))
+        if(nrow(tag) == 0)
+          tag = data.table("tag_key" = "", tag_key = "")
         names(tag) = c("tag_key", "tag_value")
         tag$version_id = resp$VersionId
         tag$bucket_name = s3_parts[[i]]$Bucket
@@ -754,19 +763,21 @@ S3FileSystem = R6Class("S3FileSystem",
       found = self$file_exists(path)
       if(!any(self$file_exists(path))){
         stop(sprintf(
-          "Following files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n'")),
+          "Following files don't exist:\n'%s'", paste(private$.s3_build_uri(path[!found]), collapse = "',\n'")),
           call. = F
         )
       }
       s3_parts = lapply(path, private$.s3_split_path)
       if (!overwrite) {
+        kwargs = list()
+        kwargs$RequestPayer = self$request_payer
         new_tags = future_lapply(seq_along(s3_parts), function(i){
+          kwargs$Bucket = s3_parts[[i]]$Bucket
+          kwargs$Key = s3_parts[[i]]$Key
+          kwargs$VersionId = s3_parts[[i]]$VersionId
           resp = retry_api_call(
-            self$s3_client$get_object_tagging(
-              Bucket = s3_parts[[i]]$Bucket,
-              Key = s3_parts[[i]]$Key,
-              VersionId = s3_parts[[i]]$VersionId
-            ), self$retries
+            do.call(self$s3_client$get_object_tagging, kwargs),
+            self$retries
           )
           org_tag = lapply(resp$TagSet, function(x) x$Value)
           names(org_tag) = vapply(resp$TagSet, function(x) x$Key, FUN.VALUE = "")
@@ -776,23 +787,22 @@ S3FileSystem = R6Class("S3FileSystem",
           )
         })
       } else if (overwrite) {
-        new_tags = rep(
-          lapply(names(tags), function(n) list(Key=n, Value=tags[[n]])),
-          length(s3_parts)
-        )
+        new_tags = list(lapply(names(tags), function(n) list(Key=n, Value=tags[[n]])))
       }
 
+      kwargs = list()
+      kwargs$RequestPayer = self$request_payer
       future_lapply(seq_along(s3_parts), function(i){
+        kwargs$Bucket = s3_parts[[i]]$Bucket
+        kwargs$Key = s3_parts[[i]]$Key
+        kwargs$VersionId = s3_parts[[i]]$VersionId
+        kwargs$Tagging = list("TagSet" = new_tags[[i]])
         resp = retry_api_call(
-          self$s3_client$put_object_tagging(
-            Bucket = s3_parts[[i]]$Bucket,
-            Key = s3_parts[[i]]$Key,
-            VersionId = s3_parts[[i]]$VersionId,
-            Tagging = list("TagSet" = new_tags[[i]])
-          ), self$retries
+          do.call(self$s3_client$put_object_tagging, kwargs),
+          self$retries
         )
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Similar to `fs::file_touch` this does not create the file if
@@ -841,7 +851,7 @@ S3FileSystem = R6Class("S3FileSystem",
       #     do.call(private$.s3_copy_multipart, kwargs)
       #   })
       # }
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Uploads files to AWS S3
@@ -916,7 +926,7 @@ S3FileSystem = R6Class("S3FileSystem",
         })
       }
       self$clear_cache(private$.s3_pnt_dir(new_path))
-      return(self$path_join(new_path))
+      return(private$.s3_build_uri(new_path))
     },
 
     #' @description Get file versions
@@ -943,7 +953,7 @@ S3FileSystem = R6Class("S3FileSystem",
       found = self$file_exists(path)
       if(!any(self$file_exists(path))){
         stop(sprintf(
-          "Following files don't exist:\n'%s'", paste(self$path_join(path[!found]), collapse = "',\n'")),
+          "Following files don't exist:\n'%s'", paste(private$.s3_build_uri(path[!found]), collapse = "',\n'")),
           call. = F
         )
       }
@@ -1034,7 +1044,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "`path` is required to be a character vector" = is.character(path)
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      found = path %in% private$.s3_bucket_ls(path)$bucket_name
+      found = path %in% private$.s3_bucket_ls()$bucket_name
 
       # bucket not owned by user
       s3_parts = lapply(path[!found], private$.s3_split_path)
@@ -1092,7 +1102,7 @@ S3FileSystem = R6Class("S3FileSystem",
             ACL = mode
           ), self$retries)
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Create bucket
@@ -1146,7 +1156,7 @@ S3FileSystem = R6Class("S3FileSystem",
             self$retries
           )
       })
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Delete bucket
@@ -1170,7 +1180,7 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       })
       self$clear_cache("__buckets")
-      return(self$path_join(original_path))
+      return(private$.s3_build_uri(original_path))
     },
 
     ############################################################################
@@ -1206,49 +1216,60 @@ S3FileSystem = R6Class("S3FileSystem",
         # list all source files needing to be copied over
         src_files = lapply(path, self$dir_info, type = "file", recurse = T)
 
-        # set destination file location
-        file_zip = list_zip(lapply(src_files, function(x) paste(x$bucket_name, x$key, sep = "/")), new_path)
-        dest_files = lapply(file_zip, function(fz) {
-          paste(trimws(fz[[2]], "right", "/"), fz[[1]], sep = "/")
-        })
+        # create destination file location
+        dest_files = lapply(seq_along(src_files), function(x) fs::path(
+          new_path[[x]], path_rel(src_files[[x]]$uri, self$path(path[x])))
+        )
 
         file_size = lapply(src_files, function(x) x$size)
         multipart = lapply(file_size, function(x) self$multipart_threshold < x)
 
+        src_files = lapply(path, self$dir_info, type = "file", recurse = T)
+        fs::path(src_files[[1]]$bucket_name, src_files[[1]]$key)
         # split source files
         standard_path = list_zip(
-          src=lapply(seq_along(src_files), function(i) src_files[[i]][!multipart[[i]]]),
-          dest=lapply(seq_along(dest_files), function(i) dest_files[[i]][!multipart[[i]]])
+          lapply(seq_along(src_files), function(i) fs::path(
+            src_files[[i]]$bucket_name[!multipart[[i]]], src_files[[i]]$key[!multipart[[i]]])
+          ),
+          lapply(seq_along(dest_files), function(i) dest_files[[i]][!multipart[[i]]])
         )
         multipart_path = list_zip(
-          lapply(seq_along(src_files), function(i) src_files[[i]][multipart[[i]]]),
+          lapply(seq_along(src_files), function(i) fs::path(
+            src_files[[i]]$bucket_name[!multipart[[i]]], src_files[[i]]$key[!multipart[[i]]])
+          ),
           lapply(seq_along(dest_files), function(i) dest_files[[i]][multipart[[i]]]),
-          lapply(seq_along(path_size), function(i) path_size[[i]][multipart[[i]]])
+          lapply(seq_along(file_size), function(i) file_size[[i]][multipart[[i]]])
         )
 
-        if (length(standard_path) > 0){
+        kwargs = list(...)
+        kwargs$overwrite = overwrite
+        kwargs$RequestPayer = self$request_payer
+
+        if (any(!vapply(multipart, any, FUN.VALUE = logical(1)))){
           lapply(standard_path, function(part){
             future_lapply(seq_along(part[[1]]), function(i) {
-              private$.s3_copy_standard(
-                part[[1]][i], part[[2]][i], overwrite, ...
-              )
+              kwargs$src = part[[1]][i]
+              kwargs$dest = part[[2]][i]
+              do.call(private$.s3_copy_standard, kwargs)
             })
           })
         }
-        if (length(multipart_path) > 0){
+        if (any(vapply(multipart, any, FUN.VALUE = logical(1)))){
+          kwargs$max_batch = max_batch
           lapply(multipart_path, function(part){
             lapply(seq_along(part[[1]]), function(i) {
-              private$.s3_copy_multipart(
-                part[[1]][i], part[[2]][i], part[[3]][i], max_batch, overwrite, ...
-              )
+              kwargs$src = part[[1]][i]
+              kwargs$dest = part[[2]][i]
+              kwargs$size = part[[3]][i]
+              do.call(private$.s3_copy_multipart, kwargs)
             })
           })
         }
         self$clear_cache(new_path)
-        return(self$path_join(new_path))
+        return(private$.s3_build_uri(new_path))
         # s3 uri to local
       } else if (any(is_uri(path)) & !any(is_uri(new_path))) {
-        self$dir_download(path, new_path, max_batch, overwrite, ...)
+        self$dir_download(path, new_path, overwrite, ...)
         # local to s3 uri
       } else if (!any(is_uri(path)) & any(is_uri(new_path))) {
         self$dir_upload(path, new_path, max_batch, overwrite, ...)
@@ -1288,7 +1309,7 @@ S3FileSystem = R6Class("S3FileSystem",
           self$clear_cache(private$.s3_pnt_dir(path[[i]]))
           return(resp)
         })
-        return(self$path_join(path))
+        return(private$.s3_build_uri(path))
       }
       LOGGER$info("Directory already exists in AWS S3")
     },
@@ -1301,13 +1322,8 @@ S3FileSystem = R6Class("S3FileSystem",
         "`path` is required to be a character vector" = is.character(path)
       )
       path_uri = self$dir_ls(path, recurse = T)
-
-      # if no object inside directory delete directory
-      if(identical(path_uri, character(0))) {
-        path_uri = paste0(trimws(path,"right", "/"), "/")
-      }
-      self$file_delete(path_uri)
-      return(self$path_join(path))
+      self$file_delete(c(path, path_uri))
+      return(private$.s3_build_uri(path))
     },
 
     #' @description Check if path exists in AWS S3
@@ -1377,7 +1393,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "length of path must equal length to new_path" = (length(path) == length(new_path))
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      dir_exists = dir.exists(new_path)
+      dir_exists = fs::dir_exists(new_path)
       if(all(dir_exists) & !overwrite){
         stop(sprintf(
             "Directory '%s' already exist, please set `overwrite=TRUE`",
@@ -1391,28 +1407,38 @@ S3FileSystem = R6Class("S3FileSystem",
 
       # list all source files needing to be copied over
       src_files = lapply(path, self$dir_ls, type = "file", recurse = T)
+      src_files = lapply(src_files, function(x) unname(vapply(x, private$.s3_strip_uri, FUN.VALUE = "")))
+
       # get all sub directories from parent path directory
       src_sub_dir = lapply(list_zip(src_files, path), function(sp){
-          Filter(nzchar,
+          Filter(
+            nzchar,
             gsub("\\.", "", unique(trimws(dirname(path_rel(unlist(sp[[1]]), sp[[2]])), "left", "/")))
           )
       })
+
       # create sub directories within new_path
       lapply(list_zip(src_sub_dir, new_path), function(Dir) {
         lapply(paste(trimws(Dir[[2]], "right", "/"), Dir[[1]], sep = "/"), function(folder){
           dir.create(folder, showWarnings = F, recursive = T)
         })
       })
+
       # create destination files
-      file_zip = list_zip(src_files, new_path)
-      dest_files = lapply(file_zip, function(fz) {
-        paste(trimws(fz[[2]], "right", "/"), fz[[1]], sep = "/")
-      })
-      # download s3 files
+      dest_files = lapply(seq_along(src_files), function(x) fs::path(
+        new_path[[x]], path_rel(src_files[[x]], path[x]))
+      )
+
       paths = list_zip(src_files, dest_files)
+
+      kwargs = list(...)
+      kwargs$RequestPayer = self$request_payer
+
       lapply(paths, function(parts){
-        future_lapply(seq_along(parts), function(i){
-          private$.s3_download_file(parts[[1]][[i]], parts[[1]][[i]], ...)
+        future_lapply(seq_along(parts[[1]]), function(i){
+            kwargs$src = parts[[1]][i]
+            kwargs$dest = parts[[2]][i]
+            do.call(private$.s3_download_file, kwargs)
         })
       })
       return(path_rel(new_path))
@@ -1598,38 +1624,34 @@ S3FileSystem = R6Class("S3FileSystem",
         "`max_batch` is required to be greater than 5*MB" = (max_batch > 5*MB)
       )
       new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
-
       path = path_abs(path)
 
       # list all source files needing to be copied over
-      src_files = lapply(path, list.files, full.names = T, recursive = T)
+      src_files = lapply(path, fs::dir_info, type = "file", recurse = T)
 
-      # create destination files
-      file_zip = list_zip(path_rel(src_files), new_path)
-      dest_files = lapply(file_zip, function(fz) {
-        paste(trimws(fz[[2]], "right", "/"), trimws(fz[[1]], "left", "/"), sep = "/")
-      })
+      # create destination file location
+      dest_files = lapply(seq_along(src_files), function(x) fs::path(
+        new_path[[x]], path_rel(src_files[[x]]$path, path[x]))
+      )
 
-      # get file size
-      path_size = lapply(src_files, file.size)
-      multipart = lapply(path_size, function(x) self$multipart_threshold < x)
+      file_size = lapply(src_files, function(x) x$size)
+      multipart = lapply(file_size, function(x) self$multipart_threshold < x)
 
       # split source files
       standard_path = list_zip(
-        lapply(seq_along(src_files), function(i) src_files[[i]][!multipart[[i]]]),
+        lapply(seq_along(src_files), function(i) src_files[[i]]$path[!multipart[[i]]]),
         lapply(seq_along(dest_files), function(i) dest_files[[i]][!multipart[[i]]]),
-        lapply(seq_along(path_size), function(i) path_size[[i]][!multipart[[i]]])
+        lapply(seq_along(file_size), function(i) file_size[[i]][!multipart[[i]]])
       )
       multipart_path = list_zip(
-        lapply(seq_along(src_files), function(i) src_files[[i]][multipart[[i]]]),
+        lapply(seq_along(src_files), function(i) src_files[[i]]$path[!multipart[[i]]]),
         lapply(seq_along(dest_files), function(i) dest_files[[i]][multipart[[i]]]),
-        lapply(seq_along(path_size), function(i) path_size[[i]][multipart[[i]]])
+        lapply(seq_along(file_size), function(i) file_size[[i]][multipart[[i]]])
       )
-
       kwargs = list(...)
       kwargs$overwrite = overwrite
       kwargs$RequestPayer = self$request_payer
-      if (length(standard_path) > 0){
+      if (any(!vapply(multipart, any, FUN.VALUE = logical(1)))) {
         lapply(standard_path, function(part){
           future_lapply(seq_along(part[[1]]), function(i) {
             kwargs$src = part[[1]][i]
@@ -1639,7 +1661,7 @@ S3FileSystem = R6Class("S3FileSystem",
           })
         })
       }
-      if (length(multipart_path) > 0){
+      if (any(vapply(multipart, any, FUN.VALUE = logical(1)))){
         kwargs$max_batch = max_batch
         lapply(multipart_path, function(part){
           lapply(seq_along(part[[1]]), function(i) {
@@ -1651,7 +1673,7 @@ S3FileSystem = R6Class("S3FileSystem",
         })
       }
       self$clear_cache(self$path_dir(unlist(dest_files)))
-      return(self$path_join(path))
+      return(private$.s3_build_uri(path))
     },
 
     ############################################################################
@@ -1680,7 +1702,7 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       parts = str_split(path, "/", 2)
       root = path == lapply(parts, function(p) p[[1]])
-      return(self$path_join(c(dirname(path[!root]), path[root])))
+      return(private$.s3_build_uri(c(dirname(path[!root]), path[root])))
     },
 
     #' @description Returns the last extension for a path.
@@ -1704,7 +1726,7 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       pattern = "(?<!^|[.]|/)[.]([^.]+)$"
       pos = regexpr(pattern, path, perl = TRUE)
-      return(self$path_join(Filter(nzchar, unlist(regmatches(path, pos, invert = TRUE)))))
+      return(private$.s3_build_uri(Filter(nzchar, unlist(regmatches(path, pos, invert = TRUE)))))
     },
 
     #' @description Replace the extension with a new extension.
@@ -1715,7 +1737,7 @@ S3FileSystem = R6Class("S3FileSystem",
       stopifnot(
         "`path` is required to be a character vector" = is.character(path)
       )
-      return(self$path_join(paste(self$path_ext_remove(path), ext, sep = ".")))
+      return(private$.s3_build_uri(paste(self$path_ext_remove(path), ext, sep = ".")))
     },
 
     #' @description Returns the file name portion of the s3 uri path
@@ -1735,8 +1757,8 @@ S3FileSystem = R6Class("S3FileSystem",
       stopifnot(
         "`parts` is required to be a character vector" = is.character(parts) || is.list(parts)
       )
-      parts = lapply(Filter(Negate(is.null), parts), function(x) enc2utf8(as.character(x)))
-      return(vapply(parts, function(x) {
+      path = fs::path_join(parts)
+      return(vapply(path, function(x) {
           paste("s3:/", paste(trimws(gsub("s3://", "", x), whitespace="/"), collapse = "/"), sep = "/")
         }, FUN.VALUE = "")
       )
@@ -1958,15 +1980,14 @@ S3FileSystem = R6Class("S3FileSystem",
         stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
 
       version_id = if(is.null(src_parts$VersionId)) "" else sprintf("?versionId=%s", src_parts$VersionId)
-      copy_src = paste0(sprintf("%s/%s",src_parts$Bucket, src_parts$Key), version_id)
+      copy_src = paste0(sprintf("/%s/%s",src_parts$Bucket, src_parts$Key), version_id)
+      kwargs = list(...)
+      kwargs$Bucket = dest_parts$Bucket
+      kwargs$Key = dest_parts$Key
+      kwargs$CopySource = copy_src
       retry_api_call(
         tryCatch({
-          self$s3_client$copy_object(
-            Bucket = dest_parts$Bucket,
-            Key = dest_parts$Key,
-            CopySource = copy_src,
-            ...
-          )
+          do.call(self$s3_client$copy_object, kwargs)
         }), self$retries)
       self$clear_cache(dest)
     },
@@ -2117,7 +2138,7 @@ S3FileSystem = R6Class("S3FileSystem",
           kwargs$PartNumber = i
           kwargs$Body = obj[[i]]
           etag = retry_api_call(
-            do.call(self$s3_client$upload_part, kwargs)$Etag,
+            do.call(self$s3_client$upload_part, kwargs)$ETag,
             self$retries
           )
           return(list(ETag = etag, PartNumber = i))
@@ -2254,6 +2275,14 @@ S3FileSystem = R6Class("S3FileSystem",
       if(!dir)
         path = trimws(path, which = "right", whitespace = "/")
       return (if(!is.na(path)) path else self$root_marker)
+    },
+
+    .s3_build_uri = function(parts){
+      parts = lapply(Filter(Negate(is.null), parts), function(x) enc2utf8(as.character(x)))
+      return(vapply(parts, function(x) {
+        paste("s3:/", paste(trimws(gsub("s3://", "", x), whitespace="/"), collapse = "/"), sep = "/")
+      }, FUN.VALUE = "")
+      )
     },
 
     .s3_split_path = function(path) {

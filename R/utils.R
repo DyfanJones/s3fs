@@ -46,10 +46,6 @@ split_vec <- function(vec, len, max_len = length(vec)){
   lapply(seq_along(start), function(i) vec[start[i]:end[i]])
 }
 
-is_dir <- function(path){
-  return(file.info(path)$isdir)
-}
-
 write_bin <- function(obj,
                       filename) {
   # If R version is 4.0.0 + then use writeBin due to long vector support
