@@ -3,6 +3,12 @@
 
 # s3fs
 
+<!-- badges: start -->
+
+[![s3fs status
+badge](https://dyfanjones.r-universe.dev/badges/s3fs)](https://dyfanjones.r-universe.dev)
+<!-- badges: end -->
+
 `s3fs` provides a file-system like interface into Amazon Web Services
 for `R`. It utilizes [`paws`](https://github.com/paws-r/paws) `SDK`and
 [`R6`](https://github.com/r-lib/R6) for it’s core design. This repo has
@@ -12,7 +18,20 @@ however it’s API and implementation has been developed to follow `R`’s
 
 ## Installation
 
-Currently only avialable on github:
+r-universe installation:
+
+``` r
+# Enable repository from dyfanjones
+options(repos = c(
+  dyfanjones = 'https://dyfanjones.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org')
+)
+
+# Download and install s3fs in R
+install.packages('s3fs')
+```
+
+Github installation
 
 ``` r
 remotes::install_github("dyfanjones/s3fs")
@@ -36,8 +55,54 @@ remotes::install_github("dyfanjones/s3fs")
 `s3fs` attempts to give the same interface as `fs` when handling files
 on AWS S3 from `R`.
 
--   Vectorization. All `s3fs` functions are vectorized, accepting
+-   **Vectorization**. All `s3fs` functions are vectorized, accepting
     multiple path inputs similar to `fs`.
+-   **Predictable**.
+    -   Non-async functions return values that convey a path.
+    -   Async functions return a `future` object of it’s no-async
+        counterpart.
+    -   The only exception will be `s3_stream_in` which returns a list
+        of raw objects.
+-   **Naming conventions**. s3fs functions follows `fs` naming
+    conventions with `dir_*`, `file_*` and `path_*` however with the
+    syntax `s3_` infront i.e `s3_dir_*`, `s3_file_*` and `s3_path_*`
+    etc.
+-   **Explicit failure**. Similar to `fs` if a failure happens, then it
+    will be raised and not masked with a warning.
+
+# Extra features:
+
+-   **Scalable**. All `s3fs` functions are designed to have the option
+    to run in parallel through the use of `future` and `future.apply`.
+
+For example: copy a large file from one location to the next.
+
+``` r
+library(s3fs)
+library(future)
+
+plan("multisession")
+
+s3_file_copy("s3://mybucket/multipart/large_file.csv", "s3://mybucket/new_location/large_file.csv")
+```
+
+`s3fs` to copy a large file (\> 5GB) using multiparts, `future` allows
+each multipart to run in parallel to speed up the process.
+
+-   **Async**. `s3fs` uses `future` to create a few key async functions.
+    This is more focused on functions that might be moving large files
+    to and from `R` and `AWS S3`.
+
+For example: Copying a large file from `AWS S3` to `R`.
+
+``` r
+library(s3fs)
+library(future)
+
+plan("multisession")
+
+s3_file_copy_async("s3://mybucket/multipart/large_file.csv", "large_file.csv")
+```
 
 ## Usage
 
