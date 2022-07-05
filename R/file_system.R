@@ -276,6 +276,7 @@ s3_file_exists = function(path){
 #' @param invert (logical): If \code{code} return files which do not match.
 #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
 #' @param refresh (logical): Refresh cached in \code{s3_cache}.
+#' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}
 #' @return
 #' `s3_file_info` A data.table with metadata for each file. Columns returned are as follows.
 #' \itemize{
@@ -671,9 +672,10 @@ s3_dir_info = function(path = ".",
                        regexp = NULL,
                        invert = FALSE,
                        recurse = FALSE,
-                       refresh = FALSE){
+                       refresh = FALSE,
+                       ...){
   s3fs = s3_file_system()
-  return(s3fs$dir_info(path, type, glob, regexp, invert, recurse, refresh))
+  return(s3fs$dir_info(path, type, glob, regexp, invert, recurse, refresh, ...))
 }
 
 #' @rdname info
@@ -684,9 +686,10 @@ s3_dir_ls = function(path = ".",
                      regexp = NULL,
                      invert = FALSE,
                      recurse = FALSE,
-                     refresh = FALSE){
+                     refresh = FALSE,
+                     ...){
   s3fs = s3_file_system()
-  return(s3fs$dir_ls(path, type, glob, regexp, invert, recurse, refresh))
+  return(s3fs$dir_ls(path, type, glob, regexp, invert, recurse, refresh, ...))
 }
 
 #' @rdname upload

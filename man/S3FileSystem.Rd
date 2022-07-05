@@ -496,6 +496,8 @@ Delete file tags
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{path}}{(character): A character vector of paths or s3 uri}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -516,6 +518,8 @@ Get file tags
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{path}}{(character): A character vector of paths or s3 uri}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -948,7 +952,8 @@ Returns file information within AWS S3 directory
   regexp = NULL,
   invert = FALSE,
   recurse = FALSE,
-  refresh = FALSE
+  refresh = FALSE,
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -972,6 +977,8 @@ passed onto \code{grep()} to filter paths.}
 \item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
 
 \item{\code{refresh}}{(logical): Refresh cached in \code{s3_cache}.}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -1001,7 +1008,8 @@ Returns file name within AWS S3 directory
   regexp = NULL,
   invert = FALSE,
   recurse = FALSE,
-  refresh = FALSE
+  refresh = FALSE,
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -1025,6 +1033,8 @@ passed onto \code{grep()} to filter paths.}
 \item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
 
 \item{\code{refresh}}{(logical): Refresh cached in \code{s3_cache}.}
+
+\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \if{html}{\out{</div>}}
 }

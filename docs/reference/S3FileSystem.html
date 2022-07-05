@@ -613,6 +613,10 @@ and the file exists an error will be thrown.</p></dd>
 <dd><p>(character): A character vector of paths or s3 uri</p></dd>
 
 
+<dt><code>...</code></dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_put_object.html" class="external-link">s3_put_object</a></code></p></dd>
+
+
 </dl><p></p></div>
 </div>
 <div class="section">
@@ -631,6 +635,10 @@ and the file exists an error will be thrown.</p></dd>
 <h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or s3 uri</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_put_object.html" class="external-link">s3_put_object</a></code></p></dd>
 
 
 </dl><p></p></div>
@@ -1102,7 +1110,8 @@ and the file exists an error will be thrown.</p></dd>
 <span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1140,6 +1149,10 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 <dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
 
 
+<dt><code>...</code></dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
+
+
 </dl><p></p></div>
 </div>
 <div class="section">
@@ -1164,7 +1177,8 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 <span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1200,6 +1214,10 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 
 <dt><code>refresh</code></dt>
 <dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
 
 
 </dl><p></p></div>
