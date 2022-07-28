@@ -105,6 +105,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #'              copy and upload methods.
     #' @param request_payer (logical): Confirms that the requester knows that they
     #'              will be charged for the request.
+    #' @param anonymous (logical): Set up anonymous credentials when connecting to AWS S3.
     #' @param ... Other parameters within \code{paws} client.
     initialize = function(aws_access_key_id = NULL,
                           aws_secret_access_key = NULL,
@@ -115,6 +116,7 @@ S3FileSystem = R6Class("S3FileSystem",
                           disable_ssl = FALSE,
                           multipart_threshold = 2 * GB,
                           request_payer = FALSE,
+                          anonymous = FALSE,
                           ...){
       stopifnot(
         "`aws_access_key_id` is required to be a character vector" = (
@@ -153,6 +155,7 @@ S3FileSystem = R6Class("S3FileSystem",
         region_name,
         endpoint,
         disable_ssl,
+        anonymous,
         ...
       )
 
@@ -2295,6 +2298,7 @@ S3FileSystem = R6Class("S3FileSystem",
                          region_name,
                          endpoint,
                          disable_ssl,
+                         anonymous,
                          ...){
       add_list = function(x) if(length(x) == 0) NULL else x
       config = list()
@@ -2307,6 +2311,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
       credentials$creds = add_list(cred)
       credentials$profile = profile_name
+      credentials$anonymous = anonymous
       config$credentials = add_list(credentials)
       config$region = region_name
       config$endpoint = endpoint

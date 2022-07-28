@@ -13,9 +13,10 @@ s3_file_system(
   endpoint = NULL,
   disable_ssl = FALSE,
   multipart_threshold = 2 * GB,
+  request_payer = FALSE,
+  anonymous = FALSE,
   retries = 5,
   refresh = FALSE,
-  request_payer = FALSE,
   ...
 )
 }
@@ -38,12 +39,14 @@ then the default profile is used.}
 \item{multipart_threshold}{(numeric): Threshold to use multipart instead of standard
 copy and upload methods.}
 
+\item{request_payer}{(logical): Confirms that the requester knows that they
+will be charged for the request.}
+
+\item{anonymous}{(logical): Set up anonymous credentials when connecting to AWS S3.}
+
 \item{retries}{(numeric): max number of retry attempts}
 
 \item{refresh}{(logical): Refresh cached S3FileSystem class}
-
-\item{request_payer}{(logical): Confirms that the requester knows that they
-will be charged for the request.}
 
 \item{...}{Other parameters within \code{paws} client.}
 }

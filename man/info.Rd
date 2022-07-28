@@ -19,7 +19,8 @@ s3_dir_info(
   regexp = NULL,
   invert = FALSE,
   recurse = FALSE,
-  refresh = FALSE
+  refresh = FALSE,
+  ...
 )
 
 s3_dir_ls(
@@ -29,7 +30,8 @@ s3_dir_ls(
   regexp = NULL,
   invert = FALSE,
   recurse = FALSE,
-  refresh = FALSE
+  refresh = FALSE,
+  ...
 )
 }
 \arguments{
@@ -50,6 +52,8 @@ passed onto \code{grep()} to filter paths.}
 \item{recurse}{(logical): Returns all AWS S3 objects in lower sub directories}
 
 \item{refresh}{(logical): Refresh cached in \code{s3_cache}.}
+
+\item{...}{parameters to be passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \value{
 \code{s3_file_info} A data.table with metadata for each file. Columns returned are as follows.

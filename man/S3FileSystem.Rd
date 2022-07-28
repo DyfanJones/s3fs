@@ -103,6 +103,7 @@ Initialize S3FileSystem class
   disable_ssl = FALSE,
   multipart_threshold = 2 * GB,
   request_payer = FALSE,
+  anonymous = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -130,6 +131,8 @@ copy and upload methods.}
 
 \item{\code{request_payer}}{(logical): Confirms that the requester knows that they
 will be charged for the request.}
+
+\item{\code{anonymous}}{(logical): Set up anonymous credentials when connecting to AWS S3.}
 
 \item{\code{...}}{Other parameters within \code{paws} client.}
 }
@@ -518,8 +521,6 @@ Get file tags
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{path}}{(character): A character vector of paths or s3 uri}
-
-\item{\code{...}}{parameters to be passed to \code{\link[paws.storage]{s3_put_object}}}
 }
 \if{html}{\out{</div>}}
 }
