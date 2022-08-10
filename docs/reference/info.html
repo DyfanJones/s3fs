@@ -64,7 +64,8 @@ s3_dir_ls returns file name within AWS S3 directory"><!-- mathjax --><script src
 <span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">s3_dir_ls</span><span class="op">(</span></span>
@@ -74,7 +75,8 @@ s3_dir_ls returns file name within AWS S3 directory"><!-- mathjax --><script src
 <span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -110,6 +112,10 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 
 <dt>refresh</dt>
 <dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
+
+
+<dt>...</dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
 
 </dl></div>
     <div id="value">
@@ -186,7 +192,7 @@ involves a bucket that is either a source or a destination in a replication rule
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

@@ -161,6 +161,7 @@
 <span>  disable_ssl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  multipart_threshold <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">GB</span>,</span>
 <span>  request_payer <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  anonymous <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -204,6 +205,10 @@ copy and upload methods.</p></dd>
 <dt><code>request_payer</code></dt>
 <dd><p>(logical): Confirms that the requester knows that they
 will be charged for the request.</p></dd>
+
+
+<dt><code>anonymous</code></dt>
+<dd><p>(logical): Set up anonymous credentials when connecting to AWS S3.</p></dd>
 
 
 <dt><code>...</code></dt>
@@ -545,7 +550,7 @@ and the file exists an error will be thrown.</p></dd>
 <div class="section">
 <h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>obj</code></dt>
-<dd><p>(raw): A raw vector or rawConnection to be streamed up to AWS S3.</p></dd>
+<dd><p>(raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.</p></dd>
 
 
 <dt><code>path</code></dt>
@@ -635,10 +640,6 @@ and the file exists an error will be thrown.</p></dd>
 <h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or s3 uri</p></dd>
-
-
-<dt><code>...</code></dt>
-<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_put_object.html" class="external-link">s3_put_object</a></code></p></dd>
 
 
 </dl><p></p></div>
@@ -1487,7 +1488,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

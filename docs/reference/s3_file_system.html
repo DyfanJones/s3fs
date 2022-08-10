@@ -62,9 +62,10 @@ credentials please look at
 <span>  endpoint <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  disable_ssl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  multipart_threshold <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">GB</span>,</span>
+<span>  request_payer <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  anonymous <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  retries <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  request_payer <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -105,17 +106,21 @@ then the default profile is used.</p></dd>
 copy and upload methods.</p></dd>
 
 
+<dt>request_payer</dt>
+<dd><p>(logical): Confirms that the requester knows that they
+will be charged for the request.</p></dd>
+
+
+<dt>anonymous</dt>
+<dd><p>(logical): Set up anonymous credentials when connecting to AWS S3.</p></dd>
+
+
 <dt>retries</dt>
 <dd><p>(numeric): max number of retry attempts</p></dd>
 
 
 <dt>refresh</dt>
 <dd><p>(logical): Refresh cached S3FileSystem class</p></dd>
-
-
-<dt>request_payer</dt>
-<dd><p>(logical): Confirms that the requester knows that they
-will be charged for the request.</p></dd>
 
 
 <dt>...</dt>
@@ -158,7 +163,7 @@ will be charged for the request.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>
