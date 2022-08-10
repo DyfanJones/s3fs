@@ -445,7 +445,7 @@ Streams out raw vector to AWS S3 file
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{obj}}{(raw): A raw vector or rawConnection to be streamed up to AWS S3.}
+\item{\code{obj}}{(raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.}
 
 \item{\code{path}}{(character): A character vector of paths or s3 uri}
 

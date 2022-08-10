@@ -16,7 +16,7 @@ s3_file_stream_out(obj, path, max_batch = 100 * MB, overwrite = FALSE, ...)
 \item{...}{parameters to be passed to \code{\link[paws.storage]{s3_get_object}} and
 \code{\link[paws.storage]{s3_put_object}}}
 
-\item{obj}{(raw): A raw vector or rawConnection to be streamed up to AWS S3.}
+\item{obj}{(raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.}
 
 \item{max_batch}{(numeric): Maximum batch size being uploaded with each multipart.}
 

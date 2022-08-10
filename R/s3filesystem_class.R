@@ -8,6 +8,7 @@
 #' @import data.table
 #' @importFrom utils modifyList
 #' @importFrom fs path path_join is_dir dir_exists dir_info
+#' @improtFrom curl curl
 
 KB = 1024
 MB = KB ^ 2
@@ -574,7 +575,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
     #' @description Streams out raw vector to AWS S3 file
     #' @param path (character): A character vector of paths or s3 uri
-    #' @param obj (raw): A raw vector or rawConnection to be streamed up to AWS S3.
+    #' @param obj (raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.
     #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
@@ -587,7 +588,7 @@ S3FileSystem = R6Class("S3FileSystem",
                                ...){
       stopifnot(
         "`obj` is required to be a raw vector or list of raw vectors" = (
-          inherits(obj, c("raw", "list"))
+          inherits(obj, c("raw", "list", "character"))
         ),
         "`path` is required to be a character vector" = is.character(path),
         "`overwrite` is required to be class numeric" = is.numeric(max_batch),
@@ -607,33 +608,50 @@ S3FileSystem = R6Class("S3FileSystem",
 
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
+      obj_type = if (is.list(obj)) vapply(obj, class, "") else class(obj)
+      if (length(unique(obj_type)) > 1)
+        stop(sprintf(
+            "`obj` needs to be of the same type: %s", paste(obj_type, collapse = ", ")
+          ), call. = FALSE
+        )
+
       obj = if(is.list(obj)) obj else list(obj)
-      obj_size = sapply(obj, length)
-      multipart = self$multipart_threshold < obj_size
 
-      standard = list_zip(obj[!multipart], path[!multipart], obj_size[!multipart])
-      multipart = list_zip(
-        lapply(obj[multipart],split_vec, len = max_batch),
-        path[multipart],
-        obj_size[multipart]
-      )
-
-      if (length(standard) > 0){
-        future_lapply(standard, function(part){
+      if (unique(obj_type) == "character"){
+        url_stream = list_zip(obj, path, max_batch)
+        future_lapply(url_stream, function(part) {
           kwargs$obj = part[[1]]
           kwargs$dest = part[[2]]
-          kwargs$size = part[[3]]
-          do.call(private$.s3_stream_out_file, kwargs)
+          do.call(private$.s3_stream_out_url, kwargs)
         })
-      }
-      if (length(multipart) > 0){
-        kwargs$max_batch = max_batch
-        lapply(seq_along(multipart), function(i) {
-          kwargs$obj = multipart[[i]][[1]]
-          kwargs$dest = multipart[[i]][[2]]
-          kwargs$size = multipart[[i]][[3]]
-          do.call(private$.s3_stream_out_multipart_file, kwargs)
-        })
+      } else{
+        obj_size = lengths(obj)
+        multipart = self$multipart_threshold < obj_size
+
+        standard = list_zip(obj[!multipart], path[!multipart], obj_size[!multipart])
+        multipart = list_zip(
+          lapply(obj[multipart],split_vec, len = max_batch),
+          path[multipart],
+          obj_size[multipart]
+        )
+
+        if (length(standard) > 0){
+          future_lapply(standard, function(part){
+            kwargs$obj = part[[1]]
+            kwargs$dest = part[[2]]
+            kwargs$size = part[[3]]
+            do.call(private$.s3_stream_out_file, kwargs)
+          })
+        }
+        if (length(multipart) > 0){
+          kwargs$max_batch = max_batch
+          lapply(seq_along(multipart), function(i) {
+            kwargs$obj = multipart[[i]][[1]]
+            kwargs$dest = multipart[[i]][[2]]
+            kwargs$size = multipart[[i]][[3]]
+            do.call(private$.s3_stream_out_multipart_file, kwargs)
+          })
+        }
       }
       self$clear_cache(path)
       return(private$.s3_build_uri(path))
@@ -1834,7 +1852,8 @@ S3FileSystem = R6Class("S3FileSystem",
   ),
   private = list(
     .retries = 5,
-    .extra_tokenize_attribute = "default_block_size",
+    .upload_parts = list(),
+    .upload_no = 1,
 
     .cache_s3_data = function(path){
       !is.null(self$s3_cache[[path]])
@@ -2168,6 +2187,79 @@ S3FileSystem = R6Class("S3FileSystem",
         LOGGER$error("Failed to Upload file in Multiparts")
         stop(cond)
       })
+      self$clear_cache(dest)
+    },
+
+    .s3_stream_out_url = function(obj,
+                                  dest,
+                                  max_batch = 100 * MB,
+                                  overwrite = FALSE,
+                                  ...){
+      dest_parts = private$.s3_split_path(dest)
+      if(isFALSE(overwrite) & self$file_exists(dest))
+        stop("File already exists and overwrite is set to `FALSE`", call. = FALSE)
+      upload_id = retry_api_call(
+        self$s3_client$create_multipart_upload(
+          Bucket = dest_parts$Bucket, Key = dest_parts$Key, ...
+        )$UploadId, self$retries)
+
+      kwargs = list(...)
+      kwargs$Bucket = dest_parts$Bucket
+      kwargs$Key = dest_parts$Key
+      kwargs$UploadId = upload_id
+
+      stream <- curl::curl(obj)
+      open(stream, "rbf")
+
+      multipart = TRUE
+      while(isIncomplete(stream)) {
+        buf = readBin(stream, raw(), max_batch)
+        buf_len = length(buf)
+        if(buf_len == 0) {
+          break
+        }
+        kwargs$Body = buf
+        if(buf_len < 5 *MB & private$.upload_no == 1){
+          kwargs$UploadId = NULL
+          multipart = FALSE
+          retry_api_call(
+            do.call(self$s3_client$put_object, kwargs),
+            self$retries
+          )
+        } else {
+          tryCatch({
+            kwargs$PartNumber = private$.upload_no
+            etag = retry_api_call(
+              do.call(self$s3_client$upload_part, kwargs)$ETag,
+              self$retries
+            )
+            private$.upload_parts[[private$.upload_no]] = list(
+              ETag = etag, PartNumber = private$.upload_no
+            )
+            private$.upload_no = private$.upload_no + 1
+          }, error = function(cond){
+            kwargs$MultipartUpload = NULL
+            retry_api_call(
+              do.call(self$s3_client$abort_multipart_upload, kwargs),
+              self$retries
+            )
+            LOGGER$error("Failed to Upload file in Multiparts")
+            stop(cond)
+          })
+        }
+      }
+      if (multipart){
+        kwargs$PartNumber = NULL
+        kwargs$Body = NULL
+        kwargs$MultipartUpload = list(Parts = private$.upload_parts)
+        retry_api_call(
+          do.call(self$s3_client$complete_multipart_upload, kwargs),
+          self$retries
+        )
+      }
+      # reset upload methods
+      private$.upload_no = 1
+      private$.upload_parts = list()
       self$clear_cache(dest)
     },
 

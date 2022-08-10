@@ -17,6 +17,7 @@ Collate:
     'file_system.R'
     'file_system_async.R'
 Imports:
+    curl,
     R6,
     data.table,
     fs,
