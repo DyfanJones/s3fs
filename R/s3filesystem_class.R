@@ -1852,8 +1852,6 @@ S3FileSystem = R6Class("S3FileSystem",
   ),
   private = list(
     .retries = 5,
-    .upload_parts = list(),
-    .upload_no = 1,
 
     .cache_s3_data = function(path){
       !is.null(self$s3_cache[[path]])
@@ -2207,11 +2205,13 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$Bucket = dest_parts$Bucket
       kwargs$Key = dest_parts$Key
       kwargs$UploadId = upload_id
-
       stream <- curl::curl(obj)
       open(stream, "rbf")
       on.exit(close(stream))
+
       multipart = TRUE
+      upload_no = 1
+      upload_parts = list()
       while(isIncomplete(stream)) {
         buf = readBin(stream, raw(), max_batch)
         buf_len = length(buf)
@@ -2219,24 +2219,25 @@ S3FileSystem = R6Class("S3FileSystem",
           break
         }
         kwargs$Body = buf
-        if(buf_len < 5 *MB & private$.upload_no == 1){
+        if(buf_len < 5 *MB & upload_no == 1){
           kwargs$UploadId = NULL
           multipart = FALSE
           retry_api_call(
             do.call(self$s3_client$put_object, kwargs),
             self$retries
           )
+          break
         } else {
           tryCatch({
-            kwargs$PartNumber = private$.upload_no
+            kwargs$PartNumber = upload_no
             etag = retry_api_call(
               do.call(self$s3_client$upload_part, kwargs)$ETag,
               self$retries
             )
-            private$.upload_parts[[private$.upload_no]] = list(
-              ETag = etag, PartNumber = private$.upload_no
+            upload_parts[[upload_no]] = list(
+              ETag = etag, PartNumber = upload_no
             )
-            private$.upload_no = private$.upload_no + 1
+            upload_no = upload_no + 1
           }, error = function(cond){
             kwargs$MultipartUpload = NULL
             retry_api_call(
@@ -2251,15 +2252,12 @@ S3FileSystem = R6Class("S3FileSystem",
       if (multipart){
         kwargs$PartNumber = NULL
         kwargs$Body = NULL
-        kwargs$MultipartUpload = list(Parts = private$.upload_parts)
+        kwargs$MultipartUpload = list(Parts = upload_parts)
         retry_api_call(
           do.call(self$s3_client$complete_multipart_upload, kwargs),
           self$retries
         )
       }
-      # reset upload methods
-      private$.upload_no = 1
-      private$.upload_parts = list()
       self$clear_cache(dest)
     },
 
