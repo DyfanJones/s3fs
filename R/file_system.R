@@ -390,7 +390,7 @@ s3_file_size = function(path){
 #'
 #' `s3_file_stream_out` streams raw vector out to AWS S3 file
 #' @param path (character): A character vector of paths or s3 uri
-#' @param obj (raw): A raw vector or rawConnection to be streamed up to AWS S3.
+#' @param obj (raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.
 #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
