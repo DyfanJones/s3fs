@@ -2210,7 +2210,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
       stream <- curl::curl(obj)
       open(stream, "rbf")
-
+      on.exit(close(stream))
       multipart = TRUE
       while(isIncomplete(stream)) {
         buf = readBin(stream, raw(), max_batch)
