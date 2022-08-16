@@ -1995,14 +1995,15 @@ S3FileSystem = R6Class("S3FileSystem",
 
     .s3_download_file = function(src, dest, ...) {
       s3_parts = private$.s3_split_path(src)
-      obj = retry_api_call(
-        self$s3_client$get_object(
+      retry_api_call(
+        self$s3_client$download_file(
           Bucket = s3_parts$Bucket,
           Key = s3_parts$Key,
           VersionId = s3_parts$VersionId,
+          Filename = dest,
           ...
         )$Body, self$retries)
-      return(write_bin(obj, dest))
+      return(invisible(TRUE))
     },
 
     .s3_copy_standard = function(src,

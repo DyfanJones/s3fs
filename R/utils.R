@@ -46,40 +46,6 @@ split_vec <- function(vec, len, max_len = length(vec)){
   lapply(seq_along(start), function(i) vec[start[i]:end[i]])
 }
 
-write_bin <- function(obj,
-                      filename) {
-  # If R version is 4.0.0 + then use writeBin due to long vector support
-  # https://github.com/HenrikBengtsson/Wishlist-for-R/issues/97
-  if (getRversion() > R_system_version("4.0.0")){
-    writeBin(obj, filename)
-  } else {
-    # use readr if R version < 4.0.0 for extra speed
-    if((!requireNamespace("brio", quietly = TRUE))){
-      brio::write_file_raw(obj, filename)
-    } else {
-      base_write_loop(obj, filename)
-    }
-  }
-  return(invisible(TRUE))
-}
-
-base_write_loop <- function(obj,
-                            filename,
-                            chunk_size = (GB*2)-2){
-  # Only 2^31 - 1 bytes can be written in a single call
-  max_len <- length(obj)
-  start <- seq(1, max_len, chunk_size)
-  end <- c(start[-1]-1, max_len)
-  if (length(start) == 1) {
-    writeBin(obj, filename)
-  } else {
-    # Open for reading and appending.
-    con <- file(filename, "a+b")
-    on.exit(close(con))
-    sapply(seq_along(start), function(i){writeBin(obj[start[i]:end[i]], con)})
-  }
-}
-
 camel_to_snake = function(name) {
   name = gsub('(.)([A-Z][a-z]+)', '\\1_\\2', name)
   return(tolower(gsub('([a-z0-9])([A-Z])', '\\1_\\2', name)))
