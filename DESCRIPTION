@@ -27,6 +27,5 @@ Imports:
     paws.storage,
     utils
 Suggests: 
-    brio,
     testthat (>= 3.1.4)
 Config/testthat/edition: 3
