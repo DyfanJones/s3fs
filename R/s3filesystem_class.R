@@ -1055,7 +1055,7 @@ S3FileSystem = R6Class("S3FileSystem",
       s3_parts = lapply(path[!found], private$.s3_split_path)
       exist = future_vapply(seq_along(s3_parts), function(i){
         tryCatch({
-          self$s3_client$list_object_v2(
+          self$s3_client$list_objects_v2(
             Bucket = s3_parts[[i]]$Bucket,
             MaxKeys = 1,
             ...
