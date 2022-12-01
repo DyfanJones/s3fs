@@ -6,7 +6,13 @@
 \alias{s3_dir_upload}
 \title{Upload file and directory}
 \usage{
-s3_file_upload(path, new_path, max_batch = 100 * MB, overwrite = FALSE, ...)
+s3_file_upload(
+  path,
+  new_path,
+  max_batch = fs_bytes("100MB"),
+  overwrite = FALSE,
+  ...
+)
 
 s3_dir_upload(path, new_path, max_batch, overwrite = FALSE, ...)
 }
@@ -15,7 +21,7 @@ s3_dir_upload(path, new_path, max_batch, overwrite = FALSE, ...)
 
 \item{new_path}{(character): A character vector of AWS S3 paths or uri's of the new locations.}
 
-\item{max_batch}{(numeric): Maximum batch size being uploaded with each multipart.}
+\item{max_batch}{(\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.}
 
 \item{overwrite}{(logical): Overwrite files if the exist. If this is \code{FALSE}
 and the file exists an error will be thrown.}

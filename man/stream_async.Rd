@@ -11,7 +11,7 @@ s3_file_stream_in_async(path, ...)
 s3_file_stream_out_async(
   obj,
   path,
-  max_batch = 100 * MB,
+  max_batch = fs_bytes("100MB"),
   overwrite = FALSE,
   ...
 )
@@ -24,7 +24,7 @@ s3_file_stream_out_async(
 
 \item{obj}{(raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.}
 
-\item{max_batch}{(numeric): Maximum batch size being uploaded with each multipart.}
+\item{max_batch}{(\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.}
 
 \item{overwrite}{(logical): Overwrite files if the exist. If this is \code{FALSE}
 and the file exists an error will be thrown.}

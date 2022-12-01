@@ -61,4 +61,3 @@ now_utc = function(){
   attr(now, "tzone") <- "UTC"
   now
 }
-

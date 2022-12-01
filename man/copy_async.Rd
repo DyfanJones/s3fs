@@ -9,19 +9,25 @@
 s3_file_copy_async(
   path,
   new_path,
-  max_batch = 100 * MB,
+  max_batch = fs_bytes("100MB"),
   overwrite = FALSE,
   ...
 )
 
-s3_dir_copy_async(path, new_path, max_batch = 100 * MB, overwrite = FALSE, ...)
+s3_dir_copy_async(
+  path,
+  new_path,
+  max_batch = fs_bytes("100MB"),
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{path}{(character): path to a local directory of file or a uri.}
 
 \item{new_path}{(character): path to a local directory of file or a uri.}
 
-\item{max_batch}{(numeric): Maximum batch size being uploaded with each multipart.}
+\item{max_batch}{(\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.}
 
 \item{overwrite}{(logical): Overwrite files if the exist. If this is \code{FALSE}
 and the file exists an error will be thrown.}

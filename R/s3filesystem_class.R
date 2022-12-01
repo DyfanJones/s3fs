@@ -7,12 +7,11 @@
 #' @import future.apply
 #' @import data.table
 #' @importFrom utils modifyList
-#' @importFrom fs path path_join is_dir dir_exists dir_info
-#' @improtFrom curl curl
+#' @importFrom fs path path_join is_dir dir_exists dir_info fs_bytes
+#' @importFrom curl curl
 
 KB = 1024
 MB = KB ^ 2
-GB = KB ^ 3
 
 retry_api_call = function(expr, retries){
   if(retries == 0){
@@ -102,7 +101,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #'              then the default profile is used.
     #' @param endpoint (character): The complete URL to use for the constructed client.
     #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
-    #' @param multipart_threshold (numeric): Threshold to use multipart instead of standard
+    #' @param multipart_threshold (\link[fs]{fs_bytes}): Threshold to use multipart instead of standard
     #'              copy and upload methods.
     #' @param request_payer (logical): Confirms that the requester knows that they
     #'              will be charged for the request.
@@ -115,7 +114,7 @@ S3FileSystem = R6Class("S3FileSystem",
                           profile_name = NULL,
                           endpoint = NULL,
                           disable_ssl = FALSE,
-                          multipart_threshold = 2 * GB,
+                          multipart_threshold = fs_bytes("2GB"),
                           request_payer = FALSE,
                           anonymous = FALSE,
                           ...){
@@ -205,14 +204,14 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description copy files
     #' @param path (character): path to a local directory of file or a uri.
     #' @param new_path (character): path to a local directory of file or a uri.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
     #' @return character vector of s3 uri paths
     file_copy = function(path,
                          new_path,
-                         max_batch = 100 * MB,
+                         max_batch = fs_bytes("100MB"),
                          overwrite = FALSE,
                          ...){
       stopifnot(
@@ -525,20 +524,21 @@ S3FileSystem = R6Class("S3FileSystem",
       setcolorder(dt,
         c("bucket_name", "key", "uri", "size", "type", "etag", "last_modified")
       )
+      dt$size <- fs::fs_bytes(dt$size)
       return(dt)
     },
 
     #' @description Move files to another location on AWS S3
     #' @param path (character): A character vector of s3 uri
     #' @param new_path (character): A character vector of s3 uri.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
     #' @return character vector of s3 uri paths
     file_move = function(path,
                          new_path,
-                         max_batch = 100*MB,
+                         max_batch = fs_bytes("100MB"),
                          overwrite = FALSE,
                          ...){
       path = private$.s3_build_uri(path)
@@ -576,14 +576,14 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Streams out raw vector to AWS S3 file
     #' @param path (character): A character vector of paths or s3 uri
     #' @param obj (raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
     #' @return character vector of s3 uri paths
     file_stream_out = function(obj,
                                path,
-                               max_batch = 100 * MB,
+                               max_batch = fs_bytes("100MB"),
                                overwrite = FALSE,
                                ...){
       stopifnot(
@@ -862,7 +862,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Uploads files to AWS S3
     #' @param path (character): A character vector of local file paths to upload to AWS S3
     #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
@@ -870,7 +870,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @return character vector of s3 uri paths
     file_upload = function(path,
                            new_path,
-                           max_batch = 100 * MB,
+                           max_batch = fs_bytes("100MB"),
                            overwrite = FALSE,
                            ...){
       stopifnot(
@@ -1195,7 +1195,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Copies the direcotry recursively to the new location.
     #' @param path (character): path to a local directory of file or a uri.
     #' @param new_path (character): path to a local directory of file or a uri.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
@@ -1203,7 +1203,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @return character vector of s3 uri paths
     dir_copy = function(path,
                         new_path,
-                        max_batch = 100 * MB,
+                        max_batch = fs_bytes("100MB"),
                         overwrite = FALSE,
                         ...){
       stopifnot(
@@ -1543,6 +1543,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(!is.null(regexp))
         files = files[grep(regexp, get("key"), invert = invert),]
 
+      files$size = fs::fs_bytes(files$size)
       return(files)
     },
 
@@ -1644,7 +1645,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @description Uploads local directory to AWS S3
     #' @param path (character): A character vector of local file paths to upload to AWS S3
     #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
-    #' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+    #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
     #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
     #'              and the file exists an error will be thrown.
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
@@ -1652,7 +1653,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @return character vector of s3 uri paths
     dir_upload = function(path,
                           new_path,
-                          max_batch = 100 * MB,
+                          max_batch = fs_bytes("100MB"),
                           overwrite = FALSE,
                           ...){
       stopifnot(
@@ -1854,7 +1855,8 @@ S3FileSystem = R6Class("S3FileSystem",
     .retries = 5,
 
     .cache_s3_data = function(path){
-      !is.null(self$s3_cache[[path]])
+      return(names(self$s3_cache) %in% path)
+      # !is.null(self$s3_cache[[path]])
     },
 
     .cache_s3_bucket = function(path){
@@ -1931,8 +1933,6 @@ S3FileSystem = R6Class("S3FileSystem",
         while (!identical(kwargs$ContinuationToken, character(0))){
           batch_resp = retry_api_call(
             tryCatch({
-              # Async while loop:
-              # https://stackoverflow.com/questions/43121109/parallel-while-loop-in-r
               do.call(self$s3_client$list_objects_v2, kwargs)
             } # TODO: handle aws error
             ), self$retries
