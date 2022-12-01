@@ -15,7 +15,7 @@ s3fs_cache = new.env(parent = emptyenv())
 #'              then the default profile is used.
 #' @param endpoint (character): The complete URL to use for the constructed client.
 #' @param disable_ssl (logical): Whether or not to use SSL. By default, SSL is used.
-#' @param multipart_threshold (numeric): Threshold to use multipart instead of standard
+#' @param multipart_threshold (\link[fs]{fs_bytes}): Threshold to use multipart instead of standard
 #'              copy and upload methods.
 #' @param request_payer (logical): Confirms that the requester knows that they
 #'              will be charged for the request.
@@ -46,7 +46,7 @@ s3_file_system = function(aws_access_key_id = NULL,
                           profile_name = NULL,
                           endpoint = NULL,
                           disable_ssl = FALSE,
-                          multipart_threshold = 2 * GB,
+                          multipart_threshold = fs_bytes("2GB"),
                           request_payer = FALSE,
                           anonymous = FALSE,
                           retries = 5,
@@ -123,7 +123,7 @@ s3_file_chmod = function(path,
 #' `s3_dir_copy` copies the directory recursively to the new location
 #' @param path (character): path to a local directory of file or a uri.
 #' @param new_path (character): path to a local directory of file or a uri.
-#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
@@ -144,7 +144,7 @@ s3_file_chmod = function(path,
 #' @export
 s3_file_copy = function(path,
                         new_path,
-                        max_batch = 100 * MB,
+                        max_batch = fs_bytes("100MB"),
                         overwrite = FALSE,
                         ...){
   s3fs = s3_file_system()
@@ -391,7 +391,7 @@ s3_file_size = function(path){
 #' `s3_file_stream_out` streams raw vector out to AWS S3 file
 #' @param path (character): A character vector of paths or s3 uri
 #' @param obj (raw|character): A raw vector, rawConnection, url to be streamed up to AWS S3.
-#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_get_object}} and
@@ -421,7 +421,7 @@ s3_file_stream_in = function(path,
 #' @export
 s3_file_stream_out = function(obj,
                              path,
-                             max_batch = 100 * MB,
+                             max_batch = fs_bytes("100MB"),
                              overwrite = FALSE,
                              ...){
   s3fs = s3_file_system()
@@ -482,7 +482,7 @@ s3_file_touch = function(path,
 #' `s3_dir_upload` upload directory to AWS S3
 #' @param path (character): A character vector of local file paths to upload to AWS S3
 #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
-#' @param max_batch (numeric): Maximum batch size being uploaded with each multipart.
+#' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
 #' @param overwrite (logical): Overwrite files if the exist. If this is \code{FALSE}
 #'              and the file exists an error will be thrown.
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_put_object}}
@@ -492,7 +492,7 @@ s3_file_touch = function(path,
 #' @export
 s3_file_upload = function(path,
                           new_path,
-                          max_batch = 100 * MB,
+                          max_batch = fs_bytes("100MB"),
                           overwrite = FALSE,
                           ...){
   s3fs = s3_file_system()
@@ -627,7 +627,7 @@ s3_bucket_delete = function(path){
 #' @export
 s3_dir_copy = function(path,
                        new_path,
-                       max_batch = 100 * MB,
+                       max_batch = fs_bytes("100MB"),
                        overwrite = FALSE,
                        ...){
   s3fs = s3_file_system()

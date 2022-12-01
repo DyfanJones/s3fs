@@ -12,7 +12,7 @@ s3_file_system(
   profile_name = NULL,
   endpoint = NULL,
   disable_ssl = FALSE,
-  multipart_threshold = 2 * GB,
+  multipart_threshold = fs_bytes("2GB"),
   request_payer = FALSE,
   anonymous = FALSE,
   retries = 5,
@@ -36,7 +36,7 @@ then the default profile is used.}
 
 \item{disable_ssl}{(logical): Whether or not to use SSL. By default, SSL is used.}
 
-\item{multipart_threshold}{(numeric): Threshold to use multipart instead of standard
+\item{multipart_threshold}{(\link[fs]{fs_bytes}): Threshold to use multipart instead of standard
 copy and upload methods.}
 
 \item{request_payer}{(logical): Confirms that the requester knows that they
