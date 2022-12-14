@@ -51,7 +51,13 @@ s3_file_stream_out streams raw vector out to AWS S3 file"><!-- mathjax --><scrip
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">s3_file_stream_in</span><span class="op">(</span><span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">s3_file_stream_out</span><span class="op">(</span><span class="va">obj</span>, <span class="va">path</span>, max_batch <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">MB</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">s3_file_stream_out</span><span class="op">(</span></span>
+<span>  <span class="va">obj</span>,</span>
+<span>  <span class="va">path</span>,</span>
+<span>  max_batch <span class="op">=</span> <span class="fu"><a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a></span><span class="op">(</span><span class="st">"100MB"</span><span class="op">)</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -70,7 +76,7 @@ s3_file_stream_out streams raw vector out to AWS S3 file"><!-- mathjax --><scrip
 
 
 <dt>max_batch</dt>
-<dd><p>(numeric): Maximum batch size being uploaded with each multipart.</p></dd>
+<dd><p>(<a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a>): Maximum batch size being uploaded with each multipart.</p></dd>
 
 
 <dt>overwrite</dt>

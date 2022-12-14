@@ -61,7 +61,7 @@ credentials please look at
 <span>  profile_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  endpoint <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  disable_ssl <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  multipart_threshold <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">GB</span>,</span>
+<span>  multipart_threshold <span class="op">=</span> <span class="fu"><a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a></span><span class="op">(</span><span class="st">"2GB"</span><span class="op">)</span>,</span>
 <span>  request_payer <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  anonymous <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  retries <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -102,7 +102,7 @@ then the default profile is used.</p></dd>
 
 
 <dt>multipart_threshold</dt>
-<dd><p>(numeric): Threshold to use multipart instead of standard
+<dd><p>(<a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a>): Threshold to use multipart instead of standard
 copy and upload methods.</p></dd>
 
 

@@ -54,7 +54,7 @@ s3_file_stream_out streams raw vector out to AWS S3 file"><!-- mathjax --><scrip
 <span><span class="fu">s3_file_stream_out_async</span><span class="op">(</span></span>
 <span>  <span class="va">obj</span>,</span>
 <span>  <span class="va">path</span>,</span>
-<span>  max_batch <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">MB</span>,</span>
+<span>  max_batch <span class="op">=</span> <span class="fu"><a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a></span><span class="op">(</span><span class="st">"100MB"</span><span class="op">)</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -76,7 +76,7 @@ s3_file_stream_out streams raw vector out to AWS S3 file"><!-- mathjax --><scrip
 
 
 <dt>max_batch</dt>
-<dd><p>(numeric): Maximum batch size being uploaded with each multipart.</p></dd>
+<dd><p>(<a href="https://fs.r-lib.org/reference/fs_bytes.html" class="external-link">fs_bytes</a>): Maximum batch size being uploaded with each multipart.</p></dd>
 
 
 <dt>overwrite</dt>
