@@ -147,20 +147,19 @@ S3FileSystem = R6Class("S3FileSystem",
           is.logical(request_payer)
         )
       )
+      self$profile_name = profile_name
+      self$region_name = region_name %||% get_region(profile_name)
       config = private$.cred_set(
         aws_access_key_id,
         aws_secret_access_key,
         aws_session_token,
-        profile_name,
-        region_name,
+        self$profile_name,
+        self$region_name,
         endpoint,
         disable_ssl,
         anonymous,
         ...
       )
-
-      self$region_name = region_name %||% get_region(profile_name)
-      self$profile_name = profile_name
       self$multipart_threshold = multipart_threshold
       self$request_payer = if(request_payer) "requester" else NULL
       self$s3_client = paws.storage::s3(config)

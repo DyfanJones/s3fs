@@ -241,6 +241,38 @@
 <span><span class="co">#&gt; [5] "s3://MyBucket/fileazqpwujaydqg/e"</span></span></code></pre></div>
 <p><sup>Created on 2022-06-22 by the <a href="https://reprex.tidyverse.org" class="external-link">reprex package</a> (v2.0.1)</sup></p>
 <p><strong>NOTE:</strong> all examples have be developed from <code>fs</code>.</p>
+<div class="section level3">
+<h3 id="file-systems-that-emulate-s3">File systems that emulate S3<a class="anchor" aria-label="anchor" href="#file-systems-that-emulate-s3"></a>
+</h3>
+<p><code>s3fs</code> allows you to connect to file systems that provides an S3-compatible interface. For example, <a href="https://min.io/" class="external-link">MinIO</a> offers high-performance, S3 compatible object storage. You will be able to connect to your <code>MinIO</code> server using <code><a href="reference/s3_file_system.html">s3fs::s3_file_system</a></code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">s3fs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/s3_file_system.html">s3_file_system</a></span><span class="op">(</span></span>
+<span>  aws_access_key_id <span class="op">=</span> <span class="st">"minioadmin"</span>,  </span>
+<span>  aws_secret_access_key <span class="op">=</span> <span class="st">"minioadmin"</span>,</span>
+<span>  endpoint <span class="op">=</span> <span class="st">"http://localhost:9000"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/info.html">s3_dir_ls</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] ""</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/create.html">s3_bucket_create</a></span><span class="op">(</span><span class="st">"s3://testbucket"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "s3://testbucket"</span></span>
+<span></span>
+<span><span class="co"># refresh cache</span></span>
+<span><span class="fu"><a href="reference/info.html">s3_dir_ls</a></span><span class="op">(</span>refresh <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "s3://testbucket"</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/s3_bucket_delete.html">s3_bucket_delete</a></span><span class="op">(</span><span class="st">"s3://testbucket"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "s3://testbucket"</span></span>
+<span></span>
+<span><span class="co"># refresh cache</span></span>
+<span><span class="fu"><a href="reference/info.html">s3_dir_ls</a></span><span class="op">(</span>refresh <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] ""</span></span></code></pre></div>
+<p><sup>Created on 2022-12-14 with <a href="https://reprex.tidyverse.org" class="external-link">reprex v2.0.2</a></sup></p>
+<p><strong>NOTE:</strong> if you want change from AWS S3 to Minio and <code>s3_file_system</code> has been previously run you will need refresh the session by setting <code>refresh = TRUE</code>. You can use multiple sessions by using the R6 class <code>S3FileSystem</code> directly.</p>
+</div>
 </div>
 </div>
 <div class="section level1">

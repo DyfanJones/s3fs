@@ -38,7 +38,14 @@ pkg_method <- function(fun, pkg) {
   return(fun_name)
 }
 
-get_region <- pkg_method("get_region", "paws.common")
+get_region <- function(...) {
+  fun <- pkg_method("get_region", "paws.common")
+  tryCatch({
+    fun(...)
+  }, error = function(e) {
+    "us-east-1"
+  })
+}
 
 split_vec <- function(vec, len, max_len = length(vec)){
   start <- seq(1, max_len, len)

@@ -176,6 +176,43 @@ paths |> s3_file_delete()
 
 **NOTE:** all examples have be developed from `fs`.
 
+### File systems that emulate S3
+
+`s3fs` allows you to connect to file systems that provides an S3-compatible interface. For example, [MinIO](https://min.io/) offers high-performance, S3 compatible object storage. 
+You will be able to connect to your `MinIO` server using `s3fs::s3_file_system`:
+
+``` r
+library(s3fs)
+
+s3_file_system(
+  aws_access_key_id = "minioadmin",  
+  aws_secret_access_key = "minioadmin",
+  endpoint = "http://localhost:9000"
+)
+
+s3_dir_ls()
+#> [1] ""
+
+s3_bucket_create("s3://testbucket")
+#> [1] "s3://testbucket"
+
+# refresh cache
+s3_dir_ls(refresh = T)
+#> [1] "s3://testbucket"
+
+s3_bucket_delete("s3://testbucket")
+#> [1] "s3://testbucket"
+
+# refresh cache
+s3_dir_ls(refresh = T)
+#> [1] ""
+```
+
+<sup>Created on 2022-12-14 with [reprex v2.0.2](https://reprex.tidyverse.org)</sup>
+
+**NOTE:** if you to want change from AWS S3 to Minio in the same R session, you will need to set the parameter `refresh = TRUE` when calling `s3_file_system` again.
+You can use multiple sessions by using the R6 class `S3FileSystem` directly.
+
 # Feedback wanted
 
 Please open a Github ticket raising any issues or feature requests.
