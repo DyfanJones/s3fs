@@ -210,7 +210,7 @@ s3_dir_ls(refresh = T)
 
 <sup>Created on 2022-12-14 with [reprex v2.0.2](https://reprex.tidyverse.org)</sup>
 
-**NOTE:** if you want change from AWS S3 to Minio and `s3_file_system` has been previously run you will need refresh the session by setting `refresh = TRUE`.
+**NOTE:** if you to want change from AWS S3 to Minio in the same R session, you will need to set the parameter `refresh = TRUE` when calling `s3_file_system` again.
 You can use multiple sessions by using the R6 class `S3FileSystem` directly.
 
 # Feedback wanted
