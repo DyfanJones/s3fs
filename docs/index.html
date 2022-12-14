@@ -271,7 +271,7 @@
 <span><span class="fu"><a href="reference/info.html">s3_dir_ls</a></span><span class="op">(</span>refresh <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] ""</span></span></code></pre></div>
 <p><sup>Created on 2022-12-14 with <a href="https://reprex.tidyverse.org" class="external-link">reprex v2.0.2</a></sup></p>
-<p><strong>NOTE:</strong> if you want change from AWS S3 to Minio and <code>s3_file_system</code> has been previously run you will need refresh the session by setting <code>refresh = TRUE</code>. You can use multiple sessions by using the R6 class <code>S3FileSystem</code> directly.</p>
+<p><strong>NOTE:</strong> if you to want change from AWS S3 to Minio in the same R session, you will need to set the parameter <code>refresh = TRUE</code> when calling <code>s3_file_system</code> again. You can use multiple sessions by using the R6 class <code>S3FileSystem</code> directly.</p>
 </div>
 </div>
 </div>
