@@ -39,41 +39,40 @@ remotes::install_github("dyfanjones/s3fs")
 
 ### Dependencies
 
--   [`paws`](https://github.com/paws-r/paws): connection with AWS S3
--   [`R6`](https://github.com/r-lib/R6): Setup core class
--   [`data.table`](https://github.com/Rdatatable/data.table): wrangle
-    lists into data.frames
--   [`fs`](https://github.com/r-lib/fs): file system on local files
--   [`lgr`](https://github.com/s-fleck/lgr): set up logging
--   [`future`](https://github.com/HenrikBengtsson/future): set up async
-    functionality
--   [`future.apply`](https://github.com/HenrikBengtsson/future.apply):
-    set up parallel looping
+- [`paws`](https://github.com/paws-r/paws): connection with AWS S3
+- [`R6`](https://github.com/r-lib/R6): Setup core class
+- [`data.table`](https://github.com/Rdatatable/data.table): wrangle
+  lists into data.frames
+- [`fs`](https://github.com/r-lib/fs): file system on local files
+- [`lgr`](https://github.com/s-fleck/lgr): set up logging
+- [`future`](https://github.com/HenrikBengtsson/future): set up async
+  functionality
+- [`future.apply`](https://github.com/HenrikBengtsson/future.apply): set
+  up parallel looping
 
 # Comparison with `fs`
 
 `s3fs` attempts to give the same interface as `fs` when handling files
 on AWS S3 from `R`.
 
--   **Vectorization**. All `s3fs` functions are vectorized, accepting
-    multiple path inputs similar to `fs`.
--   **Predictable**.
-    -   Non-async functions return values that convey a path.
-    -   Async functions return a `future` object of it’s no-async
-        counterpart.
-    -   The only exception will be `s3_stream_in` which returns a list
-        of raw objects.
--   **Naming conventions**. s3fs functions follows `fs` naming
-    conventions with `dir_*`, `file_*` and `path_*` however with the
-    syntax `s3_` infront i.e `s3_dir_*`, `s3_file_*` and `s3_path_*`
-    etc.
--   **Explicit failure**. Similar to `fs` if a failure happens, then it
-    will be raised and not masked with a warning.
+- **Vectorization**. All `s3fs` functions are vectorized, accepting
+  multiple path inputs similar to `fs`.
+- **Predictable**.
+  - Non-async functions return values that convey a path.
+  - Async functions return a `future` object of it’s no-async
+    counterpart.
+  - The only exception will be `s3_stream_in` which returns a list of
+    raw objects.
+- **Naming conventions**. s3fs functions follows `fs` naming conventions
+  with `dir_*`, `file_*` and `path_*` however with the syntax `s3_`
+  infront i.e `s3_dir_*`, `s3_file_*` and `s3_path_*` etc.
+- **Explicit failure**. Similar to `fs` if a failure happens, then it
+  will be raised and not masked with a warning.
 
 # Extra features:
 
--   **Scalable**. All `s3fs` functions are designed to have the option
-    to run in parallel through the use of `future` and `future.apply`.
+- **Scalable**. All `s3fs` functions are designed to have the option to
+  run in parallel through the use of `future` and `future.apply`.
 
 For example: copy a large file from one location to the next.
 
@@ -89,9 +88,9 @@ s3_file_copy("s3://mybucket/multipart/large_file.csv", "s3://mybucket/new_locati
 `s3fs` to copy a large file (\> 5GB) using multiparts, `future` allows
 each multipart to run in parallel to speed up the process.
 
--   **Async**. `s3fs` uses `future` to create a few key async functions.
-    This is more focused on functions that might be moving large files
-    to and from `R` and `AWS S3`.
+- **Async**. `s3fs` uses `future` to create a few key async functions.
+  This is more focused on functions that might be moving large files to
+  and from `R` and `AWS S3`.
 
 For example: Copying a large file from `AWS S3` to `R`.
 
@@ -108,16 +107,16 @@ s3_file_copy_async("s3://mybucket/multipart/large_file.csv", "large_file.csv")
 
 `fs` has a straight forward API with 4 core themes:
 
--   `path_` for manipulating and constructing paths
--   `file_` for files
--   `dir_` for directories
--   `link_` for links
+- `path_` for manipulating and constructing paths
+- `file_` for files
+- `dir_` for directories
+- `link_` for links
 
 `s3fs` follows theses themes with the following:
 
--   `s3_path_` for manipulating and constructing s3 uri paths
--   `s3_file_` for s3 files
--   `s3_dir_` for s3 directories
+- `s3_path_` for manipulating and constructing s3 uri paths
+- `s3_file_` for s3 files
+- `s3_dir_` for s3 directories
 
 **NOTE:** `link_` is currently not supported.
 
@@ -193,6 +192,48 @@ paths |> s3_file_delete()
 package](https://reprex.tidyverse.org) (v2.0.1)</sup>
 
 **NOTE:** all examples have be developed from `fs`.
+
+### File systems that emulate S3
+
+`s3fs` allows you to connect to file systems that provides an
+S3-compatible interface. For example, [MinIO](https://min.io/) offers
+high-performance, S3 compatible object storage. You will be able to
+connect to your `MinIO` server using `s3fs::s3_file_system`:
+
+``` r
+library(s3fs)
+
+s3_file_system(
+  aws_access_key_id = "minioadmin",  
+  aws_secret_access_key = "minioadmin",
+  endpoint = "http://localhost:9000"
+)
+
+s3_dir_ls()
+#> [1] ""
+
+s3_bucket_create("s3://testbucket")
+#> [1] "s3://testbucket"
+
+# refresh cache
+s3_dir_ls(refresh = T)
+#> [1] "s3://testbucket"
+
+s3_bucket_delete("s3://testbucket")
+#> [1] "s3://testbucket"
+
+# refresh cache
+s3_dir_ls(refresh = T)
+#> [1] ""
+```
+
+<sup>Created on 2022-12-14 with [reprex
+v2.0.2](https://reprex.tidyverse.org)</sup>
+
+**NOTE:** if you want change from AWS S3 to Minio and `s3_file_system`
+has been previously run you will need refresh the session by setting
+`refresh = TRUE`. You can use multiple sessions by using the R6 class
+`S3FileSystem` directly.
 
 # Feedback wanted
 
