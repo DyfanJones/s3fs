@@ -59,6 +59,7 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-file_tag_update}{\code{S3FileSystem$file_tag_update()}}
 \item \href{#method-S3FileSystem-file_touch}{\code{S3FileSystem$file_touch()}}
 \item \href{#method-S3FileSystem-file_upload}{\code{S3FileSystem$file_upload()}}
+\item \href{#method-S3FileSystem-file_url}{\code{S3FileSystem$file_url()}}
 \item \href{#method-S3FileSystem-file_version_info}{\code{S3FileSystem$file_version_info()}}
 \item \href{#method-S3FileSystem-is_file}{\code{S3FileSystem$is_file()}}
 \item \href{#method-S3FileSystem-is_dir}{\code{S3FileSystem$is_dir()}}
@@ -74,6 +75,7 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-dir_download}{\code{S3FileSystem$dir_download()}}
 \item \href{#method-S3FileSystem-dir_info}{\code{S3FileSystem$dir_info()}}
 \item \href{#method-S3FileSystem-dir_ls}{\code{S3FileSystem$dir_ls()}}
+\item \href{#method-S3FileSystem-dir_ls_url}{\code{S3FileSystem$dir_ls_url()}}
 \item \href{#method-S3FileSystem-dir_upload}{\code{S3FileSystem$dir_upload()}}
 \item \href{#method-S3FileSystem-path}{\code{S3FileSystem$path()}}
 \item \href{#method-S3FileSystem-path_dir}{\code{S3FileSystem$path_dir()}}
@@ -622,6 +624,31 @@ character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-file_url"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-file_url}{}}}
+\subsection{Method \code{file_url()}}{
+Generate presigned url for S3 object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$file_url(path, expiration = 3600L, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+
+\item{\code{expiration}}{(numeric): The number of seconds the presigned url is
+valid for. By default it expires in an hour (3600 seconds)}
+
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{get_object}}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+return character of urls
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-S3FileSystem-file_version_info"></a>}}
 \if{latex}{\out{\hypertarget{method-S3FileSystem-file_version_info}{}}}
 \subsection{Method \code{file_version_info()}}{
@@ -1041,6 +1068,33 @@ passed onto \code{grep()} to filter paths.}
 }
 \subsection{Returns}{
 character vector of s3 uri paths
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-dir_ls_url"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_ls_url}{}}}
+\subsection{Method \code{dir_ls_url()}}{
+Generate presigned url to list S3 directories
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$dir_ls_url(path, expiration = 3600L, recurse = FALSE, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): A character vector of paths or uris}
+
+\item{\code{expiration}}{(numeric): The number of seconds the presigned url is
+valid for. By default it expires in an hour (3600 seconds)}
+
+\item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
+
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+return character of urls
 }
 }
 \if{html}{\out{<hr>}}

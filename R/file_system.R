@@ -499,6 +499,22 @@ s3_file_upload = function(path,
   return(s3fs$file_upload(path, new_path, max_batch, overwrite, ...))
 }
 
+
+#' @title Generate presigned url for S3 object
+#' @param path (character): A character vector of paths or uris
+#' @param expiration (numeric): The number of seconds the presigned url is
+#'              valid for. By default it expires in an hour (3600 seconds)
+#' @param ... parameters to be passed to \code{params} parameter of
+#'              \code{\link[paws.storage]{s3_generate_presigned_url}}
+#' @return return character of urls
+#' @export
+s3_file_url = function(path,
+                       expiration = 3600L,
+                       ...){
+  s3fs = s3_file_system()
+  return(s3fs$file_url(path, expiration, ...))
+}
+
 #' @title Modifying file tags
 #' @description
 #' `s3_file_tag_delete` delete file tags
@@ -693,6 +709,22 @@ s3_dir_ls = function(path = ".",
                      ...){
   s3fs = s3_file_system()
   return(s3fs$dir_ls(path, type, glob, regexp, invert, recurse, refresh, ...))
+}
+
+#' @title Generate presigned url to list S3 directories
+#' @param path (character): A character vector of paths or uris
+#' @param expiration (numeric): The number of seconds the presigned url is
+#'              valid for. By default it expires in an hour (3600 seconds)
+#' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+#' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+#' @return return character of urls
+#' @export
+s3_dir_ls_url = function(path,
+                         expiration = 3600L,
+                         recurse = FALSE,
+                         ...){
+  s3fs = s3_file_system()
+  return(s3fs$dir_ls_url(path, expiration, recurse, ...))
 }
 
 #' @rdname upload
