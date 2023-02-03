@@ -1490,8 +1490,8 @@ S3FileSystem = R6Class("S3FileSystem",
           is.character(regexp) || is.null(regexp)
         ),
         "`invert` is required to be a character vector" = is.logical(invert),
-        "`recurse` is required to be a character vector" = is.logical(recurse),
-        "`refresh` is required to be a character vector" = is.logical(refresh)
+        "`recurse` is required to be a logical vector" = is.logical(recurse),
+        "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
       type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
@@ -1577,8 +1577,8 @@ S3FileSystem = R6Class("S3FileSystem",
           is.character(regexp) || is.null(regexp)
         ),
         "`invert` is required to be a character vector" = is.logical(invert),
-        "`recurse` is required to be a character vector" = is.logical(recurse),
-        "`refresh` is required to be a character vector" = is.logical(refresh)
+        "`recurse` is required to be a logical vector" = is.logical(recurse),
+        "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
       type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
@@ -1650,6 +1650,10 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param ... Additional arguments passed to [s3_dir_ls].
     #' @return character vector of s3 uri paths
     dir_tree = function(path, recurse = TRUE, ...) {
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`recurse` is required to be a logical vector" = is.logical(recurse)
+      )
       files = self$dir_ls(path, recurse = recurse, ...)
       by_dir = split(files, self$path_dir(files))
 
