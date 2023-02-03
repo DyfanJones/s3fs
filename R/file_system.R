@@ -706,6 +706,17 @@ s3_dir_upload = function(path,
   return(s3fs$dir_upload(path, new_path, max_batch, overwrite, ...))
 }
 
+#' @title Print contents of directories in a tree-like format
+#' @param path (character): path A path to print the tree from
+#' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+#' @param ... Additional arguments passed to [s3_dir_ls].
+#' @return character vector of s3 uri paths
+#' @export
+s3_dir_tree = function(path, recurse = TRUE, ...){
+  s3fs = s3_file_system()
+  return(s3fs$dir_tree(path, recurse, ...))
+}
+
 ############################################################################
 # Path methods
 ############################################################################
