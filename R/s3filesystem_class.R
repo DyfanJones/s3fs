@@ -1641,6 +1641,48 @@ S3FileSystem = R6Class("S3FileSystem",
       )
     },
 
+    # Modified from fs:
+    # https://github.com/r-lib/fs/blob/main/R/tree.R#L8-L36
+
+    #' @description Print contents of directories in a tree-like format
+    #' @param path (character): path A path to print the tree from
+    #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+    #' @param ... Additional arguments passed to [s3_dir_ls].
+    #' @return character vector of s3 uri paths
+    dir_tree = function(path, recurse = TRUE, ...) {
+      files = self$dir_ls(path, recurse = recurse, ...)
+      by_dir = split(files, self$path_dir(files))
+
+      # import fs functions
+      box_chars = pkg_method("box_chars", "fs")
+      colourise_fs_path = pkg_method("colourise_fs_path", "fs")
+
+      ch = box_chars()
+
+      get_coloured_name = function(x) {
+        coloured = colourise_fs_path(x)
+        sub(x, self$path_file(x), coloured, fixed = TRUE)
+      }
+      by_dir = private$.append_to_pnt_dir(by_dir)
+
+      print_leaf = function(x, indent) {
+        leafs = by_dir[[x]]
+        for (i in seq_along(leafs)) {
+          if (i == length(leafs)) {
+            cat(indent, paste0(ch$l, ch$h, ch$h, " ", collapse = ""), get_coloured_name(leafs[[i]]), "\n", sep = "")
+            print_leaf(leafs[[i]], paste0(indent, "    "))
+          } else {
+            cat(indent, paste0(ch$j, ch$h, ch$h, " ", collapse = ""), get_coloured_name(leafs[[i]]), "\n", sep = "")
+            print_leaf(leafs[[i]], paste0(indent, paste0(ch$v, "   ", collapse = "")))
+          }
+        }
+      }
+
+      cat(colourise_fs_path(path), "\n", sep = "")
+      print_leaf(path, "")
+      invisible(files)
+    },
+
     #' @description Uploads local directory to AWS S3
     #' @param path (character): A character vector of local file paths to upload to AWS S3
     #' @param new_path (character): A character vector of AWS S3 paths or uri's of the new locations.
@@ -1742,8 +1784,10 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       parts = str_split(path, "/", 2)
-      root = path == lapply(parts, function(p) p[[1]])
-      return(private$.s3_build_uri(c(dirname(path[!root]), path[root])))
+      root = (path == lapply(parts, function(p) p[[1]]))
+      dir = dirname(path)
+      dir[root] = path[root]
+      return(private$.s3_build_uri(dir))
     },
 
     #' @description Returns the last extension for a path.
@@ -1852,6 +1896,19 @@ S3FileSystem = R6Class("S3FileSystem",
   ),
   private = list(
     .retries = 5,
+
+    .append_to_pnt_dir = function(by_dir) {
+      dir = names(by_dir)
+      pnt_dir = self$path_dir(dir)
+      found <- dir != pnt_dir
+      dir <- dir[found]
+      pnt_dir <- pnt_dir[found]
+      for (i in seq_along(pnt_dir)){
+        len <- length(by_dir[[pnt_dir[i]]])
+        by_dir[[pnt_dir[i]]][[len + 1]] <- dir[[i]]
+      }
+      return(by_dir)
+    },
 
     .cache_s3_data = function(path){
       return(names(self$s3_cache) %in% path)
