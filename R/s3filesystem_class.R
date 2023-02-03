@@ -1904,12 +1904,12 @@ S3FileSystem = R6Class("S3FileSystem",
     .append_to_pnt_dir = function(by_dir) {
       dir = names(by_dir)
       pnt_dir = self$path_dir(dir)
-      found <- dir != pnt_dir
-      dir <- dir[found]
-      pnt_dir <- pnt_dir[found]
+      found = (dir != pnt_dir)
+      dir = dir[found]
+      pnt_dir = pnt_dir[found]
       for (i in seq_along(pnt_dir)){
-        len <- length(by_dir[[pnt_dir[i]]])
-        by_dir[[pnt_dir[i]]][[len + 1]] <- dir[[i]]
+        len = length(by_dir[[pnt_dir[i]]])
+        by_dir[[pnt_dir[i]]][[len + 1]] = dir[[i]]
       }
       return(by_dir)
     },
