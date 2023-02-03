@@ -933,6 +933,42 @@ S3FileSystem = R6Class("S3FileSystem",
       return(private$.s3_build_uri(new_path))
     },
 
+    #' @description Generate presigned url for S3 object
+    #' @param path (character): A character vector of paths or uris
+    #' @param expiration (numeric): The number of seconds the presigned url is
+    #'              valid for. By default it expires in an hour (3600 seconds)
+    #' @param ... parameters passed to \code{\link[paws.storage]{get_object}}
+    #' @return return character of urls
+    file_url = function(path,
+                        expiration = 3600L,
+                        ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`expiration` is required to be a numeric vector" = is.numeric(expiration)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+      args = list(...)
+
+      kwargs = list(
+        client_method = "get_object",
+        expires_in = expiration,
+        http_method = args$http_method
+      )
+      args$http_method = NULL
+      params = list(RequestPayer = args$RequestPayer %||% self$request_payer)
+      args$RequestPayer = NULL
+      kwargs$params = modifyList(params, args)
+
+      return(vapply(s3_parts, function(prt) {
+          kwargs$params$Bucket = prt$Bucket
+          kwargs$params$Key = prt$Key
+          kwargs$params$VersionId = prt$VersionId
+          do.call(self$s3_client$generate_presigned_url, kwargs)
+        }, FUN.VALUE = "")
+      )
+    },
+
     #' @description Get file versions
     #' @param path (character): A character vector of paths or uris
     #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_list_object_versions}}
@@ -1638,6 +1674,52 @@ S3FileSystem = R6Class("S3FileSystem",
         } else {
           files$uri
         }
+      )
+    },
+
+    #' @description Generate presigned url to list S3 directories
+    #' @param path (character): A character vector of paths or uris
+    #' @param expiration (numeric): The number of seconds the presigned url is
+    #'              valid for. By default it expires in an hour (3600 seconds)
+    #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+    #' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+    #' @return return character of urls
+    dir_ls_url = function(path,
+                          expiration = 3600L,
+                          recurse = FALSE,
+                          ...){
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`expiration` is required to be a numeric vector" = is.numeric(expiration),
+        "`recurse` is required to be a character vector" = is.logical(recurse)
+      )
+      path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
+      s3_parts = lapply(path, private$.s3_split_path)
+      args = list(...)
+
+      kwargs <- list(
+        client_method = "list_objects_v2",
+        expires_in = expiration,
+        http_method = args$http_method
+      )
+      args$http_method = NULL
+      params = list(RequestPayer = args$RequestPayer %||% self$request_payer)
+      args$RequestPayer = NULL
+      kwargs$params = modifyList(params, args)
+      if(recurse){
+        kwargs$params$Delimiter = NULL
+      } else {
+        kwargs$params$Delimiter = "/"
+      }
+      return(vapply(s3_parts, function(prt) {
+          if (is.null(prt$Key))
+            prefix = ""
+          if (nzchar(prt$Key))
+            prefix = paste0(trimws(prt$Key, "left", "/"), "/")
+          kwargs$params$Bucket = prt$Bucket
+          kwargs$params$Prefix = prefix
+          do.call(self$s3_client$generate_presigned_url, kwargs)
+        }, FUN.VALUE = "")
       )
     },
 
