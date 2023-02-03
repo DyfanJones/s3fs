@@ -1983,15 +1983,16 @@ S3FileSystem = R6Class("S3FileSystem",
   private = list(
     .retries = 5,
 
-    .append_to_pnt_dir = function(by_dir) {
-      dir = names(by_dir)
-      pnt_dir = self$path_dir(dir)
-      found = (dir != pnt_dir)
-      dir = dir[found]
-      pnt_dir = pnt_dir[found]
-      for (i in seq_along(pnt_dir)){
-        len = length(by_dir[[pnt_dir[i]]])
-        by_dir[[pnt_dir[i]]][[len + 1]] = dir[[i]]
+    .append_to_pnt_dir <- function(by_dir) {
+      dirs = names(by_dir)
+      pnt_dirs = self$path_dir(dirs)
+      found = (dirs != pnt_dirs)
+      dir = dirs[found]
+      pnt_dirs = pnt_dirs[found]
+      dirs = split(dirs, pnt_dirs)
+      # append any new directories
+      for (pnt in names(dirs)){
+        by_dir[[pnt]] = unique(c(by_dir[[pnt]], dirs[[pnt]]))
       }
       return(by_dir)
     },
