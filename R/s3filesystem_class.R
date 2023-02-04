@@ -523,7 +523,7 @@ S3FileSystem = R6Class("S3FileSystem",
       setcolorder(dt,
         c("bucket_name", "key", "uri", "size", "type", "etag", "last_modified")
       )
-      dt$size <- fs::fs_bytes(dt$size)
+      dt$size = fs::fs_bytes(dt$size)
       return(dt)
     },
 
@@ -1697,7 +1697,7 @@ S3FileSystem = R6Class("S3FileSystem",
       s3_parts = lapply(path, private$.s3_split_path)
       args = list(...)
 
-      kwargs <- list(
+      kwargs = list(
         client_method = "list_objects_v2",
         expires_in = expiration,
         http_method = args$http_method
@@ -1741,30 +1741,24 @@ S3FileSystem = R6Class("S3FileSystem",
 
       # import fs functions
       box_chars = pkg_method("box_chars", "fs")
-      colourise_fs_path = pkg_method("colourise_fs_path", "fs")
 
       ch = box_chars()
-
-      get_coloured_name = function(x) {
-        coloured = colourise_fs_path(x)
-        sub(x, self$path_file(x), coloured, fixed = TRUE)
-      }
       by_dir = private$.append_to_pnt_dir(by_dir)
 
       print_leaf = function(x, indent) {
         leafs = by_dir[[x]]
         for (i in seq_along(leafs)) {
           if (i == length(leafs)) {
-            cat(indent, paste0(ch$l, ch$h, ch$h, " ", collapse = ""), get_coloured_name(leafs[[i]]), "\n", sep = "")
+            cat(indent, paste0(ch$l, ch$h, ch$h, " ", collapse = ""), self$path_file(leafs[[i]]), "\n", sep = "")
             print_leaf(leafs[[i]], paste0(indent, "    "))
           } else {
-            cat(indent, paste0(ch$j, ch$h, ch$h, " ", collapse = ""), get_coloured_name(leafs[[i]]), "\n", sep = "")
+            cat(indent, paste0(ch$j, ch$h, ch$h, " ", collapse = ""), self$path_file(leafs[[i]]), "\n", sep = "")
             print_leaf(leafs[[i]], paste0(indent, paste0(ch$v, "   ", collapse = "")))
           }
         }
       }
 
-      cat(colourise_fs_path(path), "\n", sep = "")
+      cat(path, "\n", sep = "")
       print_leaf(path, "")
       invisible(files)
     },
@@ -1983,11 +1977,11 @@ S3FileSystem = R6Class("S3FileSystem",
   private = list(
     .retries = 5,
 
-    .append_to_pnt_dir <- function(by_dir) {
+    .append_to_pnt_dir = function(by_dir) {
       dirs = names(by_dir)
       pnt_dirs = self$path_dir(dirs)
       found = (dirs != pnt_dirs)
-      dir = dirs[found]
+      dirs = dirs[found]
       pnt_dirs = pnt_dirs[found]
       dirs = split(dirs, pnt_dirs)
       # append any new directories
@@ -2349,7 +2343,7 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$Bucket = dest_parts$Bucket
       kwargs$Key = dest_parts$Key
       kwargs$UploadId = upload_id
-      stream <- curl::curl(obj)
+      stream = curl::curl(obj)
       open(stream, "rbf")
       on.exit(close(stream))
 
