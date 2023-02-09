@@ -25,7 +25,7 @@ Imports:
     future,
     future.apply,
     lgr,
-    paws.storage (>=0.2.0),
+    paws.storage (>= 0.2.0),
     utils
 Suggests: 
     testthat (>= 3.1.4)
