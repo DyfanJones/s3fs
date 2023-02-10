@@ -41,11 +41,12 @@ test_that("check is s3 uri is bucket", {
   buckets = c(
     bucket_nv, # account bucket
     s3_file_temp(tmp_dir = bucket_nv), # made up object
-    "s3://voltrondata-labs-datasets" # non-account bucket
+    "s3://voltrondata-labs-datasets", # non-account bucket
+    "s3://made-up"# non-account made up bucket
   )
   result = s3_is_bucket(buckets)
 
-  expect_equal(result, c(T,F,T))
+  expect_equal(result, c(T,F,T,F))
 })
 
 test_that("check is s3 uri is bucket", {
