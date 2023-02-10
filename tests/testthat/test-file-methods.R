@@ -130,7 +130,7 @@ test_that("copy file local to uri multipart", {
   result = s3_file_exists(new_path)
 
   expect_true(result)
-  expect_equal(file.size(path), s3_file_size(new_path))
+  expect_equal(unname(fs::file_size(path)), s3_file_size(new_path))
 
   s3_file_delete(new_path)
   fs::file_delete(path)

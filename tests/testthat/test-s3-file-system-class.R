@@ -4,7 +4,7 @@ test_that("check class creation with default parameters", {
   s3fs = s3_file_system(refresh = T)
   expect_equal(s3fs$region_name, Sys.getenv("AWS_REGION"))
   expect_equal(s3fs$retries, 5)
-  expect_equal(s3fs$multipart_threshold, 2 * GB)
+  expect_equal(s3fs$multipart_threshold, fs::as_fs_bytes("2GB"))
 })
 
 test_that("check class creation with dummy parameters", {
