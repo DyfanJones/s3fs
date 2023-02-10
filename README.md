@@ -7,6 +7,7 @@
 
 [![s3fs status
 badge](https://dyfanjones.r-universe.dev/badges/s3fs)](https://dyfanjones.r-universe.dev)
+[![R-CMD-check](https://github.com/DyfanJones/s3fs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DyfanJones/s3fs/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `s3fs` provides a file-system like interface into Amazon Web Services
