@@ -3,8 +3,8 @@ Type: Package
 Title: Amazon Web Service 'S3' File System
 Version: 0.1.0
 Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
-Description: Access Amazon Web Service 'S3' as if it were a file system, 
-    design based off the'R' package 'fs'.
+Description: Access Amazon Web Service 'S3' as if it were a file system. 
+    'API' is based upon 'fs' package.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -28,5 +28,6 @@ Imports:
     paws.storage (>= 0.2.0),
     utils
 Suggests: 
+    covr,
     testthat (>= 3.1.4)
 Config/testthat/edition: 3
