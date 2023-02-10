@@ -5,6 +5,6 @@ skip_if_no_env <- function(){
   region = nzchar(Sys.getenv("AWS_REGION"))
   bucket_nv = nzchar(Sys.getenv("AWS_S3_BUCKET_NOT_VERSIONED"))
   bucket_v = nzchar(Sys.getenv("AWS_S3_BUCKET_VERSIONED"))
-  if(!id || !secret || !region || !bucket_nv || !bucket_v)
+  if(!any(id, secret, region, bucket_nv,bucket_v))
     skip("Environment variables are not set for testing")
 }
