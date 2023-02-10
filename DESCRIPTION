@@ -1,6 +1,6 @@
 Package: s3fs
 Type: Package
-Title: File System like 'API' for Amazon Web Service 'S3'
+Title: Amazon Web Service 'S3' File System
 Version: 0.1.0
 Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
 Description: Access Amazon Web Service 'S3' as if it were a file system. 
