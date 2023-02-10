@@ -716,7 +716,7 @@ s3_dir_ls = function(path = ".",
 #' @param expiration (numeric): The number of seconds the presigned url is
 #'              valid for. By default it expires in an hour (3600 seconds)
 #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
-#' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+#' @param ... parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}
 #' @return return character of urls
 #' @export
 s3_dir_ls_url = function(path,
@@ -736,6 +736,17 @@ s3_dir_upload = function(path,
                          ...){
   s3fs = s3_file_system()
   return(s3fs$dir_upload(path, new_path, max_batch, overwrite, ...))
+}
+
+#' @title Print contents of directories in a tree-like format
+#' @param path (character): path A path to print the tree from
+#' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+#' @param ... Additional arguments passed to [s3_dir_ls].
+#' @return character vector of s3 uri paths
+#' @export
+s3_dir_tree = function(path, recurse = TRUE, ...){
+  s3fs = s3_file_system()
+  return(s3fs$dir_tree(path, recurse, ...))
 }
 
 ############################################################################

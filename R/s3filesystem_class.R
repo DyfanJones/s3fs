@@ -523,7 +523,7 @@ S3FileSystem = R6Class("S3FileSystem",
       setcolorder(dt,
         c("bucket_name", "key", "uri", "size", "type", "etag", "last_modified")
       )
-      dt$size <- fs::fs_bytes(dt$size)
+      dt$size = fs::fs_bytes(dt$size)
       return(dt)
     },
 
@@ -937,7 +937,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param path (character): A character vector of paths or uris
     #' @param expiration (numeric): The number of seconds the presigned url is
     #'              valid for. By default it expires in an hour (3600 seconds)
-    #' @param ... parameters passed to \code{\link[paws.storage]{get_object}}
+    #' @param ... parameters passed to \code{\link[paws.storage]{s3_get_object}}
     #' @return return character of urls
     file_url = function(path,
                         expiration = 3600L,
@@ -1088,19 +1088,23 @@ S3FileSystem = R6Class("S3FileSystem",
 
       # bucket not owned by user
       s3_parts = lapply(path[!found], private$.s3_split_path)
-      exist = future_vapply(seq_along(s3_parts), function(i){
+      bucket_names = vapply(
+        s3_parts, function(x) x$Bucket, FUN.VALUE = character(1)
+      )
+      mod_found = path[!found] %in% bucket_names
+      exist = future_vapply(seq_along(s3_parts[mod_found]), function(i){
         tryCatch({
           self$s3_client$list_objects_v2(
-            Bucket = s3_parts[[i]]$Bucket,
+            Bucket = s3_parts[mod_found][[i]]$Bucket,
             MaxKeys = 1,
             ...
-            )
+          )
           return(TRUE)
-          }, error = function(e){
-            return(FALSE)
+        }, error = function(e){
+          return(FALSE)
         })
       }, FUN.VALUE = logical(1))
-      found[!found] = exist
+      found[!found][mod_found] = exist
       return(found)
     },
 
@@ -1526,8 +1530,8 @@ S3FileSystem = R6Class("S3FileSystem",
           is.character(regexp) || is.null(regexp)
         ),
         "`invert` is required to be a character vector" = is.logical(invert),
-        "`recurse` is required to be a character vector" = is.logical(recurse),
-        "`refresh` is required to be a character vector" = is.logical(refresh)
+        "`recurse` is required to be a logical vector" = is.logical(recurse),
+        "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
       type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
@@ -1613,8 +1617,8 @@ S3FileSystem = R6Class("S3FileSystem",
           is.character(regexp) || is.null(regexp)
         ),
         "`invert` is required to be a character vector" = is.logical(invert),
-        "`recurse` is required to be a character vector" = is.logical(recurse),
-        "`refresh` is required to be a character vector" = is.logical(refresh)
+        "`recurse` is required to be a logical vector" = is.logical(recurse),
+        "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
       type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
@@ -1682,7 +1686,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param expiration (numeric): The number of seconds the presigned url is
     #'              valid for. By default it expires in an hour (3600 seconds)
     #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
-    #' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+    #' @param ... parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}
     #' @return return character of urls
     dir_ls_url = function(path,
                           expiration = 3600L,
@@ -1697,7 +1701,7 @@ S3FileSystem = R6Class("S3FileSystem",
       s3_parts = lapply(path, private$.s3_split_path)
       args = list(...)
 
-      kwargs <- list(
+      kwargs = list(
         client_method = "list_objects_v2",
         expires_in = expiration,
         http_method = args$http_method
@@ -1712,8 +1716,8 @@ S3FileSystem = R6Class("S3FileSystem",
         kwargs$params$Delimiter = "/"
       }
       return(vapply(s3_parts, function(prt) {
-          if (is.null(prt$Key))
-            prefix = ""
+          if (!nzchar(prt$Key))
+            prefix = prt$Key
           if (nzchar(prt$Key))
             prefix = paste0(trimws(prt$Key, "left", "/"), "/")
           kwargs$params$Bucket = prt$Bucket
@@ -1721,6 +1725,46 @@ S3FileSystem = R6Class("S3FileSystem",
           do.call(self$s3_client$generate_presigned_url, kwargs)
         }, FUN.VALUE = "")
       )
+    },
+
+    # Modified from fs:
+    # https://github.com/r-lib/fs/blob/main/R/tree.R#L8-L36
+
+    #' @description Print contents of directories in a tree-like format
+    #' @param path (character): path A path to print the tree from
+    #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
+    #' @param ... Additional arguments passed to [s3_dir_ls].
+    #' @return character vector of s3 uri paths
+    dir_tree = function(path, recurse = TRUE, ...) {
+      stopifnot(
+        "`path` is required to be a character vector" = is.character(path),
+        "`recurse` is required to be a logical vector" = is.logical(recurse)
+      )
+      files = self$dir_ls(path, recurse = recurse, ...)
+      by_dir = split(files, self$path_dir(files))
+
+      # import fs functions
+      box_chars = pkg_method("box_chars", "fs")
+
+      ch = box_chars()
+      by_dir = private$.append_to_pnt_dir(by_dir)
+
+      print_leaf = function(x, indent) {
+        leafs = by_dir[[x]]
+        for (i in seq_along(leafs)) {
+          if (i == length(leafs)) {
+            cat(indent, paste0(ch$l, ch$h, ch$h, " ", collapse = ""), self$path_file(leafs[[i]]), "\n", sep = "")
+            print_leaf(leafs[[i]], paste0(indent, "    "))
+          } else {
+            cat(indent, paste0(ch$j, ch$h, ch$h, " ", collapse = ""), self$path_file(leafs[[i]]), "\n", sep = "")
+            print_leaf(leafs[[i]], paste0(indent, paste0(ch$v, "   ", collapse = "")))
+          }
+        }
+      }
+
+      cat(path, "\n", sep = "")
+      print_leaf(path, "")
+      invisible(files)
     },
 
     #' @description Uploads local directory to AWS S3
@@ -1824,8 +1868,10 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       parts = str_split(path, "/", 2)
-      root = path == lapply(parts, function(p) p[[1]])
-      return(private$.s3_build_uri(c(dirname(path[!root]), path[root])))
+      root = (path == lapply(parts, function(p) p[[1]]))
+      dir = dirname(path)
+      dir[root] = path[root]
+      return(private$.s3_build_uri(dir))
     },
 
     #' @description Returns the last extension for a path.
@@ -1880,7 +1926,8 @@ S3FileSystem = R6Class("S3FileSystem",
       stopifnot(
         "`parts` is required to be a character vector" = is.character(parts) || is.list(parts)
       )
-      path = fs::path_join(parts)
+      path = unname(vapply(parts, private$.s3_strip_uri, FUN.VALUE = ""))
+      path = fs::path_join(path)
       return(vapply(path, function(x) {
           paste("s3:/", paste(trimws(gsub("s3://", "", x), whitespace="/"), collapse = "/"), sep = "/")
         }, FUN.VALUE = "")
@@ -1934,6 +1981,20 @@ S3FileSystem = R6Class("S3FileSystem",
   ),
   private = list(
     .retries = 5,
+
+    .append_to_pnt_dir = function(by_dir) {
+      dirs = names(by_dir)
+      pnt_dirs = self$path_dir(dirs)
+      found = (dirs != pnt_dirs)
+      dirs = dirs[found]
+      pnt_dirs = pnt_dirs[found]
+      dirs = split(dirs, pnt_dirs)
+      # append any new directories
+      for (pnt in names(dirs)){
+        by_dir[[pnt]] = unique(c(by_dir[[pnt]], dirs[[pnt]]))
+      }
+      return(by_dir)
+    },
 
     .cache_s3_data = function(path){
       return(names(self$s3_cache) %in% path)
@@ -1991,8 +2052,6 @@ S3FileSystem = R6Class("S3FileSystem",
                           refresh=FALSE,
                           ...){
       s3_parts = private$.s3_split_path(path)
-      if (is.null(prefix))
-        prefix = ""
       if (nzchar(s3_parts$Key)) {
         prefix = paste(trimws(s3_parts$Key, "left", "/"), prefix, sep = "/")
       }
@@ -2287,7 +2346,7 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$Bucket = dest_parts$Bucket
       kwargs$Key = dest_parts$Key
       kwargs$UploadId = upload_id
-      stream <- curl::curl(obj)
+      stream = curl::curl(obj)
       open(stream, "rbf")
       on.exit(close(stream))
 

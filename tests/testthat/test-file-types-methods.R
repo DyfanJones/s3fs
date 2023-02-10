@@ -38,11 +38,15 @@ test_that("check is s3 uri is bucket", {
   skip_if_no_env()
   s3fs = s3_file_system(refresh = T)
 
-  result1 = s3_is_bucket(bucket_nv)
-  result2 = s3_is_bucket(s3_file_temp(tmp_dir = bucket_nv))
+  buckets = c(
+    bucket_nv, # account bucket
+    s3_file_temp(tmp_dir = bucket_nv), # made up object
+    "s3://voltrondata-labs-datasets", # non-account bucket
+    "s3://made-up"# non-account made up bucket
+  )
+  result = s3_is_bucket(buckets)
 
-  expect_true(result1)
-  expect_false(result2)
+  expect_equal(result, c(T,F,T,F))
 })
 
 test_that("check is s3 uri is bucket", {

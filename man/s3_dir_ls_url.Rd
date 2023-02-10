@@ -2,7 +2,7 @@
 % Please edit documentation in R/file_system.R
 \name{s3_dir_ls_url}
 \alias{s3_dir_ls_url}
-\title{Generate presigned url for S3 object}
+\title{Generate presigned url to list S3 directories}
 \usage{
 s3_dir_ls_url(path, expiration = 3600L, recurse = FALSE, ...)
 }
@@ -14,11 +14,11 @@ valid for. By default it expires in an hour (3600 seconds)}
 
 \item{recurse}{(logical): Returns all AWS S3 objects in lower sub directories}
 
-\item{...}{parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{...}{parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \value{
 return character of urls
 }
 \description{
-Generate presigned url for S3 object
+Generate presigned url to list S3 directories
 }

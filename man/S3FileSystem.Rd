@@ -76,6 +76,7 @@ This method will only update the modification time of the AWS S3 object.
 \item \href{#method-S3FileSystem-dir_info}{\code{S3FileSystem$dir_info()}}
 \item \href{#method-S3FileSystem-dir_ls}{\code{S3FileSystem$dir_ls()}}
 \item \href{#method-S3FileSystem-dir_ls_url}{\code{S3FileSystem$dir_ls_url()}}
+\item \href{#method-S3FileSystem-dir_tree}{\code{S3FileSystem$dir_tree()}}
 \item \href{#method-S3FileSystem-dir_upload}{\code{S3FileSystem$dir_upload()}}
 \item \href{#method-S3FileSystem-path}{\code{S3FileSystem$path()}}
 \item \href{#method-S3FileSystem-path_dir}{\code{S3FileSystem$path_dir()}}
@@ -640,7 +641,7 @@ Generate presigned url for S3 object
 \item{\code{expiration}}{(numeric): The number of seconds the presigned url is
 valid for. By default it expires in an hour (3600 seconds)}
 
-\item{\code{...}}{parameters passed to \code{\link[paws.storage]{get_object}}}
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_get_object}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -1089,12 +1090,36 @@ valid for. By default it expires in an hour (3600 seconds)}
 
 \item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
 
-\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 return character of urls
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-S3FileSystem-dir_tree"></a>}}
+\if{latex}{\out{\hypertarget{method-S3FileSystem-dir_tree}{}}}
+\subsection{Method \code{dir_tree()}}{
+Print contents of directories in a tree-like format
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$dir_tree(path, recurse = TRUE, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{(character): path A path to print the tree from}
+
+\item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
+
+\item{\code{...}}{Additional arguments passed to \link{s3_dir_ls}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+character vector of s3 uri paths
 }
 }
 \if{html}{\out{<hr>}}

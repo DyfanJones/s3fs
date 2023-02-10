@@ -130,7 +130,7 @@ test_that("copy file local to uri multipart", {
   result = s3_file_exists(new_path)
 
   expect_true(result)
-  expect_equal(file.size(path), s3_file_size(new_path))
+  expect_equal(unname(fs::file_size(path)), s3_file_size(new_path))
 
   s3_file_delete(new_path)
   fs::file_delete(path)
@@ -317,4 +317,19 @@ test_that("version id file", {
   s3_file_delete(path)
   expect_equal(result1, "contents1")
   expect_equal(result2, "contents2")
+})
+
+################################################################################
+# Url
+################################################################################
+test_that("file url", {
+  skip_if_no_env()
+
+  url = s3_file_url("s3://madeup/dummy.txt")
+  expect_true(
+    grepl(
+      "https://madeup.s3.*amazonaws.com/dummy.txt\\?AWSAccessKeyId=.*&Expires=.*&Signature=.*",
+      url
+    )
+  )
 })
