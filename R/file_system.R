@@ -716,7 +716,7 @@ s3_dir_ls = function(path = ".",
 #' @param expiration (numeric): The number of seconds the presigned url is
 #'              valid for. By default it expires in an hour (3600 seconds)
 #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
-#' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+#' @param ... parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}
 #' @return return character of urls
 #' @export
 s3_dir_ls_url = function(path,

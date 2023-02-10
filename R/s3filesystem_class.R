@@ -937,7 +937,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param path (character): A character vector of paths or uris
     #' @param expiration (numeric): The number of seconds the presigned url is
     #'              valid for. By default it expires in an hour (3600 seconds)
-    #' @param ... parameters passed to \code{\link[paws.storage]{get_object}}
+    #' @param ... parameters passed to \code{\link[paws.storage]{s3_get_object}}
     #' @return return character of urls
     file_url = function(path,
                         expiration = 3600L,
@@ -1682,7 +1682,7 @@ S3FileSystem = R6Class("S3FileSystem",
     #' @param expiration (numeric): The number of seconds the presigned url is
     #'              valid for. By default it expires in an hour (3600 seconds)
     #' @param recurse (logical): Returns all AWS S3 objects in lower sub directories
-    #' @param ... parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}
+    #' @param ... parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}
     #' @return return character of urls
     dir_ls_url = function(path,
                           expiration = 3600L,

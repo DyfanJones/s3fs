@@ -14,7 +14,7 @@ valid for. By default it expires in an hour (3600 seconds)}
 
 \item{recurse}{(logical): Returns all AWS S3 objects in lower sub directories}
 
-\item{...}{parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{...}{parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \value{
 return character of urls

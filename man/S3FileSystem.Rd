@@ -641,7 +641,7 @@ Generate presigned url for S3 object
 \item{\code{expiration}}{(numeric): The number of seconds the presigned url is
 valid for. By default it expires in an hour (3600 seconds)}
 
-\item{\code{...}}{parameters passed to \code{\link[paws.storage]{get_object}}}
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_get_object}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -1090,7 +1090,7 @@ valid for. By default it expires in an hour (3600 seconds)}
 
 \item{\code{recurse}}{(logical): Returns all AWS S3 objects in lower sub directories}
 
-\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_list_object_v2}}}
+\item{\code{...}}{parameters passed to \code{\link[paws.storage]{s3_list_objects_v2}}}
 }
 \if{html}{\out{</div>}}
 }
