@@ -1088,19 +1088,23 @@ S3FileSystem = R6Class("S3FileSystem",
 
       # bucket not owned by user
       s3_parts = lapply(path[!found], private$.s3_split_path)
-      exist = future_vapply(seq_along(s3_parts), function(i){
+      bucket_names = vapply(
+        s3_parts, function(x) x$Bucket, FUN.VALUE = character(1)
+      )
+      mod_found = path[!found] %in% bucket_names
+      exist = future_vapply(seq_along(s3_parts[mod_found]), function(i){
         tryCatch({
           self$s3_client$list_objects_v2(
             Bucket = s3_parts[[i]]$Bucket,
             MaxKeys = 1,
             ...
-            )
+          )
           return(TRUE)
-          }, error = function(e){
-            return(FALSE)
+        }, error = function(e){
+          return(FALSE)
         })
       }, FUN.VALUE = logical(1))
-      found[!found] = exist
+      found[!found][mod_found] = exist
       return(found)
     },
 
