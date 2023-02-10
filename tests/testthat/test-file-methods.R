@@ -318,3 +318,18 @@ test_that("version id file", {
   expect_equal(result1, "contents1")
   expect_equal(result2, "contents2")
 })
+
+################################################################################
+# Url
+################################################################################
+test_that("file url", {
+  skip_if_no_env()
+
+  url = s3_file_url("s3://madeup/dummy.txt")
+  expect_true(
+    grepl(
+      "https://madeup.s3.*amazonaws.com/dummy.txt\\?AWSAccessKeyId=.*&Expires=.*&Signature=.*",
+      url
+    )
+  )
+})

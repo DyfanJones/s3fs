@@ -79,3 +79,83 @@ test_that("copy file uri to local standard", {
   expect_true(all(result))
   expect_equal(as.character(path_rel(file_path, new_path)), path_rel(path, dir))
 })
+
+################################################################################
+# Dir: tree
+################################################################################
+test_that("dir tree", {
+  skip_if_no_env()
+
+  self = S3FileSystem$new()
+  private = self$.__enclos_env__$private
+
+  files = c(
+    "s3://made_up",
+    "s3://made_up/dir1/test.txt",
+    "s3://made_up/dir1/dir4/test.txt",
+    "s3://made_up/dir2/test.txt",
+    "s3://made_up/dir3/test.txt"
+  )
+  by_dir = split(files, self$path_dir(files))
+  by_dir = private$.append_to_pnt_dir(by_dir)
+
+  expected = list(
+    "s3://made_up" = c(
+      "s3://made_up", "s3://made_up/dir1", "s3://made_up/dir2", "s3://made_up/dir3"
+    ),
+    "s3://made_up/dir1" = c(
+      "s3://made_up/dir1/test.txt", "s3://made_up/dir1/dir4"
+    ),
+    "s3://made_up/dir1/dir4" = "s3://made_up/dir1/dir4/test.txt",
+    "s3://made_up/dir2" = "s3://made_up/dir2/test.txt",
+    "s3://made_up/dir3" = "s3://made_up/dir3/test.txt"
+  )
+  expect_equal(by_dir, expected)
+})
+
+
+test_that("capture dir tree", {
+  skip_if_no_env()
+
+  root_path = s3_path_join(c(bucket_nv, "foo", "bar"))
+  files = s3_path(root_path, c("file1", "file2"))
+  s3_file_create(files)
+
+  actual = capture.output(s3_dir_tree(s3_path(bucket_nv, "foo")))
+
+  expect = c(
+    s3_path(bucket_nv, "foo"),
+    "\\-- bar", "    +-- file1", "    \\-- file2"
+  )
+
+  expect_equal(actual, expect)
+  s3_file_delete(files)
+})
+
+
+################################################################################
+# list: url
+################################################################################
+test_that("dir ls url no prefix", {
+  skip_if_no_env()
+
+  url = s3_dir_ls_url("s3://madeup")
+  expect_true(
+    grepl(
+      "https://madeup.s3.*amazonaws.com/\\?delimiter=.*list-type=2&prefix=&.*",
+      url
+    )
+  )
+})
+
+test_that("dir ls url prefix", {
+  skip_if_no_env()
+
+  url = s3_dir_ls_url("s3://madeup/dummy")
+  expect_true(
+    grepl(
+      "https://madeup.s3.*amazonaws.com/\\?delimiter=.*list-type=2&prefix=dummy.*",
+      url
+    )
+  )
+})
