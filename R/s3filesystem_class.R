@@ -1716,8 +1716,8 @@ S3FileSystem = R6Class("S3FileSystem",
         kwargs$params$Delimiter = "/"
       }
       return(vapply(s3_parts, function(prt) {
-          if (is.null(prt$Key))
-            prefix = ""
+          if (!nzchar(prt$Key))
+            prefix = prt$Key
           if (nzchar(prt$Key))
             prefix = paste0(trimws(prt$Key, "left", "/"), "/")
           kwargs$params$Bucket = prt$Bucket
@@ -1926,7 +1926,8 @@ S3FileSystem = R6Class("S3FileSystem",
       stopifnot(
         "`parts` is required to be a character vector" = is.character(parts) || is.list(parts)
       )
-      path = fs::path_join(parts)
+      path = unname(vapply(parts, private$.s3_strip_uri, FUN.VALUE = ""))
+      path = fs::path_join(path)
       return(vapply(path, function(x) {
           paste("s3:/", paste(trimws(gsub("s3://", "", x), whitespace="/"), collapse = "/"), sep = "/")
         }, FUN.VALUE = "")
@@ -2051,8 +2052,6 @@ S3FileSystem = R6Class("S3FileSystem",
                           refresh=FALSE,
                           ...){
       s3_parts = private$.s3_split_path(path)
-      if (is.null(prefix))
-        prefix = ""
       if (nzchar(s3_parts$Key)) {
         prefix = paste(trimws(s3_parts$Key, "left", "/"), prefix, sep = "/")
       }
