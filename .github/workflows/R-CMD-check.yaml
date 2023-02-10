@@ -32,3 +32,7 @@ jobs:
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
+
+      - name: Test coverage
+        run: covr::codecov(quiet = FALSE)
+        shell: Rscript {0}
