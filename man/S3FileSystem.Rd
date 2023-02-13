@@ -843,7 +843,7 @@ Delete bucket
 \if{html}{\out{<a id="method-S3FileSystem-dir_copy"></a>}}
 \if{latex}{\out{\hypertarget{method-S3FileSystem-dir_copy}{}}}
 \subsection{Method \code{dir_copy()}}{
-Copies the direcotry recursively to the new location.
+Copies the directory recursively to the new location.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{S3FileSystem$dir_copy(
   path,

@@ -1,6 +1,6 @@
 # s3fs 0.1.2
 
-* Hot fix replace `\()` syntax `function()`
+* Hot fix replace `\()` syntax with `function()`
 
 # s3fs 0.1.1
 
