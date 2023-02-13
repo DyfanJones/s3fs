@@ -1,14 +1,14 @@
 Package: s3fs
 Type: Package
-Title: Amazon Web Service 'S3' File System
-Version: 0.1.0
+Title: 'Amazon Web Service S3' File System
+Version: 0.1.1
 Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
-Description: Access Amazon Web Service 'S3' as if it were a file system. 
-    'API' is based upon 'fs' package.
+Description: Access 'Amazon Web Service Simple Storage Service' ('S3') <https://aws.amazon.com/s3/>
+    as if it were a file system. Interface based on the R package 'fs'.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.2.3  
 Roxygen: list(markdown = TRUE)
 Collate: 
     'zzz.R'
