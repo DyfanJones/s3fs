@@ -1231,7 +1231,7 @@ S3FileSystem = R6Class("S3FileSystem",
     # Directory methods
     ############################################################################
 
-    #' @description Copies the direcotry recursively to the new location.
+    #' @description Copies the directory recursively to the new location.
     #' @param path (character): path to a local directory of file or a uri.
     #' @param new_path (character): path to a local directory of file or a uri.
     #' @param max_batch (\link[fs]{fs_bytes}): Maximum batch size being uploaded with each multipart.
