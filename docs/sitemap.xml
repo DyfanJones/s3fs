@@ -4,6 +4,9 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/CODE_OF_CONDUCT.html</loc>
+  </url>
+  <url>
     <loc>/LICENSE-text.html</loc>
   </url>
   <url>
@@ -70,6 +73,12 @@
     <loc>/reference/s3_bucket_delete.html</loc>
   </url>
   <url>
+    <loc>/reference/s3_dir_ls_url.html</loc>
+  </url>
+  <url>
+    <loc>/reference/s3_dir_tree.html</loc>
+  </url>
+  <url>
     <loc>/reference/s3_file_move.html</loc>
   </url>
   <url>
@@ -83,6 +92,9 @@
   </url>
   <url>
     <loc>/reference/s3_file_touch_async.html</loc>
+  </url>
+  <url>
+    <loc>/reference/s3_file_url.html</loc>
   </url>
   <url>
     <loc>/reference/s3_file_version_info.html</loc>

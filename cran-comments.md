@@ -1,3 +1,5 @@
+Update description to meet cran comments.
+
 ## Test environments
 
 * local macOS install, R 4.2.2
