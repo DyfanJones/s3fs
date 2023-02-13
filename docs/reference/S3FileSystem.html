@@ -18,7 +18,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">s3fs</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
@@ -121,6 +121,7 @@
 <li><p><a href="#method-S3FileSystem-file_tag_update"><code>S3FileSystem$file_tag_update()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-file_touch"><code>S3FileSystem$file_touch()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-file_upload"><code>S3FileSystem$file_upload()</code></a></p></li>
+<li><p><a href="#method-S3FileSystem-file_url"><code>S3FileSystem$file_url()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-file_version_info"><code>S3FileSystem$file_version_info()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-is_file"><code>S3FileSystem$is_file()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-is_dir"><code>S3FileSystem$is_dir()</code></a></p></li>
@@ -136,6 +137,8 @@
 <li><p><a href="#method-S3FileSystem-dir_download"><code>S3FileSystem$dir_download()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-dir_info"><code>S3FileSystem$dir_info()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-dir_ls"><code>S3FileSystem$dir_ls()</code></a></p></li>
+<li><p><a href="#method-S3FileSystem-dir_ls_url"><code>S3FileSystem$dir_ls_url()</code></a></p></li>
+<li><p><a href="#method-S3FileSystem-dir_tree"><code>S3FileSystem$dir_tree()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-dir_upload"><code>S3FileSystem$dir_upload()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-path"><code>S3FileSystem$path()</code></a></p></li>
 <li><p><a href="#method-S3FileSystem-path_dir"><code>S3FileSystem$path_dir()</code></a></p></li>
@@ -753,15 +756,44 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 <p>character vector of s3 uri paths</p>
 </div>
 
-</div><p></p><hr><a id="method-S3FileSystem-file_version_info"></a><div class="section">
-<h3 id="method-file-version-info-">Method <code>file_version_info()</code><a class="anchor" aria-label="anchor" href="#method-file-version-info-"></a></h3>
-<p>Get file versions</p><div class="section">
+</div><p></p><hr><a id="method-S3FileSystem-file_url"></a><div class="section">
+<h3 id="method-file-url-">Method <code>file_url()</code><a class="anchor" aria-label="anchor" href="#method-file-url-"></a></h3>
+<p>Generate presigned url for S3 object</p><div class="section">
 <h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">file_version_info</span><span class="op">(</span><span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">file_url</span><span class="op">(</span><span class="va">path</span>, expiration <span class="op">=</span> <span class="fl">3600L</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths or uris</p></dd>
+
+
+<dt><code>expiration</code></dt>
+<dd><p>(numeric): The number of seconds the presigned url is
+valid for. By default it expires in an hour (3600 seconds)</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>parameters passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_get_object.html" class="external-link">s3_get_object</a></code></p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-16">Returns<a class="anchor" aria-label="anchor" href="#returns-16"></a></h4>
+<p>return character of urls</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-file_version_info"></a><div class="section">
+<h3 id="method-file-version-info-">Method <code>file_version_info()</code><a class="anchor" aria-label="anchor" href="#method-file-version-info-"></a></h3>
+<p>Get file versions</p><div class="section">
+<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">file_version_info</span><span class="op">(</span><span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or uris</p></dd>
 
@@ -773,7 +805,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-16">Returns<a class="anchor" aria-label="anchor" href="#returns-16"></a></h4>
+<h4 id="returns-17">Returns<a class="anchor" aria-label="anchor" href="#returns-17"></a></h4>
 <p>return data.table with file version info, columns below:</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
 <li><p>key (character): AWS S3 path key of file</p></li>
 <li><p>uri (character): S3 uri of file</p></li>
@@ -787,28 +819,8 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div><p></p><hr><a id="method-S3FileSystem-is_file"></a><div class="section">
 <h3 id="method-is-file-">Method <code>is_file()</code><a class="anchor" aria-label="anchor" href="#method-is-file-"></a></h3>
 <p>Test for file types</p><div class="section">
-<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_file</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character): A character vector of paths or uris</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-17">Returns<a class="anchor" aria-label="anchor" href="#returns-17"></a></h4>
-<p>logical vector if object is a file</p>
-</div>
-
-</div><p></p><hr><a id="method-S3FileSystem-is_dir"></a><div class="section">
-<h3 id="method-is-dir-">Method <code>is_dir()</code><a class="anchor" aria-label="anchor" href="#method-is-dir-"></a></h3>
-<p>Test for file types</p><div class="section">
 <h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_dir</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_file</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -821,18 +833,38 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 <div class="section">
 <h4 id="returns-18">Returns<a class="anchor" aria-label="anchor" href="#returns-18"></a></h4>
+<p>logical vector if object is a file</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-is_dir"></a><div class="section">
+<h3 id="method-is-dir-">Method <code>is_dir()</code><a class="anchor" aria-label="anchor" href="#method-is-dir-"></a></h3>
+<p>Test for file types</p><div class="section">
+<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_dir</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths or uris</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-19">Returns<a class="anchor" aria-label="anchor" href="#returns-19"></a></h4>
 <p>logical vector if object is a directory</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_bucket"></a><div class="section">
 <h3 id="method-is-bucket-">Method <code>is_bucket()</code><a class="anchor" aria-label="anchor" href="#method-is-bucket-"></a></h3>
 <p>Test for file types</p><div class="section">
-<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
+<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_bucket</span><span class="op">(</span><span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
+<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or uris</p></dd>
 
@@ -844,19 +876,19 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-19">Returns<a class="anchor" aria-label="anchor" href="#returns-19"></a></h4>
+<h4 id="returns-20">Returns<a class="anchor" aria-label="anchor" href="#returns-20"></a></h4>
 <p>logical vector if object is a <code>AWS S3</code> bucket</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-is_file_empty"></a><div class="section">
 <h3 id="method-is-file-empty-">Method <code>is_file_empty()</code><a class="anchor" aria-label="anchor" href="#method-is-file-empty-"></a></h3>
 <p>Test for file types</p><div class="section">
-<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
+<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">is_file_empty</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
+<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or uris</p></dd>
 
@@ -864,14 +896,14 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-20">Returns<a class="anchor" aria-label="anchor" href="#returns-20"></a></h4>
+<h4 id="returns-21">Returns<a class="anchor" aria-label="anchor" href="#returns-21"></a></h4>
 <p>logical vector if file is empty</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-bucket_chmod"></a><div class="section">
 <h3 id="method-bucket-chmod-">Method <code>bucket_chmod()</code><a class="anchor" aria-label="anchor" href="#method-bucket-chmod-"></a></h3>
 <p>Change bucket permissions</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">bucket_chmod</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"private"</span>, <span class="st">"public-read"</span>, <span class="st">"public-read-write"</span>, <span class="st">"authenticated-read"</span><span class="op">)</span></span>
@@ -879,7 +911,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 
 <div class="section">
-<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of path or s3 uri.</p></dd>
 
@@ -891,14 +923,14 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-21">Returns<a class="anchor" aria-label="anchor" href="#returns-21"></a></h4>
+<h4 id="returns-22">Returns<a class="anchor" aria-label="anchor" href="#returns-22"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-bucket_create"></a><div class="section">
 <h3 id="method-bucket-create-">Method <code>bucket_create()</code><a class="anchor" aria-label="anchor" href="#method-bucket-create-"></a></h3>
 <p>Create bucket</p><div class="section">
-<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
+<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">bucket_create</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  region_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -909,7 +941,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 
 <div class="section">
-<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of path or s3 uri.</p></dd>
 
@@ -933,19 +965,19 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-22">Returns<a class="anchor" aria-label="anchor" href="#returns-22"></a></h4>
+<h4 id="returns-23">Returns<a class="anchor" aria-label="anchor" href="#returns-23"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-bucket_delete"></a><div class="section">
 <h3 id="method-bucket-delete-">Method <code>bucket_delete()</code><a class="anchor" aria-label="anchor" href="#method-bucket-delete-"></a></h3>
 <p>Delete bucket</p><div class="section">
-<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">bucket_delete</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
+<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of path or s3 uri.</p></dd>
 
@@ -956,7 +988,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div><p></p><hr><a id="method-S3FileSystem-dir_copy"></a><div class="section">
 <h3 id="method-dir-copy-">Method <code>dir_copy()</code><a class="anchor" aria-label="anchor" href="#method-dir-copy-"></a></h3>
 <p>Copies the direcotry recursively to the new location.</p><div class="section">
-<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
+<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_copy</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  <span class="va">new_path</span>,</span>
@@ -967,7 +999,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 
 <div class="section">
-<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): path to a local directory of file or a uri.</p></dd>
 
@@ -993,19 +1025,19 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-23">Returns<a class="anchor" aria-label="anchor" href="#returns-23"></a></h4>
+<h4 id="returns-24">Returns<a class="anchor" aria-label="anchor" href="#returns-24"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_create"></a><div class="section">
 <h3 id="method-dir-create-">Method <code>dir_create()</code><a class="anchor" aria-label="anchor" href="#method-dir-create-"></a></h3>
 <p>Create empty directory</p><div class="section">
-<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
+<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_create</span><span class="op">(</span><span class="va">path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A vector of directory or uri to be created in AWS S3</p></dd>
 
@@ -1022,41 +1054,21 @@ and the file exists an error will be thrown.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-24">Returns<a class="anchor" aria-label="anchor" href="#returns-24"></a></h4>
+<h4 id="returns-25">Returns<a class="anchor" aria-label="anchor" href="#returns-25"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_delete"></a><div class="section">
 <h3 id="method-dir-delete-">Method <code>dir_delete()</code><a class="anchor" aria-label="anchor" href="#method-dir-delete-"></a></h3>
 <p>Delete contents and directory in AWS S3</p><div class="section">
-<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_delete</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character): A vector of paths or uris to directories to be deleted.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-25">Returns<a class="anchor" aria-label="anchor" href="#returns-25"></a></h4>
-<p>character vector of s3 uri paths</p>
-</div>
-
-</div><p></p><hr><a id="method-S3FileSystem-dir_exists"></a><div class="section">
-<h3 id="method-dir-exists-">Method <code>dir_exists()</code><a class="anchor" aria-label="anchor" href="#method-dir-exists-"></a></h3>
-<p>Check if path exists in AWS S3</p><div class="section">
 <h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_exists</span><span class="op">(</span>path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_delete</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character) aws s3 path to be checked</p></dd>
+<dd><p>(character): A vector of paths or uris to directories to be deleted.</p></dd>
 
 
 </dl><p></p></div>
@@ -1066,15 +1078,35 @@ and the file exists an error will be thrown.</p></dd>
 <p>character vector of s3 uri paths</p>
 </div>
 
-</div><p></p><hr><a id="method-S3FileSystem-dir_download"></a><div class="section">
-<h3 id="method-dir-download-">Method <code>dir_download()</code><a class="anchor" aria-label="anchor" href="#method-dir-download-"></a></h3>
-<p>Downloads AWS S3 files to local</p><div class="section">
+</div><p></p><hr><a id="method-S3FileSystem-dir_exists"></a><div class="section">
+<h3 id="method-dir-exists-">Method <code>dir_exists()</code><a class="anchor" aria-label="anchor" href="#method-dir-exists-"></a></h3>
+<p>Check if path exists in AWS S3</p><div class="section">
 <h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_download</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_exists</span><span class="op">(</span>path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character) aws s3 path to be checked</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-27">Returns<a class="anchor" aria-label="anchor" href="#returns-27"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-dir_download"></a><div class="section">
+<h3 id="method-dir-download-">Method <code>dir_download()</code><a class="anchor" aria-label="anchor" href="#method-dir-download-"></a></h3>
+<p>Downloads AWS S3 files to local</p><div class="section">
+<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_download</span><span class="op">(</span><span class="va">path</span>, <span class="va">new_path</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths or uris</p></dd>
 
@@ -1096,82 +1128,15 @@ and the file exists an error will be thrown.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-27">Returns<a class="anchor" aria-label="anchor" href="#returns-27"></a></h4>
+<h4 id="returns-28">Returns<a class="anchor" aria-label="anchor" href="#returns-28"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_info"></a><div class="section">
 <h3 id="method-dir-info-">Method <code>dir_info()</code><a class="anchor" aria-label="anchor" href="#method-dir-info-"></a></h3>
 <p>Returns file information within AWS S3 directory</p><div class="section">
-<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_info</span><span class="op">(</span></span>
-<span>  path <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"bucket"</span>, <span class="st">"directory"</span>, <span class="st">"file"</span><span class="op">)</span>,</span>
-<span>  glob <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character):A character vector of one or more paths. Can be path
-or s3 uri.</p></dd>
-
-
-<dt><code>type</code></dt>
-<dd><p>(character): File type(s) to return. Default ("any") returns all
-AWS S3 object types.</p></dd>
-
-
-<dt><code>glob</code></dt>
-<dd><p>(character): A wildcard pattern (e.g. <code>*.csv</code>), passed onto
-<code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code> to filter paths.</p></dd>
-
-
-<dt><code>regexp</code></dt>
-<dd><p>(character): A regular expression (e.g. <code>[.]csv$</code>),
-passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code> to filter paths.</p></dd>
-
-
-<dt><code>invert</code></dt>
-<dd><p>(logical): If <code>code</code> return files which do not match.</p></dd>
-
-
-<dt><code>recurse</code></dt>
-<dd><p>(logical): Returns all AWS S3 objects in lower sub directories</p></dd>
-
-
-<dt><code>refresh</code></dt>
-<dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
-
-
-<dt><code>...</code></dt>
-<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-28">Returns<a class="anchor" aria-label="anchor" href="#returns-28"></a></h4>
-<p>data.table with directory metadata</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
-<li><p>key (character): AWS S3 path key of file</p></li>
-<li><p>uri (character): S3 uri of file</p></li>
-<li><p>size (numeric): file size in bytes</p></li>
-<li><p>version_id (character): version id of file</p></li>
-<li><p>etag (character): An entity tag is an opague identifier</p></li>
-<li><p>last_modified (POSIXct): Created date of file</p></li>
-</ul></div>
-
-</div><p></p><hr><a id="method-S3FileSystem-dir_ls"></a><div class="section">
-<h3 id="method-dir-ls-">Method <code>dir_ls()</code><a class="anchor" aria-label="anchor" href="#method-dir-ls-"></a></h3>
-<p>Returns file name within AWS S3 directory</p><div class="section">
 <h4 id="usage-32">Usage<a class="anchor" aria-label="anchor" href="#usage-32"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_ls</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_info</span><span class="op">(</span></span>
 <span>  path <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"bucket"</span>, <span class="st">"directory"</span>, <span class="st">"file"</span><span class="op">)</span>,</span>
 <span>  glob <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -1225,13 +1190,141 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 </div>
 <div class="section">
 <h4 id="returns-29">Returns<a class="anchor" aria-label="anchor" href="#returns-29"></a></h4>
+<p>data.table with directory metadata</p><ul><li><p>bucket_name (character): AWS S3 bucket of file</p></li>
+<li><p>key (character): AWS S3 path key of file</p></li>
+<li><p>uri (character): S3 uri of file</p></li>
+<li><p>size (numeric): file size in bytes</p></li>
+<li><p>version_id (character): version id of file</p></li>
+<li><p>etag (character): An entity tag is an opague identifier</p></li>
+<li><p>last_modified (POSIXct): Created date of file</p></li>
+</ul></div>
+
+</div><p></p><hr><a id="method-S3FileSystem-dir_ls"></a><div class="section">
+<h3 id="method-dir-ls-">Method <code>dir_ls()</code><a class="anchor" aria-label="anchor" href="#method-dir-ls-"></a></h3>
+<p>Returns file name within AWS S3 directory</p><div class="section">
+<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_ls</span><span class="op">(</span></span>
+<span>  path <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"bucket"</span>, <span class="st">"directory"</span>, <span class="st">"file"</span><span class="op">)</span>,</span>
+<span>  glob <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  regexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  invert <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  recurse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character):A character vector of one or more paths. Can be path
+or s3 uri.</p></dd>
+
+
+<dt><code>type</code></dt>
+<dd><p>(character): File type(s) to return. Default ("any") returns all
+AWS S3 object types.</p></dd>
+
+
+<dt><code>glob</code></dt>
+<dd><p>(character): A wildcard pattern (e.g. <code>*.csv</code>), passed onto
+<code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code> to filter paths.</p></dd>
+
+
+<dt><code>regexp</code></dt>
+<dd><p>(character): A regular expression (e.g. <code>[.]csv$</code>),
+passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code> to filter paths.</p></dd>
+
+
+<dt><code>invert</code></dt>
+<dd><p>(logical): If <code>code</code> return files which do not match.</p></dd>
+
+
+<dt><code>recurse</code></dt>
+<dd><p>(logical): Returns all AWS S3 objects in lower sub directories</p></dd>
+
+
+<dt><code>refresh</code></dt>
+<dd><p>(logical): Refresh cached in <code>s3_cache</code>.</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>parameters to be passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-30">Returns<a class="anchor" aria-label="anchor" href="#returns-30"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-dir_ls_url"></a><div class="section">
+<h3 id="method-dir-ls-url-">Method <code>dir_ls_url()</code><a class="anchor" aria-label="anchor" href="#method-dir-ls-url-"></a></h3>
+<p>Generate presigned url to list S3 directories</p><div class="section">
+<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_ls_url</span><span class="op">(</span><span class="va">path</span>, expiration <span class="op">=</span> <span class="fl">3600L</span>, recurse <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths or uris</p></dd>
+
+
+<dt><code>expiration</code></dt>
+<dd><p>(numeric): The number of seconds the presigned url is
+valid for. By default it expires in an hour (3600 seconds)</p></dd>
+
+
+<dt><code>recurse</code></dt>
+<dd><p>(logical): Returns all AWS S3 objects in lower sub directories</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>parameters passed to <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_list_objects_v2.html" class="external-link">s3_list_objects_v2</a></code></p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-31">Returns<a class="anchor" aria-label="anchor" href="#returns-31"></a></h4>
+<p>return character of urls</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-dir_tree"></a><div class="section">
+<h3 id="method-dir-tree-">Method <code>dir_tree()</code><a class="anchor" aria-label="anchor" href="#method-dir-tree-"></a></h3>
+<p>Print contents of directories in a tree-like format</p><div class="section">
+<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">path</span>, recurse <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): path A path to print the tree from</p></dd>
+
+
+<dt><code>recurse</code></dt>
+<dd><p>(logical): Returns all AWS S3 objects in lower sub directories</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>Additional arguments passed to <a href="info.html">s3_dir_ls</a>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-32">Returns<a class="anchor" aria-label="anchor" href="#returns-32"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-dir_upload"></a><div class="section">
 <h3 id="method-dir-upload-">Method <code>dir_upload()</code><a class="anchor" aria-label="anchor" href="#method-dir-upload-"></a></h3>
 <p>Uploads local directory to AWS S3</p><div class="section">
-<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
+<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">dir_upload</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  <span class="va">new_path</span>,</span>
@@ -1242,7 +1335,7 @@ passed onto <code><a href="https://rdrr.io/r/base/grep.html" class="external-lin
 </div>
 
 <div class="section">
-<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
+<h4 id="arguments-36">Arguments<a class="anchor" aria-label="anchor" href="#arguments-36"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of local file paths to upload to AWS S3</p></dd>
 
@@ -1268,19 +1361,19 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-30">Returns<a class="anchor" aria-label="anchor" href="#returns-30"></a></h4>
+<h4 id="returns-33">Returns<a class="anchor" aria-label="anchor" href="#returns-33"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path"></a><div class="section">
 <h3 id="method-path-">Method <code><a href="path.html">path()</a></code><a class="anchor" aria-label="anchor" href="#method-path-"></a></h3>
 <p>Constructs a s3 uri path</p><div class="section">
-<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path</span><span class="op">(</span><span class="va">...</span>, ext <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
+<h4 id="arguments-37">Arguments<a class="anchor" aria-label="anchor" href="#arguments-37"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>(character): Character vectors</p></dd>
 
@@ -1292,85 +1385,21 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-31">Returns<a class="anchor" aria-label="anchor" href="#returns-31"></a></h4>
+<h4 id="returns-34">Returns<a class="anchor" aria-label="anchor" href="#returns-34"></a></h4>
 <p>character vector of s3 uri paths</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-path_dir"></a><div class="section">
 <h3 id="method-path-dir-">Method <code>path_dir()</code><a class="anchor" aria-label="anchor" href="#method-path-dir-"></a></h3>
 <p>Returns the directory portion of s3 uri</p><div class="section">
-<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_dir</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character): A character vector of paths</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-32">Returns<a class="anchor" aria-label="anchor" href="#returns-32"></a></h4>
-<p>character vector of s3 uri paths</p>
-</div>
-
-</div><p></p><hr><a id="method-S3FileSystem-path_ext"></a><div class="section">
-<h3 id="method-path-ext-">Method <code>path_ext()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-"></a></h3>
-<p>Returns the last extension for a path.</p><div class="section">
-<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-36">Arguments<a class="anchor" aria-label="anchor" href="#arguments-36"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character): A character vector of paths</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-33">Returns<a class="anchor" aria-label="anchor" href="#returns-33"></a></h4>
-<p>character s3 uri file extension</p>
-</div>
-
-</div><p></p><hr><a id="method-S3FileSystem-path_ext_remove"></a><div class="section">
-<h3 id="method-path-ext-remove-">Method <code>path_ext_remove()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-remove-"></a></h3>
-<p>Removes the last extension and return the rest of the s3 uri.</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext_remove</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-37">Arguments<a class="anchor" aria-label="anchor" href="#arguments-37"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>path</code></dt>
-<dd><p>(character): A character vector of paths</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-34">Returns<a class="anchor" aria-label="anchor" href="#returns-34"></a></h4>
-<p>character vector of s3 uri paths</p>
-</div>
-
-</div><p></p><hr><a id="method-S3FileSystem-path_ext_set"></a><div class="section">
-<h3 id="method-path-ext-set-">Method <code>path_ext_set()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-set-"></a></h3>
-<p>Replace the extension with a new extension.</p><div class="section">
 <h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext_set</span><span class="op">(</span><span class="va">path</span>, <span class="va">ext</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_dir</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-38">Arguments<a class="anchor" aria-label="anchor" href="#arguments-38"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of paths</p></dd>
-
-
-<dt><code>ext</code></dt>
-<dd><p>(character): New file extension</p></dd>
 
 
 </dl><p></p></div>
@@ -1380,11 +1409,11 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 <p>character vector of s3 uri paths</p>
 </div>
 
-</div><p></p><hr><a id="method-S3FileSystem-path_file"></a><div class="section">
-<h3 id="method-path-file-">Method <code>path_file()</code><a class="anchor" aria-label="anchor" href="#method-path-file-"></a></h3>
-<p>Returns the file name portion of the s3 uri path</p><div class="section">
+</div><p></p><hr><a id="method-S3FileSystem-path_ext"></a><div class="section">
+<h3 id="method-path-ext-">Method <code>path_ext()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-"></a></h3>
+<p>Returns the last extension for a path.</p><div class="section">
 <h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_file</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -1397,20 +1426,20 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 <div class="section">
 <h4 id="returns-36">Returns<a class="anchor" aria-label="anchor" href="#returns-36"></a></h4>
-<p>character vector of file names</p>
+<p>character s3 uri file extension</p>
 </div>
 
-</div><p></p><hr><a id="method-S3FileSystem-path_join"></a><div class="section">
-<h3 id="method-path-join-">Method <code>path_join()</code><a class="anchor" aria-label="anchor" href="#method-path-join-"></a></h3>
-<p>Construct an s3 uri path from path vector</p><div class="section">
+</div><p></p><hr><a id="method-S3FileSystem-path_ext_remove"></a><div class="section">
+<h3 id="method-path-ext-remove-">Method <code>path_ext_remove()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-remove-"></a></h3>
+<p>Removes the last extension and return the rest of the s3 uri.</p><div class="section">
 <h4 id="usage-40">Usage<a class="anchor" aria-label="anchor" href="#usage-40"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_join</span><span class="op">(</span><span class="va">parts</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext_remove</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-40">Arguments<a class="anchor" aria-label="anchor" href="#arguments-40"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>parts</code></dt>
-<dd><p>(character): A character vector of one or more paths</p></dd>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths</p></dd>
 
 
 </dl><p></p></div>
@@ -1420,15 +1449,79 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 <p>character vector of s3 uri paths</p>
 </div>
 
-</div><p></p><hr><a id="method-S3FileSystem-path_split"></a><div class="section">
-<h3 id="method-path-split-">Method <code>path_split()</code><a class="anchor" aria-label="anchor" href="#method-path-split-"></a></h3>
-<p>Split s3 uri path to core components bucket, key and version id</p><div class="section">
+</div><p></p><hr><a id="method-S3FileSystem-path_ext_set"></a><div class="section">
+<h3 id="method-path-ext-set-">Method <code>path_ext_set()</code><a class="anchor" aria-label="anchor" href="#method-path-ext-set-"></a></h3>
+<p>Replace the extension with a new extension.</p><div class="section">
 <h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_split</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_ext_set</span><span class="op">(</span><span class="va">path</span>, <span class="va">ext</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-41">Arguments<a class="anchor" aria-label="anchor" href="#arguments-41"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths</p></dd>
+
+
+<dt><code>ext</code></dt>
+<dd><p>(character): New file extension</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-38">Returns<a class="anchor" aria-label="anchor" href="#returns-38"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-path_file"></a><div class="section">
+<h3 id="method-path-file-">Method <code>path_file()</code><a class="anchor" aria-label="anchor" href="#method-path-file-"></a></h3>
+<p>Returns the file name portion of the s3 uri path</p><div class="section">
+<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_file</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-42">Arguments<a class="anchor" aria-label="anchor" href="#arguments-42"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>path</code></dt>
+<dd><p>(character): A character vector of paths</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-39">Returns<a class="anchor" aria-label="anchor" href="#returns-39"></a></h4>
+<p>character vector of file names</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-path_join"></a><div class="section">
+<h3 id="method-path-join-">Method <code>path_join()</code><a class="anchor" aria-label="anchor" href="#method-path-join-"></a></h3>
+<p>Construct an s3 uri path from path vector</p><div class="section">
+<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_join</span><span class="op">(</span><span class="va">parts</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-43">Arguments<a class="anchor" aria-label="anchor" href="#arguments-43"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>parts</code></dt>
+<dd><p>(character): A character vector of one or more paths</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-40">Returns<a class="anchor" aria-label="anchor" href="#returns-40"></a></h4>
+<p>character vector of s3 uri paths</p>
+</div>
+
+</div><p></p><hr><a id="method-S3FileSystem-path_split"></a><div class="section">
+<h3 id="method-path-split-">Method <code>path_split()</code><a class="anchor" aria-label="anchor" href="#method-path-split-"></a></h3>
+<p>Split s3 uri path to core components bucket, key and version id</p><div class="section">
+<h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">path_split</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-44">Arguments<a class="anchor" aria-label="anchor" href="#arguments-44"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): A character vector of one or more paths or s3 uri</p></dd>
 
@@ -1436,19 +1529,19 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-38">Returns<a class="anchor" aria-label="anchor" href="#returns-38"></a></h4>
+<h4 id="returns-41">Returns<a class="anchor" aria-label="anchor" href="#returns-41"></a></h4>
 <p>list character vectors splitting the s3 uri path in "Bucket", "Key" and "VersionId"</p>
 </div>
 
 </div><p></p><hr><a id="method-S3FileSystem-clear_cache"></a><div class="section">
 <h3 id="method-clear-cache-">Method <code>clear_cache()</code><a class="anchor" aria-label="anchor" href="#method-clear-cache-"></a></h3>
 <p>Clear S3 Cache</p><div class="section">
-<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
+<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">clear_cache</span><span class="op">(</span>path <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-42">Arguments<a class="anchor" aria-label="anchor" href="#arguments-42"></a></h4>
+<h4 id="arguments-45">Arguments<a class="anchor" aria-label="anchor" href="#arguments-45"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(character): s3 path to be cl</p></dd>
 
@@ -1459,12 +1552,12 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div><p></p><hr><a id="method-S3FileSystem-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
+<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">S3FileSystem</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-43">Arguments<a class="anchor" aria-label="anchor" href="#arguments-43"></a></h4>
+<h4 id="arguments-46">Arguments<a class="anchor" aria-label="anchor" href="#arguments-46"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -1488,7 +1581,7 @@ and <code><a href="https://rdrr.io/pkg/paws.storage/man/s3_create_multipart_uplo
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

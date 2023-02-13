@@ -4,9 +4,9 @@
 \name{s3fs-package}
 \alias{s3fs}
 \alias{s3fs-package}
-\title{s3fs: Amazon Web Service 'S3' File System}
+\title{s3fs: 'Amazon Web Service S3' File System}
 \description{
-Access Amazon Web Service 'S3' as if it were a file system. 'API' is based upon 'fs' package.
+Access 'Amazon Web Service Simple Storage Service' ('S3') \url{https://aws.amazon.com/s3/} as if it were a file system. Interface based on the R package 'fs'.
 }
 \author{
 \strong{Maintainer}: Dyfan Jones \email{dyfan.r.jones@gmail.com}
