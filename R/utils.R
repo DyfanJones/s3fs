@@ -4,7 +4,7 @@
 
 str_split = function(path, pattern, n=-1L){
   out = strsplit(path, pattern)
-  lapply(out, \(x) {
+  lapply(out, function(x) {
     if(n == -1L){
       return(x)
     } else {
