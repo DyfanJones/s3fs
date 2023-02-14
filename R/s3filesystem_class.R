@@ -2195,7 +2195,7 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       version_id = if(is.null(src_parts$VersionId)) "" else sprintf("?versionId=%s", src_parts$VersionId)
       copy_src = paste0(sprintf("/%s/%s",src_parts$Bucket, src_parts$Key), version_id)
-      start = seq(0, size-1, 6 * (2 ** 20))
+      start = seq(0, size-1, max_batch)
       end = c(start[-1]-1, size-1)
       chunks = sprintf("bytes=%s-%s", start, end)
 
