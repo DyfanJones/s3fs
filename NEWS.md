@@ -1,3 +1,7 @@
+# s3fs 0.1.2.9000
+
+* Fix hard coded max batch size
+
 # s3fs 0.1.2
 
 * Hot fix replace `\()` syntax with `function()`
