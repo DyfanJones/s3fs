@@ -2017,7 +2017,8 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       }, http_403 = function(err) {
         # if don't have permission assume bucket isn't versioned
-        LOGGER$error(err$message)
+        LOGGER$warn(err$message)
+        LOGGER$info("Assuming bucket isn't versioned")
         return(character(0))
       })
       return(identical(bucket_status, "Enabled"))
