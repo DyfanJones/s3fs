@@ -2,19 +2,61 @@
 
 `%||%` = function(x, y) if(is.null(x)) y else x
 
-str_split = function(path, pattern, n=-1L){
-  out = strsplit(path, pattern)
-  lapply(out, function(x) {
-    if(n == -1L){
-      return(x)
-    } else {
-      str_n = paste(x[n:length(x)], collapse = pattern)
-      if (n == 1)
-        return(str_n)
-      return(c(x[1:(n - 1)], str_n))
-    }
+
+################################################################################
+# Developed from:
+# https://github.com/tidyverse/stringr/blob/2a30b2ebc8e854e181db0ef39025a9cbd35b75cf/R/split.r
+# See the NOTICE file at the top of this package for attribution.
+################################################################################
+str_split <- function(string, pattern, n = Inf) {
+  if (n == Inf) {
+    strsplit(string, pattern)
+  } else if (n == 1) {
+    string
+  } else {
+    locations <- str_locate_all(string, pattern)
+    lapply(locations, function(mat) {
+      cut <- mat[seq_len(min(n - 1, nrow(mat))), , drop = FALSE]
+      keep <- matrix(c(0, t(cut), Inf), ncol = 2, byrow = TRUE)
+
+      str_sub(string, keep[, 1] + 1, keep[, 2] - 1)
+    })
+  }
+}
+
+str_locate_all <- function(string, pattern) {
+  matches <- gregexpr(pattern, string)
+
+  null <- matrix(0, nrow = 0, ncol = 2)
+  colnames(null) <- c("start", "end")
+
+  lapply(matches, function(match) {
+    if (length(match) == 1 && match == -1) return(null)
+
+    start <- as.vector(match)
+    end <- start + attr(match, "match.length") - 1
+    cbind(start = start, end = end)
   })
 }
+
+str_sub <- function(string, start = 0, end = Inf) {
+  if (length(string) == 0 || length(start) == 0 || length(end) == 0) {
+    return(vector("character", 0))
+  }
+
+  n <- max(length(string), length(start), length(end))
+  string <- rep(string, length = n)
+  start <- rep(start, length = n)
+  end <- rep(end, length = n)
+
+  # Replace infinite ends with length of string
+  max_length <- !is.na(end) & end == Inf
+  end[max_length] <- nchar(string)[max_length]
+
+  substring(string, start, end)
+}
+
+
 
 path_abs <- function(path) {
   return(normalizePath(path, winslash = "/", mustWork = FALSE))
