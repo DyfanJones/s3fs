@@ -1698,6 +1698,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(nrow(files) == 0)
         return("")
 
+      FILES <<- files
       files = files[startsWith(trimws(get("key"), "right", "/"), path), ]
       if(length(files$bucket_name) == 0){
         stop(sprintf(
