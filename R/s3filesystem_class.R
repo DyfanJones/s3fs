@@ -2009,11 +2009,17 @@ S3FileSystem = R6Class("S3FileSystem",
     },
 
     .s3_is_bucket_version = function(bucket){
-      bucket_status = retry_api_call(
-        self$s3_client$get_bucket_versioning(
-          Bucket = bucket
-        )$Status, self$retries
-      )
+      bucket_status = tryCatch({
+        retry_api_call(
+          self$s3_client$get_bucket_versioning(
+            Bucket = bucket
+          )$Status, self$retries
+        )
+      }, http_403 = function(err) {
+        # if don't have permission assume bucket isn't versioned
+        LOGGER$error(err$message)
+        return("")
+      })
       if (identical(bucket_status,  character(0)))
           bucket_status = ""
 
