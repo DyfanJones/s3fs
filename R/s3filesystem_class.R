@@ -2018,12 +2018,9 @@ S3FileSystem = R6Class("S3FileSystem",
       }, http_403 = function(err) {
         # if don't have permission assume bucket isn't versioned
         LOGGER$error(err$message)
-        return("")
+        return(character(0))
       })
-      if (identical(bucket_status,  character(0)))
-          bucket_status = ""
-
-      return(bucket_status == "Enabled")
+      return(identical(bucket_status, "Enabled"))
     },
 
     .s3_bucket_ls = function(refresh=FALSE){
