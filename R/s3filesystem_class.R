@@ -1573,7 +1573,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "`recurse` is required to be a logical vector" = is.logical(recurse),
         "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
-      type = match.arg(type)
+      Type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       kwargs = list(...)
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
@@ -1612,7 +1612,12 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       )
       if (!identical(Key, character(0))) {
-        files = files[grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T), ]
+        files = files[
+          # ensure only target directory items are returned
+          grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T) &
+          # don't return directory path
+          !(trimws(get("key"), "right", "/") %in% Key),
+        ]
       }
       if(length(files$bucket_name) == 0){
         stop(sprintf(
@@ -1622,8 +1627,9 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       }
 
-      if(type != "any")
-        files = files[get("type") %in% type,]
+      if(Type != "any") {
+        files = files[get("type") %in% Type,]
+      }
       if(!is.null(glob))
         files = files[grep(glob, get("key"), invert = invert),]
       if(!is.null(regexp))
@@ -1667,7 +1673,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "`recurse` is required to be a logical vector" = is.logical(recurse),
         "`refresh` is required to be a logical vector" = is.logical(refresh)
       )
-      type = match.arg(type)
+      Type = match.arg(type)
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       kwargs = list(...)
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
@@ -1709,7 +1715,12 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       )
       if (!identical(Key, character(0))) {
-        files = files[grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T), ]
+        files = files[
+          # ensure only target directory items are returned
+          grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T) &
+          # don't return directory path
+          !(trimws(get("key"), "right", "/") %in% Key),
+        ]
       }
       if(length(files$bucket_name) == 0){
         stop(sprintf(
@@ -1719,8 +1730,8 @@ S3FileSystem = R6Class("S3FileSystem",
         )
       }
 
-      if(type != "any")
-        files = files[get("type") %in% type,]
+      if(Type != "any")
+        files = files[get("type") %in% Type,]
       if(!is.null(glob))
         files = files[grep(glob, get("key"), invert = invert),]
       if(!is.null(regexp))
@@ -2211,7 +2222,6 @@ S3FileSystem = R6Class("S3FileSystem",
                                  ...){
       src_parts = private$.s3_split_path(src)
       dest_parts = private$.s3_split_path(dest)
-
       if (!is.null(dest_parts$VersionId))
         stop("Unable to copy to a versioned file", call. = FALSE)
 
