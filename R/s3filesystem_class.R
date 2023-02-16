@@ -1698,7 +1698,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(nrow(files) == 0)
         return("")
 
-      path = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
+      files = files[startsWith(trimws(get("key"), "right", "/"), path), ]
       if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
@@ -1706,7 +1706,7 @@ S3FileSystem = R6Class("S3FileSystem",
           call. = F
         )
       }
-      files = files[!(trimws(get("key"), "right", "/") %in% path), ]
+
       if(type != "any")
         files = files[get("type") %in% type,]
       if(!is.null(glob))
