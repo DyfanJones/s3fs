@@ -87,7 +87,7 @@ test_that("copy file uri to local standard", {
 
 test_that("copy file uri to uri multipart", {
   skip_if_no_env()
-  s3_file_system(multipart_threshold = 2 * s3fs:::MB, refresh = T)
+  s3_file_system(multipart_threshold = fs_bytes("50MB"), refresh = T)
 
   new_path = s3_file_temp(tmp_dir = bucket_nv)
   path = s3_path(bucket_nv, "multipart_file.csv")
@@ -95,7 +95,7 @@ test_that("copy file uri to uri multipart", {
   s3_file_copy(
     path,
     new_path,
-    max_batch = 6 * s3fs:::MB
+    max_batch = fs_bytes("20MB")
   )
   result = s3_file_exists(new_path)
   size = s3_file_size(c(path, new_path))
@@ -108,7 +108,7 @@ test_that("copy file uri to uri multipart", {
 
 test_that("copy file local to uri multipart", {
   skip_if_no_env()
-  s3_file_system(multipart_threshold = 2 * s3fs:::MB, refresh = T)
+  s3_file_system(multipart_threshold = fs_bytes("2MB"), refresh = T)
 
   path = "temp.csv"
   new_path = s3_file_temp(tmp_dir = bucket_nv, ext = "csv")
@@ -123,7 +123,7 @@ test_that("copy file local to uri multipart", {
   s3_file_copy(
     path,
     new_path,
-    max_batch = 6 * s3fs:::MB,
+    max_batch = fs_bytes("6MB"),
     overwrite = T
   )
 
@@ -251,7 +251,7 @@ test_that("stream files in and out standard", {
 
 test_that("stream files in and out multipart", {
   skip_if_no_env()
-  s3_file_system(multipart_threshold = 2 * s3fs:::MB, refresh = T)
+  s3_file_system(multipart_threshold = fs_bytes("2MB"), refresh = T)
 
   path = "temp.csv"
   new_path = s3_file_temp(tmp_dir = bucket_nv, ext = "csv")
@@ -264,7 +264,7 @@ test_that("stream files in and out multipart", {
   fwrite(df, path)
   obj = readBin(path, "raw", n = file.size(path))
 
-  s3_file_stream_out(obj, new_path, max_batch = 6 * s3fs:::MB, overwrite = T)
+  s3_file_stream_out(obj, new_path, max_batch = fs_bytes("6MB"), overwrite = T)
   result = s3_file_stream_in(new_path)
 
   s3_file_delete(new_path)
