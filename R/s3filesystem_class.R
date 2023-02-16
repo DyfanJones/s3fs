@@ -1613,7 +1613,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
-          paste(sprintf("s3://%s", Key), collapse = "', '")),
+          paste(sprintf("s3://%s", path), collapse = "', '")),
           call. = F
         )
       }
@@ -1704,7 +1704,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
-          paste(sprintf("s3://%s", Key), collapse = "', '")),
+          paste(sprintf("s3://%s", path), collapse = "', '")),
           call. = F
         )
       }
