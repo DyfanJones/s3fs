@@ -255,9 +255,7 @@ S3FileSystem = R6Class("S3FileSystem",
               kwargs$dest = part[[2]]
               kwargs$size = part[[3]]
               do.call(private$.s3_copy_multipart, kwargs)
-            },
-            future.seed = length(multipart)
-          )
+          })
         }
         self$clear_cache(private$.s3_pnt_dir(new_path))
         return(private$.s3_build_uri(new_path))
