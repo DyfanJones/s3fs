@@ -1609,7 +1609,7 @@ S3FileSystem = R6Class("S3FileSystem",
       }
 
       Key = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
-      files = files[grepl(paste0("^", Key, collapse = "|"), get("Key"), perl = T), ]
+      files = files[grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T), ]
       if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
@@ -1700,7 +1700,7 @@ S3FileSystem = R6Class("S3FileSystem",
         return("")
 
       Key = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
-      files = files[grepl(paste0("^", Key, collapse = "|"), get("Key"), perl = T), ]
+      files = files[grepl(paste0("^", Key, collapse = "|"), get("key"), perl = T), ]
       if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
