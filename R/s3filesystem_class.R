@@ -189,14 +189,16 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       s3_parts = lapply(path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
-        retry_api_call(
-          self$s3_client$put_object_acl(
-            Bucket = s3_parts[[i]]$Bucket,
-            Key = s3_parts[[i]]$Key,
-            VersionId = s3_parts[[i]]$VersionId,
-            ACL = mode
-          ), self$retries)
-      })
+          retry_api_call(
+            self$s3_client$put_object_acl(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              VersionId = s3_parts[[i]]$VersionId,
+              ACL = mode
+            ), self$retries)
+        },
+        future.seed = length(s3_parts)
+      )
       return(private$.s3_build_uri(path))
     },
 
@@ -239,19 +241,23 @@ S3FileSystem = R6Class("S3FileSystem",
 
         if (length(standard) > 0){
           future_lapply(standard, function(part){
-            kwargs$src = part[[1]]
-            kwargs$dest = part[[2]]
-            do.call(private$.s3_copy_standard, kwargs)
-          })
+              kwargs$src = part[[1]]
+              kwargs$dest = part[[2]]
+              do.call(private$.s3_copy_standard, kwargs)
+            },
+            future.seed = length(standard)
+          )
         }
         if (length(multipart) > 0){
           kwargs$max_batch = max_batch
           lapply(multipart, function(part){
-            kwargs$src = part[[1]]
-            kwargs$dest = part[[2]]
-            kwargs$size = part[[3]]
-            do.call(private$.s3_copy_multipart, kwargs)
-          })
+              kwargs$src = part[[1]]
+              kwargs$dest = part[[2]]
+              kwargs$size = part[[3]]
+              do.call(private$.s3_copy_multipart, kwargs)
+            },
+            future.seed = length(multipart)
+          )
         }
         self$clear_cache(private$.s3_pnt_dir(new_path))
         return(private$.s3_build_uri(new_path))
@@ -348,17 +354,19 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
       lapply(key_parts, function(parts) {
         future_lapply(parts, function(part) {
-          bucket = unique(sapply(part, function(x) x$Bucket))
-          kwargs$Bucket = bucket
-          kwargs$Delete = list(Objects = lapply(part, function(x) {
-            Filter(Negate(is.null), x[2:3])
-          }))
-          retry_api_call(
-            tryCatch({
-              do.call(self$s3_client$delete_objects, kwargs)
-            }), self$retries
-          )
-        })
+            bucket = unique(sapply(part, function(x) x$Bucket))
+            kwargs$Bucket = bucket
+            kwargs$Delete = list(Objects = lapply(part, function(x) {
+              Filter(Negate(is.null), x[2:3])
+            }))
+            retry_api_call(
+              tryCatch({
+                do.call(self$s3_client$delete_objects, kwargs)
+              }), self$retries
+            )
+          },
+          future.seed = length(parts)
+        )
       })
       self$clear_cache(private$.s3_pnt_dir(origin_path))
       return(private$.s3_build_uri(origin_path))
@@ -399,10 +407,12 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs = list(...)
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
       future_lapply(seq_along(path), function(i){
-        kwargs$src = path[[i]]
-        kwargs$dest = new_path[[i]]
-        do.call(private$.s3_download_file, kwargs)
-      })
+          kwargs$src = path[[i]]
+          kwargs$dest = new_path[[i]]
+          do.call(private$.s3_download_file, kwargs)
+        },
+        future.seed = length(path)
+      )
       return(new_path)
     },
 
@@ -492,30 +502,32 @@ S3FileSystem = R6Class("S3FileSystem",
       s3_parts = lapply(path, private$.s3_split_path)
 
       resp = future_lapply(seq_along(s3_parts), function(i){
-        resp = retry_api_call(
-          tryCatch({
-            self$s3_client$head_object(
-              Bucket = s3_parts[[i]]$Bucket,
-              Key = s3_parts[[i]]$Key,
-              VersionId = s3_parts[[i]]$VersionId
-            )
-          }), self$retries)
-        resp$bucket_name = s3_parts[[i]]$Bucket
-        resp$key = s3_parts[[i]]$Key
-        key = (
-          if(!is.null(s3_parts$VersionId))
-            paste0(s3_parts[[i]]$Key, "?versionId=", s3_parts$VersionId)
-          else s3_parts[[i]]$Key
-        )
-        resp$uri = self$path(
-          s3_parts[[i]]$Bucket,
-          key
-        )
-        resp$size = resp$ContentLength
-        resp$ContentLength = NULL
-        resp$type = ifelse(endsWith(s3_parts[[i]]$Key, "/"), "directory", "file")
-        suppressWarnings(as.data.table(resp))
-      })
+          resp = retry_api_call(
+            tryCatch({
+              self$s3_client$head_object(
+                Bucket = s3_parts[[i]]$Bucket,
+                Key = s3_parts[[i]]$Key,
+                VersionId = s3_parts[[i]]$VersionId
+              )
+            }), self$retries)
+          resp$bucket_name = s3_parts[[i]]$Bucket
+          resp$key = s3_parts[[i]]$Key
+          key = (
+            if(!is.null(s3_parts$VersionId))
+              paste0(s3_parts[[i]]$Key, "?versionId=", s3_parts$VersionId)
+            else s3_parts[[i]]$Key
+          )
+          resp$uri = self$path(
+            s3_parts[[i]]$Bucket,
+            key
+          )
+          resp$size = resp$ContentLength
+          resp$ContentLength = NULL
+          resp$type = ifelse(endsWith(s3_parts[[i]]$Key, "/"), "directory", "file")
+          suppressWarnings(as.data.table(resp))
+        },
+        future.seed = length(s3_parts)
+      )
 
       dt = rbindlist(resp)
       names(dt) = camel_to_snake(names(dt))
@@ -567,9 +579,11 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
 
       future_lapply(path, function(p){
-        kwargs$src = p
-        do.call(private$.s3_stream_in_file, kwargs)
-      })
+          kwargs$src = p
+          do.call(private$.s3_stream_in_file, kwargs)
+        },
+        future.seed = length(path)
+      )
     },
 
     #' @description Streams out raw vector to AWS S3 file
@@ -619,10 +633,12 @@ S3FileSystem = R6Class("S3FileSystem",
       if (unique(obj_type) == "character"){
         url_stream = list_zip(obj, path, max_batch)
         future_lapply(url_stream, function(part) {
-          kwargs$obj = part[[1]]
-          kwargs$dest = part[[2]]
-          do.call(private$.s3_stream_out_url, kwargs)
-        })
+            kwargs$obj = part[[1]]
+            kwargs$dest = part[[2]]
+            do.call(private$.s3_stream_out_url, kwargs)
+          },
+          future.seed = length(url_stream)
+        )
       } else{
         obj_size = lengths(obj)
         multipart = self$multipart_threshold < obj_size
@@ -636,11 +652,13 @@ S3FileSystem = R6Class("S3FileSystem",
 
         if (length(standard) > 0){
           future_lapply(standard, function(part){
-            kwargs$obj = part[[1]]
-            kwargs$dest = part[[2]]
-            kwargs$size = part[[3]]
-            do.call(private$.s3_stream_out_file, kwargs)
-          })
+              kwargs$obj = part[[1]]
+              kwargs$dest = part[[2]]
+              kwargs$size = part[[3]]
+              do.call(private$.s3_stream_out_file, kwargs)
+            },
+            future.seed = length(standard)
+          )
         }
         if (length(multipart) > 0){
           kwargs$max_batch = max_batch
@@ -698,14 +716,16 @@ S3FileSystem = R6Class("S3FileSystem",
       }
       s3_parts = lapply(path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
-        retry_api_call(
-          self$s3_client$delete_object_tagging(
-            Bucket = s3_parts[[i]]$Bucket,
-            Key = s3_parts[[i]]$Key,
-            VersionId = s3_parts[[i]]$VersionId
-          ), self$retries
-        )
-      })
+          retry_api_call(
+            self$s3_client$delete_object_tagging(
+              Bucket = s3_parts[[i]]$Bucket,
+              Key = s3_parts[[i]]$Key,
+              VersionId = s3_parts[[i]]$VersionId
+            ), self$retries
+          )
+        },
+        future.seed = length(s3_parts)
+      )
       return(private$.s3_build_uri(path))
     },
 
@@ -736,28 +756,30 @@ S3FileSystem = R6Class("S3FileSystem",
       s3_parts = lapply(path, private$.s3_split_path)
       kwargs = list()
       out = future_lapply(seq_along(s3_parts), function(i){
-        kwargs$Bucket = s3_parts[[i]]$Bucket
-        kwargs$Key = s3_parts[[i]]$Key
-        kwargs$VersionId = s3_parts[[i]]$VersionId
-        resp = retry_api_call(
-          do.call(self$s3_client$get_object_tagging, kwargs),
-          self$retries
-        )
-        tag = suppressWarnings(rbindlist(resp$TagSet, fill = T))
-        if(nrow(tag) == 0)
-          tag = data.table("tag_key" = "", tag_key = "")
-        names(tag) = c("tag_key", "tag_value")
-        tag$version_id = resp$VersionId
-        tag$bucket_name = s3_parts[[i]]$Bucket
-        tag$key = s3_parts[[i]]$Key
-        tag$uri = self$path(
-          s3_parts[[i]]$Bucket,
-          if(!is.null(s3_parts[[i]]$VersionId))
-            paste0(s3_parts[[i]]$Key, "?versionId=", s3_parts[[i]]$VersionId)
-          else s3_parts[[i]]$Key
-        )
-        return(tag)
-      })
+          kwargs$Bucket = s3_parts[[i]]$Bucket
+          kwargs$Key = s3_parts[[i]]$Key
+          kwargs$VersionId = s3_parts[[i]]$VersionId
+          resp = retry_api_call(
+            do.call(self$s3_client$get_object_tagging, kwargs),
+            self$retries
+          )
+          tag = suppressWarnings(rbindlist(resp$TagSet, fill = T))
+          if(nrow(tag) == 0)
+            tag = data.table("tag_key" = "", tag_key = "")
+          names(tag) = c("tag_key", "tag_value")
+          tag$version_id = resp$VersionId
+          tag$bucket_name = s3_parts[[i]]$Bucket
+          tag$key = s3_parts[[i]]$Key
+          tag$uri = self$path(
+            s3_parts[[i]]$Bucket,
+            if(!is.null(s3_parts[[i]]$VersionId))
+              paste0(s3_parts[[i]]$Key, "?versionId=", s3_parts[[i]]$VersionId)
+            else s3_parts[[i]]$Key
+          )
+          return(tag)
+        },
+        future.seed = length(s3_parts)
+      )
       out = rbindlist(out)
       names(out) = camel_to_snake(names(out))
       setcolorder(out, c("bucket_name", "key", "uri", "version_id"))
@@ -791,35 +813,39 @@ S3FileSystem = R6Class("S3FileSystem",
       if (!overwrite) {
         kwargs = list()
         new_tags = future_lapply(seq_along(s3_parts), function(i){
-          kwargs$Bucket = s3_parts[[i]]$Bucket
-          kwargs$Key = s3_parts[[i]]$Key
-          kwargs$VersionId = s3_parts[[i]]$VersionId
-          resp = retry_api_call(
-            do.call(self$s3_client$get_object_tagging, kwargs),
-            self$retries
-          )
-          org_tag = lapply(resp$TagSet, function(x) x$Value)
-          names(org_tag) = vapply(resp$TagSet, function(x) x$Key, FUN.VALUE = "")
-          new_tags = modifyList(org_tag, tags)
-          return(
-            lapply(names(new_tags), function(n) list(Key=n, Value=new_tags[[n]]))
-          )
-        })
+            kwargs$Bucket = s3_parts[[i]]$Bucket
+            kwargs$Key = s3_parts[[i]]$Key
+            kwargs$VersionId = s3_parts[[i]]$VersionId
+            resp = retry_api_call(
+              do.call(self$s3_client$get_object_tagging, kwargs),
+              self$retries
+            )
+            org_tag = lapply(resp$TagSet, function(x) x$Value)
+            names(org_tag) = vapply(resp$TagSet, function(x) x$Key, FUN.VALUE = "")
+            new_tags = modifyList(org_tag, tags)
+            return(
+              lapply(names(new_tags), function(n) list(Key=n, Value=new_tags[[n]]))
+            )
+          },
+          future.seed = length(s3_parts)
+        )
       } else if (overwrite) {
         new_tags = list(lapply(names(tags), function(n) list(Key=n, Value=tags[[n]])))
       }
 
       kwargs = list()
       future_lapply(seq_along(s3_parts), function(i){
-        kwargs$Bucket = s3_parts[[i]]$Bucket
-        kwargs$Key = s3_parts[[i]]$Key
-        kwargs$VersionId = s3_parts[[i]]$VersionId
-        kwargs$Tagging = list("TagSet" = new_tags[[i]])
-        resp = retry_api_call(
-          do.call(self$s3_client$put_object_tagging, kwargs),
-          self$retries
-        )
-      })
+          kwargs$Bucket = s3_parts[[i]]$Bucket
+          kwargs$Key = s3_parts[[i]]$Key
+          kwargs$VersionId = s3_parts[[i]]$VersionId
+          kwargs$Tagging = list("TagSet" = new_tags[[i]])
+          resp = retry_api_call(
+            do.call(self$s3_client$put_object_tagging, kwargs),
+            self$retries
+          )
+        },
+        future.seed = length(s3_parts)
+      )
       return(private$.s3_build_uri(path))
     },
 
@@ -914,20 +940,24 @@ S3FileSystem = R6Class("S3FileSystem",
       multipart = list_zip(path[multipart], path_size[multipart], new_path[multipart])
       if (length(standard) > 0){
         future_lapply(standard, function(part){
-          kwargs$src = part[[1]]
-          kwargs$dest = part[[3]]
-          kwargs$size = part[[2]]
-          do.call(private$.s3_upload_standard_file, kwargs)
-        })
+            kwargs$src = part[[1]]
+            kwargs$dest = part[[3]]
+            kwargs$size = part[[2]]
+            do.call(private$.s3_upload_standard_file, kwargs)
+          },
+          future.seed = length(standard)
+        )
       }
       if (length(multipart) > 0){
         future_lapply(multipart, function(part){
-          kwargs$src = part[[1]]
-          kwargs$dest = part[[3]]
-          kwargs$size = part[[2]]
-          kwargs$max_batch = max_batch
-          do.call(private$.s3_upload_multipart_file, kwargs)
-        })
+            kwargs$src = part[[1]]
+            kwargs$dest = part[[3]]
+            kwargs$size = part[[2]]
+            kwargs$max_batch = max_batch
+            do.call(private$.s3_upload_multipart_file, kwargs)
+          },
+          future.seed = length(multipart)
+        )
       }
       self$clear_cache(private$.s3_pnt_dir(new_path))
       return(private$.s3_build_uri(new_path))
@@ -1000,46 +1030,48 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs = list(...)
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
       out = future_lapply(seq_along(s3_parts), function(i){
-        j = 1
-        out = list()
-        while(!identical(kwargs$VersionIdMarker, character(0))){
-          resp = retry_api_call(
-            self$s3_client$list_object_versions(
-              Bucket = s3_parts[[i]]$Bucket,
-              Prefix = s3_parts[[i]]$Key,
-              VersionIdMarker = kwargs$VersionIdMarker,
-              KeyMarker = kwargs$KeyMarker
-            ), self$retries
-          )
-          kwargs$VersionIdMarker = resp$VersionIdMarker
-          kwargs$KeyMarker = resp$KeyMarker
+          j = 1
+          out = list()
+          while(!identical(kwargs$VersionIdMarker, character(0))){
+            resp = retry_api_call(
+              self$s3_client$list_object_versions(
+                Bucket = s3_parts[[i]]$Bucket,
+                Prefix = s3_parts[[i]]$Key,
+                VersionIdMarker = kwargs$VersionIdMarker,
+                KeyMarker = kwargs$KeyMarker
+              ), self$retries
+            )
+            kwargs$VersionIdMarker = resp$VersionIdMarker
+            kwargs$KeyMarker = resp$KeyMarker
 
-          df = rbindlist(
-            lapply(resp$Versions, function(v)
-              list(
-                size = v$Size,
-                version_id =v$VersionId,
-                owner = v$Owner$DisplayName,
-                etag = v$ETag,
-                last_modified = v$LastModified
+            df = rbindlist(
+              lapply(resp$Versions, function(v)
+                list(
+                  size = v$Size,
+                  version_id =v$VersionId,
+                  owner = v$Owner$DisplayName,
+                  etag = v$ETag,
+                  last_modified = v$LastModified
+                )
               )
             )
-          )
-          df$bucket_name = s3_parts[[i]]$Bucket
-          df$key = s3_parts[[i]]$Key
-          df$uri = self$path(
-            s3_parts[[i]]$Bucket,
-            if(!is.null(df$version_id))
-              paste0(s3_parts[[i]]$Key, "?versionId=", df$version_id)
-            else s3_parts[[i]]$Key
-          )
-          out[[j]] = df
-          j = j + 1
-        }
-        dt = rbindlist(out)
-        setcolorder(dt, c("bucket_name", "key", "uri"))
-        return(dt)
-      })
+            df$bucket_name = s3_parts[[i]]$Bucket
+            df$key = s3_parts[[i]]$Key
+            df$uri = self$path(
+              s3_parts[[i]]$Bucket,
+              if(!is.null(df$version_id))
+                paste0(s3_parts[[i]]$Key, "?versionId=", df$version_id)
+              else s3_parts[[i]]$Key
+            )
+            out[[j]] = df
+            j = j + 1
+          }
+          dt = rbindlist(out)
+          setcolorder(dt, c("bucket_name", "key", "uri"))
+          return(dt)
+        },
+        future.seed = length(s3_parts)
+      )
       return(rbindlist(out))
     },
 
@@ -1140,12 +1172,14 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
       s3_parts = lapply(path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
-        retry_api_call(
-          self$s3_client$put_bucket_acl(
-            Bucket = s3_parts[[i]]$Bucket,
-            ACL = mode
-          ), self$retries)
-      })
+          retry_api_call(
+            self$s3_client$put_bucket_acl(
+              Bucket = s3_parts[[i]]$Bucket,
+              ACL = mode
+            ), self$retries)
+        },
+        future.seed = length(s3_parts)
+      )
       return(private$.s3_build_uri(path))
     },
 
@@ -1184,22 +1218,24 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$ACL = mode
 
       future_lapply(seq_along(s3_parts), function(i){
-        kwargs$Bucket = s3_parts[[i]]$Bucket
-        retry_api_call(
-          do.call(self$s3_client$create_bucket, kwargs),
-          self$retries
-        )
-        if (versioning)
+          kwargs$Bucket = s3_parts[[i]]$Bucket
           retry_api_call(
-            self$s3_client$put_bucket_versioning(
-              Bucket = kwargs$Bucket,
-              VersioningConfiguration = list(
-                Status = "Enabled"
-              )
-            ),
+            do.call(self$s3_client$create_bucket, kwargs),
             self$retries
           )
-      })
+          if (versioning)
+            retry_api_call(
+              self$s3_client$put_bucket_versioning(
+                Bucket = kwargs$Bucket,
+                VersioningConfiguration = list(
+                  Status = "Enabled"
+                )
+              ),
+              self$retries
+            )
+        },
+        future.seed = length(s3_parts)
+      )
       return(private$.s3_build_uri(path))
     },
 
@@ -1217,12 +1253,14 @@ S3FileSystem = R6Class("S3FileSystem",
         self$file_delete(path)
       s3_parts = lapply(original_path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
-        retry_api_call(
-          self$s3_client$delete_bucket(
-            Bucket = s3_parts[[i]]$Bucket
-          ), self$retries
-        )
-      })
+          retry_api_call(
+            self$s3_client$delete_bucket(
+              Bucket = s3_parts[[i]]$Bucket
+            ), self$retries
+          )
+        },
+        future.seed = length(s3_parts)
+      )
       self$clear_cache("__buckets")
       return(private$.s3_build_uri(original_path))
     },
@@ -1292,10 +1330,12 @@ S3FileSystem = R6Class("S3FileSystem",
         if (any(!vapply(multipart, any, FUN.VALUE = logical(1)))){
           lapply(standard_path, function(part){
             future_lapply(seq_along(part[[1]]), function(i) {
-              kwargs$src = part[[1]][i]
-              kwargs$dest = part[[2]][i]
-              do.call(private$.s3_copy_standard, kwargs)
-            })
+                kwargs$src = part[[1]][i]
+                kwargs$dest = part[[2]][i]
+                do.call(private$.s3_copy_standard, kwargs)
+              },
+              future.seed = length(part[[1]])
+            )
           })
         }
         if (any(vapply(multipart, any, FUN.VALUE = logical(1)))){
@@ -1482,10 +1522,12 @@ S3FileSystem = R6Class("S3FileSystem",
 
       lapply(paths, function(parts){
         future_lapply(seq_along(parts[[1]]), function(i){
-            kwargs$src = parts[[1]][i]
-            kwargs$dest = parts[[2]][i]
-            do.call(private$.s3_download_file, kwargs)
-        })
+              kwargs$src = parts[[1]][i]
+              kwargs$dest = parts[[2]][i]
+              do.call(private$.s3_download_file, kwargs)
+          },
+          future.seed = length(parts[[1]])
+        )
       })
       return(path_rel(new_path))
     },
@@ -1821,11 +1863,13 @@ S3FileSystem = R6Class("S3FileSystem",
       if (any(!vapply(multipart, any, FUN.VALUE = logical(1)))) {
         lapply(standard_path, function(part){
           future_lapply(seq_along(part[[1]]), function(i) {
-            kwargs$src = part[[1]][i]
-            kwargs$dest = part[[2]][i]
-            kwargs$size = part[[3]][i]
-            do.call(private$.s3_upload_standard_file, kwargs)
-          })
+              kwargs$src = part[[1]][i]
+              kwargs$dest = part[[2]][i]
+              kwargs$size = part[[3]][i]
+              do.call(private$.s3_upload_standard_file, kwargs)
+            },
+            future.seed = length(part[[1]])
+          )
         })
       }
       if (any(vapply(multipart, any, FUN.VALUE = logical(1)))){
@@ -2210,14 +2254,16 @@ S3FileSystem = R6Class("S3FileSystem",
 
       tryCatch({
         parts = future_lapply(seq_along(chunks), function(i){
-          kwargs$PartNumber = i
-          kwargs$CopySourceRange = chunks[i]
-          etag = retry_api_call(
-            do.call(self$s3_client$upload_part_copy, kwargs)$CopyPartResult$ETag,
-            self$retries
-          )
-          return(list(ETag = etag, PartNumber = i))
-        })
+            kwargs$PartNumber = i
+            kwargs$CopySourceRange = chunks[i]
+            etag = retry_api_call(
+              do.call(self$s3_client$upload_part_copy, kwargs)$CopyPartResult$ETag,
+              self$retries
+            )
+            return(list(ETag = etag, PartNumber = i))
+          },
+          future.seed = length(chunks)
+        )
         kwargs$MultipartUpload = list(Parts = parts)
         kwargs$CopySource = NULL
         retry_api_call(
@@ -2243,14 +2289,16 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs = list()
       kwargs$RequestPayer = args$RequestPayer %||% self$request_payer
       obj = future_lapply(seq_along(s3_parts), function(i){
-        kwargs$Bucket = s3_parts[[i]]$Bucket
-        kwargs$Key = s3_parts[[i]]$Key
-        kwargs$VersionId = s3_parts[[i]]$VersionId
-        retry_api_call(
-          do.call(self$s3_client$head_object, kwargs)$Metadata,
-          self$retries
-        )
-      })
+          kwargs$Bucket = s3_parts[[i]]$Bucket
+          kwargs$Key = s3_parts[[i]]$Key
+          kwargs$VersionId = s3_parts[[i]]$VersionId
+          retry_api_call(
+            do.call(self$s3_client$head_object, kwargs)$Metadata,
+            self$retries
+          )
+        },
+        future.seed = length(s3_parts)
+      )
     },
 
     .s3_stream_in_file = function(src, ...) {
@@ -2306,14 +2354,16 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$UploadId = upload_id
       tryCatch({
         parts = future_lapply(seq_len(num_parts), function(i){
-          kwargs$PartNumber = i
-          kwargs$Body = obj[[i]]
-          etag = retry_api_call(
-            do.call(self$s3_client$upload_part, kwargs)$ETag,
-            self$retries
-          )
-          return(list(ETag = etag, PartNumber = i))
-        })
+            kwargs$PartNumber = i
+            kwargs$Body = obj[[i]]
+            etag = retry_api_call(
+              do.call(self$s3_client$upload_part, kwargs)$ETag,
+              self$retries
+            )
+            return(list(ETag = etag, PartNumber = i))
+          },
+          future.seed = num_parts
+        )
         kwargs$MultipartUpload = list(Parts = parts)
         retry_api_call(
           do.call(self$s3_client$complete_multipart_upload, kwargs),
