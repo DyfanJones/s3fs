@@ -1607,16 +1607,17 @@ S3FileSystem = R6Class("S3FileSystem",
           "last_modified" = .POSIXct(character())
         )))
       }
-      path = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
 
-      if(length(files$bucket_name) == 0)
+      Key = vapply(str_split(path, "/", 2), function(p) p[2], FUN.VALUE = "")
+      files = files[grepl(paste0("^", Key, collapse = "|"), get("Key"), perl = T), ]
+      if(length(files$bucket_name) == 0){
         stop(sprintf(
           "Failed to search directory '%s': no such file or directory",
-          paste(sprintf("s3://%s", path), collapse = "', '")),
+          paste(sprintf("s3://%s", Key), collapse = "', '")),
           call. = F
         )
+      }
 
-      files = files[!(trimws(get("key"), "right", "/") %in% path), ]
       if(type != "any")
         files = files[get("type") %in% type,]
       if(!is.null(glob))
