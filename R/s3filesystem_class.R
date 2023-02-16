@@ -1366,7 +1366,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "`path` is required to be a character vector" = is.character(path)
       )
       path_uri = self$dir_ls(path, recurse = T)
-      self$file_delete(c(path, path_uri))
+      self$file_delete(Filter(nchar, c(path, path_uri)))
       return(private$.s3_build_uri(path))
     },
 
