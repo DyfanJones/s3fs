@@ -424,28 +424,31 @@ S3FileSystem = R6Class("S3FileSystem",
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
 
       # check if directory is in cache
-      found = path %in% names(self$s3_cache)
+      found = vector(length = length(path))
       if (length(self$s3_cache) > 0) {
-        uri = unique(rbindlist(self$s3_cache)[get("type") == "file"][["uri"]])
-        found[!found] = path[!found] %in% vapply(uri, private$.s3_strip_uri, FUN.VALUE = "")
+        uri = unique(rbindlist(self$s3_cache)[["uri"]])
+        found = path %in% vapply(uri, private$.s3_strip_uri, FUN.VALUE = "")
       }
 
       if(!any(found)){
         s3_parts = lapply(path[!found], private$.s3_split_path)
         exist  = future_vapply(seq_along(s3_parts), function(i) {
-          retry_api_call(
-            tryCatch({
-              self$s3_client$head_object(
-                Bucket = s3_parts[[i]]$Bucket,
-                Key = s3_parts[[i]]$Key,
-                VersionId = s3_parts[[i]]$VersionId
-              )
-              return(TRUE)
-              }, http_404 = function(e){
-                return(FALSE)
-            }), self$retries
-          )
-          }, FUN.VALUE = logical(1))
+            retry_api_call(
+              tryCatch({
+                self$s3_client$head_object(
+                  Bucket = s3_parts[[i]]$Bucket,
+                  Key = s3_parts[[i]]$Key,
+                  VersionId = s3_parts[[i]]$VersionId
+                )
+                return(TRUE)
+                }, http_404 = function(e){
+                  return(FALSE)
+              }), self$retries
+            )
+          },
+          FUN.VALUE = logical(1),
+          future.seed = length(s3_parts)
+        )
         found[!found] = exist
       }
       return(found)
@@ -1123,17 +1126,20 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       mod_found = path[!found] %in% bucket_names
       exist = future_vapply(seq_along(s3_parts[mod_found]), function(i){
-        tryCatch({
-          self$s3_client$list_objects_v2(
-            Bucket = s3_parts[mod_found][[i]]$Bucket,
-            MaxKeys = 1,
-            ...
-          )
-          return(TRUE)
-        }, error = function(e){
-          return(FALSE)
-        })
-      }, FUN.VALUE = logical(1))
+          tryCatch({
+            self$s3_client$list_objects_v2(
+              Bucket = s3_parts[mod_found][[i]]$Bucket,
+              MaxKeys = 1,
+              ...
+            )
+            return(TRUE)
+          }, error = function(e){
+            return(FALSE)
+          })
+        },
+        FUN.VALUE = logical(1),
+        future.seed = length(s3_parts[mod_found])
+      )
       found[!found][mod_found] = exist
       return(found)
     },
@@ -1247,7 +1253,7 @@ S3FileSystem = R6Class("S3FileSystem",
 
       # Delete contents from s3 bucket
       path = self$dir_ls(original_path, recurse = TRUE, refresh = TRUE)
-      if(all(nzchar(path)))
+      if(!identical(path, character(0)))
         self$file_delete(path)
       s3_parts = lapply(original_path, private$.s3_split_path)
       future_lapply(seq_along(s3_parts), function(i){
@@ -1579,7 +1585,7 @@ S3FileSystem = R6Class("S3FileSystem",
       kwargs$RequestPayer = kwargs$RequestPayer %||% self$request_payer
       if(all(private$.cache_s3_data(path)))
         private$.cache_s3_bucket(path)
-        file = rbindlist(self$s3_cache[path])
+      file = rbindlist(self$s3_cache[path])
       if (all(path %in% c("", "/", "."))){
         files = private$.s3_bucket_ls(refresh)
       } else {
@@ -1605,7 +1611,6 @@ S3FileSystem = R6Class("S3FileSystem",
           "last_modified" = .POSIXct(character())
         )))
       }
-
       Key = Filter(Negate(is.na),
         vapply(unlist(lapply(path, str_split, "/", 2 ), recursive = F),
           function(p) p[2], FUN.VALUE = ""
@@ -1618,13 +1623,6 @@ S3FileSystem = R6Class("S3FileSystem",
           # don't return directory path
           !(trimws(get("key"), "right", "/") %in% Key),
         ]
-      }
-      if(length(files$bucket_name) == 0){
-        stop(sprintf(
-          "Failed to search directory '%s': no such file or directory",
-          paste(sprintf("s3://%s", path), collapse = "', '")),
-          call. = F
-        )
       }
 
       if(Type != "any") {
@@ -1707,7 +1705,7 @@ S3FileSystem = R6Class("S3FileSystem",
       }
 
       if(nrow(files) == 0)
-        return("")
+        return(character(0))
 
       Key = Filter(Negate(is.na),
         vapply(unlist(lapply(path, str_split, "/", 2 ), recursive = F),
@@ -1722,13 +1720,6 @@ S3FileSystem = R6Class("S3FileSystem",
           !(trimws(get("key"), "right", "/") %in% Key),
         ]
       }
-      if(length(files$bucket_name) == 0){
-        stop(sprintf(
-          "Failed to search directory '%s': no such file or directory",
-          paste(sprintf("s3://%s", path), collapse = "', '")),
-          call. = F
-        )
-      }
 
       if(Type != "any")
         files = files[get("type") %in% Type,]
@@ -1737,13 +1728,7 @@ S3FileSystem = R6Class("S3FileSystem",
       if(!is.null(regexp))
         files = files[grep(regexp, get("key"), invert = invert),]
 
-      return(
-        if(identical(files$bucket_name ,character(0))) {
-          character(0)
-        } else {
-          files$uri
-        }
-      )
+      return(if(identical(files$uri, NULL)) character(0) else files$uri)
     },
 
     #' @description Generate presigned url to list S3 directories
@@ -2144,8 +2129,8 @@ S3FileSystem = R6Class("S3FileSystem",
           batch_resp = retry_api_call(
             tryCatch({
               do.call(self$s3_client$list_objects_v2, kwargs)
-            } # TODO: handle aws error
-            ), self$retries
+            }),
+            self$retries
           )
           kwargs$ContinuationToken = batch_resp$NextContinuationToken
           resp[[i]] = batch_resp
@@ -2264,7 +2249,7 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       version_id = if(is.null(src_parts$VersionId)) "" else sprintf("?versionId=%s", src_parts$VersionId)
       copy_src = paste0(sprintf("/%s/%s",src_parts$Bucket, src_parts$Key), version_id)
-      start = seq(0, size-1, max_batch)
+      start = as.numeric(seq(0, size-1, max_batch))
       end = c(start[-1]-1, size-1)
       chunks = sprintf("bytes=%s-%s", start, end)
 
@@ -2424,6 +2409,7 @@ S3FileSystem = R6Class("S3FileSystem",
       stream = curl::curl(obj)
       open(stream, "rbf")
       on.exit(close(stream))
+      max_batch = as.numeric(max_batch)
 
       multipart = TRUE
       upload_no = 1
@@ -2514,6 +2500,7 @@ S3FileSystem = R6Class("S3FileSystem",
         self$s3_client$create_multipart_upload(
           Bucket = dest_parts$Bucket, Key = dest_parts$Key, ...
         )$UploadId, self$retries)
+      max_batch = as.numeric(max_batch)
       num_parts = ceiling(size / max_batch)
       con = file(src, open = "rb")
       on.exit({close(con)})
