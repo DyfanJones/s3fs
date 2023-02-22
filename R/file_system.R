@@ -73,8 +73,8 @@ s3_file_system = function(aws_access_key_id = NULL,
       anonymous = anonymous,
       ...
     )
-    assign("service", s3fs, envir = s3fs_cache)
     s3fs$retries = retries
+    assign("service", s3fs, envir = s3fs_cache)
   }
   return(invisible(s3fs))
 }
