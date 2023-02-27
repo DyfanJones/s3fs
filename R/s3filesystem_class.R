@@ -1411,6 +1411,8 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       path_uri = self$dir_ls(path, recurse = T)
       self$file_delete(Filter(nchar, c(path, path_uri)))
+      # ensure nested directories are removed from cache
+      self$clear_cache(path)
       return(private$.s3_build_uri(path))
     },
 
