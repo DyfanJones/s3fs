@@ -1,4 +1,4 @@
-# s3fs 0.1.2.9000
+# s3fs 0.1.3
 
 * Fix hard coded max batch size
 * Add seed for future to prevent warning message

@@ -1,4 +1,4 @@
-Update description to meet cran comments.
+This is a patch update, fixing several issues
 
 ## Test environments
 
@@ -8,11 +8,4 @@ Update description to meet cran comments.
 
 ## R CMD check results
 
-There were no ERRORs or WARNINGs
-
-Notes:
-  New submission
-
-Maintainers Notes:
-Apologies for quick re-submission, this is due to `"\()"` being used and restricting R version.
-Please ignore s3fs 0.1.1
+There were no ERRORs, WARNINGs or NOTEs
