@@ -17,7 +17,7 @@ character vector of s3 uri paths
 }
 \description{
 Similar to \code{fs::file_touch} this does not create the file if
-it does not exist. Use \code{s3fs$file_create()} to do this if needed.
+it does not exist. Use \code{\link{s3_file_create}} to do this if needed.
 }
 \note{
 This method will only update the modification time of the AWS S3 object.

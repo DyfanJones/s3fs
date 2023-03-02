@@ -453,7 +453,7 @@ s3_file_temp = function(pattern = "file",
 
 #' @title Change file modification time
 #' @description Similar to `fs::file_touch` this does not create the file if
-#'              it does not exist. Use `s3fs$file_create()` to do this if needed.
+#'              it does not exist. Use \code{\link{s3_file_create}} to do this if needed.
 #' @param path (character): A character vector of paths or s3 uri
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
 #' @note This method will only update the modification time of the AWS S3 object.
