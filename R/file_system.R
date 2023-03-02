@@ -303,7 +303,7 @@ s3_file_exists = function(path){
 #' \item{content_language} {(character): what language the content is in}
 #' \item{content_type} {(character): file MIME type}
 #' \item{expires} {(POSIXct): date and time the file is no longer cacheable}
-#' \item{website_redirect_location} {(character): redirecs request for file to another}
+#' \item{website_redirect_location} {(character): redirects request for file to another}
 #' \item{server_side_encryption} {(character): File server side encryption}
 #' \item{metadata} {(list): metadata of file}
 #' \item{sse_customer_algorithm} {(character): server-side encryption with a customer-provided encryption key}
@@ -453,7 +453,7 @@ s3_file_temp = function(pattern = "file",
 
 #' @title Change file modification time
 #' @description Similar to `fs::file_touch` this does not create the file if
-#'              it does not exist. Use `s3fs$file_create()` to do this if needed.
+#'              it does not exist. Use \code{\link{s3_file_create}} to do this if needed.
 #' @param path (character): A character vector of paths or s3 uri
 #' @param ... parameters to be passed to \code{\link[paws.storage]{s3_copy_object}}
 #' @note This method will only update the modification time of the AWS S3 object.

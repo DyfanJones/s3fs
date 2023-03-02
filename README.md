@@ -23,6 +23,13 @@ however it’s API and implementation has been developed to follow `R`’s
 
 ## Installation
 
+You can install the released version of s3fs from
+[CRAN](https://cran.r-project.org/) with:
+
+``` r
+install.packages('s3fs')
+```
+
 r-universe installation:
 
 ``` r

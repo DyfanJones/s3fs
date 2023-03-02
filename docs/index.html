@@ -76,8 +76,11 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>r-universe installation:</p>
+<p>You can install the released version of s3fs from <a href="https://cran.r-project.org/" class="external-link">CRAN</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'s3fs'</span><span class="op">)</span></span></code></pre></div>
+<p>r-universe installation:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Enable repository from dyfanjones</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  dyfanjones <span class="op">=</span> <span class="st">'https://dyfanjones.r-universe.dev'</span>,</span>
@@ -87,7 +90,7 @@
 <span><span class="co"># Download and install s3fs in R</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'s3fs'</span><span class="op">)</span></span></code></pre></div>
 <p>Github installation</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"dyfanjones/s3fs"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
@@ -141,7 +144,7 @@
 <strong>Scalable</strong>. All <code>s3fs</code> functions are designed to have the option to run in parallel through the use of <code>future</code> and <code>future.apply</code>.</li>
 </ul>
 <p>For example: copy a large file from one location to the next.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DyfanJones/s3fs" class="external-link">s3fs</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span></span>
 <span></span>
@@ -154,7 +157,7 @@
 <strong>Async</strong>. <code>s3fs</code> uses <code>future</code> to create a few key async functions. This is more focused on functions that might be moving large files to and from <code>R</code> and <code>AWS S3</code>.</li>
 </ul>
 <p>For example: Copying a large file from <code>AWS S3</code> to <code>R</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DyfanJones/s3fs" class="external-link">s3fs</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span></span>
 <span></span>
@@ -185,7 +188,7 @@
 <code>s3_dir_</code> for s3 directories</li>
 </ul>
 <p><strong>NOTE:</strong> <code>link_</code> is currently not supported.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DyfanJones/s3fs" class="external-link">s3fs</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Construct a path to a file with `path()`</span></span>
@@ -227,7 +230,7 @@
 <span><span class="fu"><a href="reference/delete.html">s3_dir_delete</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span></code></pre></div>
 <p><sup>Created on 2022-06-21 by the <a href="https://reprex.tidyverse.org" class="external-link">reprex package</a> (v2.0.1)</sup></p>
 <p>Similar to <code>fs</code>, <code>s3fs</code> is designed to work well with the pipe.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DyfanJones/s3fs" class="external-link">s3fs</a></span><span class="op">)</span></span>
 <span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/s3_file_temp.html">s3_file_temp</a></span><span class="op">(</span>tmp_dir <span class="op">=</span> <span class="st">"MyBucket"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span> <span class="fu"><a href="reference/create.html">s3_dir_create</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -252,7 +255,7 @@
 <h3 id="file-systems-that-emulate-s3">File systems that emulate S3<a class="anchor" aria-label="anchor" href="#file-systems-that-emulate-s3"></a>
 </h3>
 <p><code>s3fs</code> allows you to connect to file systems that provides an S3-compatible interface. For example, <a href="https://min.io/" class="external-link">MinIO</a> offers high-performance, S3 compatible object storage. You will be able to connect to your <code>MinIO</code> server using <code><a href="reference/s3_file_system.html">s3fs::s3_file_system</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DyfanJones/s3fs" class="external-link">s3fs</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/s3_file_system.html">s3_file_system</a></span><span class="op">(</span></span>
