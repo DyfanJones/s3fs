@@ -396,7 +396,7 @@ S3FileSystem = R6Class("S3FileSystem",
       dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
       new_path = path_abs(new_path)
 
-      if (length(new_path) == 1 & fs::is_dir(new_path)) {
+      if (length(new_path) == 1 && all(fs::is_dir(new_path))) {
         new_path = rep(new_path, length(path))
         new_path = paste(trimws(new_path, "right", "/"), basename(path), sep = "/")
         dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
