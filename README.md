@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![s3fs status
-badge](https://dyfanjones.r-universe.dev/badges/s3fs)](https://dyfanjones.r-universe.dev)
+badge](https://dyfanjones.r-universe.dev/badges/s3fs)](https://dyfanjones.r-universe.dev/s3fs)
 [![R-CMD-check](https://github.com/DyfanJones/s3fs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DyfanJones/s3fs/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/DyfanJones/s3fs/branch/main/graph/badge.svg)](https://app.codecov.io/gh/DyfanJones/s3fs?branch=main)

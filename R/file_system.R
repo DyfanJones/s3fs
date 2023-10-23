@@ -283,53 +283,53 @@ s3_file_exists = function(path){
 #' @return
 #' `s3_file_info` A data.table with metadata for each file. Columns returned are as follows.
 #' \itemize{
-#' \item{bucket_name} {(character): AWS S3 bucket of file}
-#' \item{key} {(character): AWS S3 path key of file}
-#' \item{uri} {(character): S3 uri of file}
-#' \item{size} {(numeric): file size in bytes}
-#' \item{type} {(character): file type (file or directory)}
-#' \item{etag} {(character): An entity tag is an opague identifier}
-#' \item{last_modified} {(POSIXct): Created date of file.}
-#' \item{delete_marker} {(logical): Specifies retrieved a logical marker}
-#' \item{accept_ranges} {(character): Indicates that a range of bytes was specified.}
-#' \item{expiration} {(character): File expiration}
-#' \item{restore} {(character): If file is archived}
-#' \item{archive_status} {(character): Archive status}
-#' \item{missing_meta} {(integer): Number of metadata entries not returned in "x-amz-meta" headers}
-#' \item{version_id} {(character): version id of file}
-#' \item{cache_control} {(character): caching behaviour for the request/reply chain}
-#' \item{content_disposition} {(character): presentational information of file}
-#' \item{content_encoding} {(character): file content encodings}
-#' \item{content_language} {(character): what language the content is in}
-#' \item{content_type} {(character): file MIME type}
-#' \item{expires} {(POSIXct): date and time the file is no longer cacheable}
-#' \item{website_redirect_location} {(character): redirects request for file to another}
-#' \item{server_side_encryption} {(character): File server side encryption}
-#' \item{metadata} {(list): metadata of file}
-#' \item{sse_customer_algorithm} {(character): server-side encryption with a customer-provided encryption key}
-#' \item{sse_customer_key_md5} {(character): server-side encryption with a customer-provided encryption key}
-#' \item{ssekms_key_id} {(character): ID of the Amazon Web Services Key Management Service}
-#' \item{bucket_key_enabled} {(logical): s3 bucket key for server-side encryption with}
-#' \item{storage_class} {(character): file storage class information}
-#' \item{request_charged} {(character): indicates successfully charged for request}
-#' \item{replication_status} {(character): return specific header if request
+#' \item{bucket_name (character): AWS S3 bucket of file}
+#' \item{key (character): AWS S3 path key of file}
+#' \item{uri (character): S3 uri of file}
+#' \item{size (numeric): file size in bytes}
+#' \item{type (character): file type (file or directory)}
+#' \item{etag (character): An entity tag is an opague identifier}
+#' \item{last_modified (POSIXct): Created date of file.}
+#' \item{delete_marker (logical): Specifies retrieved a logical marker}
+#' \item{accept_ranges (character): Indicates that a range of bytes was specified.}
+#' \item{expiration (character): File expiration}
+#' \item{restore (character): If file is archived}
+#' \item{archive_status (character): Archive status}
+#' \item{missing_meta (integer): Number of metadata entries not returned in "x-amz-meta" headers}
+#' \item{version_id (character): version id of file}
+#' \item{cache_control (character): caching behaviour for the request/reply chain}
+#' \item{content_disposition (character): presentational information of file}
+#' \item{content_encoding (character): file content encodings}
+#' \item{content_language (character): what language the content is in}
+#' \item{content_type (character): file MIME type}
+#' \item{expires (POSIXct): date and time the file is no longer cacheable}
+#' \item{website_redirect_location (character): redirects request for file to another}
+#' \item{server_side_encryption (character): File server side encryption}
+#' \item{metadata (list): metadata of file}
+#' \item{sse_customer_algorithm (character): server-side encryption with a customer-provided encryption key}
+#' \item{sse_customer_key_md5 (character): server-side encryption with a customer-provided encryption key}
+#' \item{ssekms_key_id (character): ID of the Amazon Web Services Key Management Service}
+#' \item{bucket_key_enabled (logical): s3 bucket key for server-side encryption with}
+#' \item{storage_class (character): file storage class information}
+#' \item{request_charged (character): indicates successfully charged for request}
+#' \item{replication_status (character): return specific header if request
 #'      involves a bucket that is either a source or a destination in a replication rule
 #'      \url{https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object}}
-#' \item{parts_count} {(integer): number of count parts the file has}
-#' \item{object_lock_mode} {(character): the file lock mode}
-#' \item{object_lock_retain_until_date} {(POSIXct): date and time of when object_lock_mode expires}
-#' \item{object_lock_legal_hold_status} {(character): file legal holding}
+#' \item{parts_count (integer): number of count parts the file has}
+#' \item{object_lock_mode (character): the file lock mode}
+#' \item{object_lock_retain_until_date (POSIXct): date and time of when object_lock_mode expires}
+#' \item{object_lock_legal_hold_status (character): file legal holding}
 #' }
 #'
 #' `s3_dir_info` data.table with directory metadata
 #' \itemize{
-#' \item{bucket_name} {(character): AWS S3 bucket of file}
-#' \item{key} {(character): AWS S3 path key of file}
-#' \item{uri} {(character): S3 uri of file}
-#' \item{size} {(numeric): file size in bytes}
-#' \item{version_id} {(character): version id of file}
-#' \item{etag} {(character): An entity tag is an opague identifier}
-#' \item{last_modified} {(POSIXct): Created date of file}
+#' \item{bucket_name (character): AWS S3 bucket of file}
+#' \item{key (character): AWS S3 path key of file}
+#' \item{uri (character): S3 uri of file}
+#' \item{size (numeric): file size in bytes}
+#' \item{version_id (character): version id of file}
+#' \item{etag (character): An entity tag is an opague identifier}
+#' \item{last_modified (POSIXct): Created date of file}
 #'}
 #'
 #' `s3_dir_ls` character vector of s3 uri paths
