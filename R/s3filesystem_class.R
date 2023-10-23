@@ -1400,6 +1400,7 @@ S3FileSystem = R6Class("S3FileSystem",
         return(private$.s3_build_uri(path))
       }
       LOGGER$info("Directory already exists in AWS S3")
+      return(path)
     },
 
     #' @description Delete contents and directory in AWS S3
