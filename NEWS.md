@@ -1,3 +1,8 @@
+# s3fs 0.1.4
+
+* Fix ensure path is returned for already existing directories (#28)
+* set R version >= 3.6.0 (#29)
+
 # s3fs 0.1.3
 
 * Fix hard coded max batch size
