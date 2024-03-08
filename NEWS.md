@@ -1,3 +1,7 @@
+# s3fs (development version)
+
+* Fix for `s3_file_download` to allow multiple file paths passed to `new_path` (#34)
+
 # s3fs 0.1.4
 
 * Fix ensure path is returned for already existing directories (#28)
