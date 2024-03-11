@@ -396,7 +396,7 @@ S3FileSystem = R6Class("S3FileSystem",
       dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
       new_path = path_abs(new_path)
 
-      if (length(new_path) == 1 & fs::is_dir(new_path)) {
+      if (length(new_path) == 1 && all(fs::is_dir(new_path))) {
         new_path = rep(new_path, length(path))
         new_path = paste(trimws(new_path, "right", "/"), basename(path), sep = "/")
         dir.create(unique(dirname(new_path)), showWarnings = F, recursive = T)
@@ -524,12 +524,12 @@ S3FileSystem = R6Class("S3FileSystem",
           )
           resp$size = resp$ContentLength
           resp$ContentLength = NULL
-          resp$type = ifelse(endsWith(s3_parts[[i]]$Key, "/"), "directory", "file")
-          suppressWarnings(as.data.table(resp))
+          resp$type = if (endsWith(s3_parts[[i]]$Key, "/")) "directory" else "file"
+          resp[lengths(resp) == 0] = lapply(resp[lengths(resp) == 0], as.na)
+          as.data.table(resp)
         },
         future.seed = length(s3_parts)
       )
-
       dt = rbindlist(resp)
       names(dt) = camel_to_snake(names(dt))
       setnames(dt, "e_tag", "etag")
@@ -2153,9 +2153,9 @@ S3FileSystem = R6Class("S3FileSystem",
                 else ""
               ),
               size = c$Size,
-              type = ifelse(endsWith(c$Key, "/"), "directory", "file"),
-              owner = ifelse(
-                identical(c$Owner$DisplayName, character(0)), "", c$Owner$DisplayName
+              type = if (endsWith(c$Key, "/")) "directory" else "file",
+              owner = (
+                if (identical(c$Owner$DisplayName, character(0))) NA_character_ else c$Owner$DisplayName
               ),
               etag = c$ETag,
               last_modified = c$LastModified
@@ -2181,7 +2181,7 @@ S3FileSystem = R6Class("S3FileSystem",
             type = "directory",
             owner = "",
             etag = "",
-            last_modified = as.POSIXct(NA)
+            last_modified = na_posixct()
           )
         })
         s3_ls = rbind(rbindlist(s3_files),rbindlist(s3_dir))

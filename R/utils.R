@@ -110,3 +110,21 @@ now_utc = function(){
   attr(now, "tzone") <- "UTC"
   now
 }
+
+na_posixct <- function() {
+  out = NA_integer_
+  class(out) <-  c("POSIXct", "POSIXt")
+  return(out)
+}
+
+as.na <- function(x) {
+  switch(
+    class(x)[[1]],
+    "logical" = NA,
+    "character" = NA_character_,
+    "integer" = NA_integer_,
+    "POSIXct" = na_posixct(),
+    x
+  )
+}
+

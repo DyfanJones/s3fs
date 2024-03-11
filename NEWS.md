@@ -1,3 +1,8 @@
+# s3fs (development version)
+
+* Fix for `s3_file_download` to allow multiple file paths passed to `new_path` (#34), thanks to @sckott for contribution.
+* Fix for `s3_file_info`, convert `logical(0)` to `NA` to correctly build `data.frame` output.
+
 # s3fs 0.1.4
 
 * Fix ensure path is returned for already existing directories (#28)
