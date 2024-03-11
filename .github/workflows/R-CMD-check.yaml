@@ -18,6 +18,7 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_S3_BUCKET_NOT_VERSIONED: ${{ secrets.AWS_S3_BUCKET_NOT_VERSIONED }}
       AWS_S3_BUCKET_VERSIONED: ${{ secrets.AWS_S3_BUCKET_VERSIONED }}
+      FOO: ${{ secrets.FOO }}
       R_KEEP_PKG_SOURCE: yes
     steps:
       - uses: actions/checkout@v3
