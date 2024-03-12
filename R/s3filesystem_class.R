@@ -688,7 +688,7 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       if(nzchar(tmp_dir)) {
         tmp_dir = unname(vapply(tmp_dir, private$.s3_strip_uri, FUN.VALUE = ""))
-        self$s3_cache_bucket = str_split(tmp_dir, "/", 2)[[1]][[1]]
+        self$s3_cache_bucket = str_split(tmp_dir, "/", 2, fixed = T)[[1]][[1]]
       } else if (is.null(self$s3_cache_bucket)) {
         tmp_dir = self$s3_cache_bucket
       }
@@ -1615,7 +1615,7 @@ S3FileSystem = R6Class("S3FileSystem",
         )))
       }
       Key = Filter(Negate(is.na),
-        vapply(unlist(lapply(path, str_split, "/", 2 ), recursive = F),
+        vapply(str_split(path, "/", 2, fixed = T),
           function(p) p[2], FUN.VALUE = ""
         )
       )
@@ -1711,7 +1711,7 @@ S3FileSystem = R6Class("S3FileSystem",
         return(character(0))
 
       Key = Filter(Negate(is.na),
-        vapply(unlist(lapply(path, str_split, "/", 2 ), recursive = F),
+        vapply(str_split(path, "/", 2, fixed = T),
           function(p) p[2], FUN.VALUE = ""
         )
       )
@@ -1922,7 +1922,7 @@ S3FileSystem = R6Class("S3FileSystem",
         "`path` is required to be a character vector" = is.character(path)
       )
       path = unname(vapply(path, private$.s3_strip_uri, FUN.VALUE = ""))
-      parts = str_split(path, "/", 2)
+      parts = str_split(path, "/", 2, fixed = T)
       root = (path == lapply(parts, function(p) p[[1]]))
       dir = dirname(path)
       dir[root] = path[root]
@@ -1938,7 +1938,7 @@ S3FileSystem = R6Class("S3FileSystem",
       )
       pattern = "(?<!^|[.]|/)[.]([^.]+)$"
       pos = regexpr(pattern, path, perl = TRUE)
-      return(ifelse(pos > -1L, substring(path, pos + 1L), ""))
+      return(fifelse(pos > -1L, substring(path, pos + 1L), ""))
     },
 
     #' @description Removes the last extension and return the rest of the s3 uri.
@@ -2577,8 +2577,8 @@ S3FileSystem = R6Class("S3FileSystem",
       if (!grepl("/", path)) {
         return(list(Bucket = path, Key = "", VersionId = NULL))
       } else {
-        parts = str_split(path, "/", n = 2)[[1]]
-        keyparts = str_split(parts[2],  "\\?versionId=")[[1]]
+        parts = str_split(path, "/", n = 2, fixed = T)[[1]]
+        keyparts = str_split(parts[2], "?versionId=", fixed = T)[[1]]
         return(list(
           Bucket = parts[1],
           Key = keyparts[1],

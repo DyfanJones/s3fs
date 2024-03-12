@@ -2,61 +2,34 @@
 
 `%||%` = function(x, y) if(is.null(x)) y else x
 
-
-################################################################################
-# Developed from:
-# https://github.com/tidyverse/stringr/blob/2a30b2ebc8e854e181db0ef39025a9cbd35b75cf/R/split.r
-# See the NOTICE file at the top of this package for attribution.
-################################################################################
-str_split <- function(string, pattern, n = Inf) {
+str_split <- function(string,
+                      pattern,
+                      n = Inf,
+                      perl = FALSE,
+                      fixed = FALSE,
+                      useBytes = FALSE) {
   if (n == Inf) {
-    strsplit(string, pattern)
+    strsplit(string, pattern, perl = perl, fixed = fixed, useBytes = useBytes)
   } else if (n == 1) {
     string
   } else {
-    locations <- str_locate_all(string, pattern)
-    lapply(locations, function(mat) {
-      cut <- mat[seq_len(min(n - 1, nrow(mat))), , drop = FALSE]
-      keep <- matrix(c(0, t(cut), Inf), ncol = 2, byrow = TRUE)
-
-      str_sub(string, keep[, 1] + 1, keep[, 2] - 1)
+    matches <- gregexpr(
+      pattern, string, perl = perl, fixed = fixed, useBytes = useBytes
+    )
+    lapply(seq_along(matches), function(i) {
+      match <- matches[[i]]
+      char <- string[[i]]
+      if (length(match) == 1 && match == -1) {
+        return(char)
+      } else {
+        size <- seq_len(min(n - 1, length(match)))
+        start <- c(1, match[size] + attr(match, "match.length")[size])
+        end <- c(match[size] - 1, nchar(char))
+      }
+      substring(char, start, end)
     })
   }
 }
-
-str_locate_all <- function(string, pattern) {
-  matches <- gregexpr(pattern, string)
-
-  null <- matrix(0, nrow = 0, ncol = 2)
-  colnames(null) <- c("start", "end")
-
-  lapply(matches, function(match) {
-    if (length(match) == 1 && match == -1) return(null)
-
-    start <- as.vector(match)
-    end <- start + attr(match, "match.length") - 1
-    cbind(start = start, end = end)
-  })
-}
-
-str_sub <- function(string, start = 0, end = Inf) {
-  if (length(string) == 0 || length(start) == 0 || length(end) == 0) {
-    return(vector("character", 0))
-  }
-
-  n <- max(length(string), length(start), length(end))
-  string <- rep(string, length = n)
-  start <- rep(start, length = n)
-  end <- rep(end, length = n)
-
-  # Replace infinite ends with length of string
-  max_length <- !is.na(end) & end == Inf
-  end[max_length] <- nchar(string)[max_length]
-
-  substring(string, start, end)
-}
-
-
 
 path_abs <- function(path) {
   return(normalizePath(path, winslash = "/", mustWork = FALSE))
@@ -64,7 +37,7 @@ path_abs <- function(path) {
 
 path_rel <- function(path, cwd = getwd()){
   rel_path = gsub(cwd, "", path)
-  return(trimws(rel_path, "left", "/"))
+  return(sub("^/+", "", rel_path, perl = TRUE))
 }
 
 is_uri <- function(path){
@@ -127,4 +100,3 @@ as.na <- function(x) {
     x
   )
 }
-
