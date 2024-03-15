@@ -1,7 +1,7 @@
 Package: s3fs
 Type: Package
 Title: 'Amazon Web Service S3' File System
-Version: 0.1.4.9000
+Version: 0.1.5
 Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("aut", "cre")))
 Description: Access 'Amazon Web Service Simple Storage Service' ('S3') <https://aws.amazon.com/s3/>
     as if it were a file system. Interface based on the R package 'fs'.
