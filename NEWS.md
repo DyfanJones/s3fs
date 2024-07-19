@@ -1,3 +1,7 @@
+# Unreleased
+
+* Suppress warning in `S3FileSystem` triggered from `s3_file_delete()` (#42, @salim-b)
+
 # s3fs 0.1.5
 
 * Fix for `s3_file_download` to allow multiple file paths passed to `new_path` (#34), thanks to @sckott for contribution.
