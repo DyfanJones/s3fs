@@ -1045,14 +1045,16 @@ S3FileSystem = R6Class("S3FileSystem",
             kwargs$VersionIdMarker = resp$VersionIdMarker
             kwargs$KeyMarker = resp$KeyMarker
 
-            df = rbindlist(
-              lapply(resp$Versions, function(v)
-                list(
-                  size = v$Size,
-                  version_id =v$VersionId,
-                  owner = v$Owner$DisplayName,
-                  etag = v$ETag,
-                  last_modified = v$LastModified
+            df = suppressWarnings(
+              rbindlist(
+                lapply(resp$Versions, function(v)
+                  list(
+                    size = v$Size,
+                    version_id =v$VersionId,
+                    owner = v$Owner$DisplayName,
+                    etag = v$ETag,
+                    last_modified = v$LastModified
+                  )
                 )
               )
             )
