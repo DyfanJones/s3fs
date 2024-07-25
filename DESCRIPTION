@@ -9,7 +9,7 @@ License: MIT + file LICENSE
 URL: https://github.com/DyfanJones/s3fs
 BugReports: https://github.com/DyfanJones/s3fs/issues
 Encoding: UTF-8
-RoxygenNote: 7.2.3  
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Collate: 
     'zzz.R'
