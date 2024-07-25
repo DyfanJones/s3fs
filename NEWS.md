@@ -1,4 +1,4 @@
-# s3fs 0.1.6: Unreleased
+# s3fs 0.1.6
 
 * Suppress warning in `S3FileSystem` triggered from `s3_file_delete()` (#42, @salim-b)
 
