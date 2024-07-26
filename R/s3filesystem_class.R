@@ -910,9 +910,10 @@ S3FileSystem = R6Class("S3FileSystem",
       new_path = unname(vapply(new_path, private$.s3_strip_uri, FUN.VALUE = ""))
       path = path_abs(path)
 
-      if (length(new_path) == 1 & !nzchar(self$path_ext(new_path))) {
+      if (length(new_path) == 1 && !nzchar(self$path_ext(new_path))) {
         new_path = rep(trimws(new_path, "right", "/"), length(path))
-        new_path = paste(new_path, basename(path), sep = "/")
+        if (basename(new_path) != basename(path))
+          new_path = paste(new_path, basename(path), sep = "/")
       }
       if(length(path) != length(new_path))
         stop(
