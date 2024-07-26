@@ -1,3 +1,7 @@
+# s3fs 0.1.7 (development)
+
+* Fix files without extensions will be created as a dir/file instead of file (#47) thanks to @pat-s for raising issue
+
 # s3fs 0.1.6
 
 * Suppress warning in `S3FileSystem` triggered from `s3_file_delete()` (#42, @salim-b)
