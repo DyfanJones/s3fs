@@ -1,4 +1,4 @@
-This is a patch update, fixing several issues
+This is a patch update
 
 ## Test environments
 
