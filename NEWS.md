@@ -1,4 +1,4 @@
-# s3fs 0.1.7 (development)
+# s3fs 0.1.7
 
 * Fix files without extensions will be created as a dir/file instead of file (#47) thanks to @pat-s for raising issue
 
