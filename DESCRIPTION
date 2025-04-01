@@ -6,7 +6,7 @@ Authors@R: c(person("Dyfan", "Jones", email="dyfan.r.jones@gmail.com", role= c("
 Description: Access 'Amazon Web Service Simple Storage Service' ('S3') <https://aws.amazon.com/s3/>
     as if it were a file system. Interface based on the R package 'fs'.
 License: MIT + file LICENSE
-URL: https://github.com/DyfanJones/s3fs
+URL: https://github.com/DyfanJones/s3fs, https://dyfanjones.github.io/s3fs/
 BugReports: https://github.com/DyfanJones/s3fs/issues
 Encoding: UTF-8
 RoxygenNote: 7.3.2
